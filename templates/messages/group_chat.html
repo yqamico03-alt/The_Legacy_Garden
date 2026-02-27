@@ -4,56 +4,196 @@
 {% block content %}
 
 <style>
-  /* ── Make messaging fill the full viewport height ── */
-  html, body { height: 100%; overflow: hidden !important; }
-  footer, .footer, .site-footer { display: none !important; }
+  /* ── Base resets ── */
+  html, body { height: auto; overflow: auto !important; }
+  footer, .footer, .site-footer { display: block !important; }
+
+  /* ── Outer wrap ── */
   .messages-wrap {
-    height: calc(100vh - 80px) !important;
-    max-height: calc(100vh - 80px) !important;
-    overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
     margin: 0 !important;
     padding: 0 !important;
   }
-  .messages-shell { flex: 1 !important; height: 100% !important; overflow: hidden !important; }
-  .msg-main { display: flex !important; flex-direction: column !important; height: 100% !important; overflow: hidden !important; }
-  .chat-body { flex: 1 !important; overflow-y: auto !important; min-height: 0 !important; }
-  .msg-sidebar { height: 100% !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
-  .sidebar-list { flex: 1 !important; overflow-y: auto !important; min-height: 0 !important; }
 
-  /* ✅ Force "My Chats" rows to show username + role + streak */
-  .msg-sidebar .chat-item{
-    display:flex;
-    align-items:center;
-    gap:14px;
+  /* ── Shell: always a ROW — sidebar left, chat right ── */
+  .messages-shell {
+    display: flex !important;
+    flex-direction: row !important;
+    height: calc(100svh - 80px) !important;
+    overflow: hidden !important;
   }
-  .msg-sidebar .chat-meta{
-    display:block !important;
-    flex:1;
-    min-width:0;
+
+  /* ── Sidebar ── */
+  .msg-sidebar {
+    width: 280px !important;
+    min-width: 220px !important;
+    max-width: 300px !important;
+    flex-shrink: 0 !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    transform: none !important;
+    position: relative !important;
+    border-right: 1px solid var(--border, #e8e2d8) !important;
+    background: var(--warm-white, #fffef9) !important;
+    z-index: 1 !important;
   }
-  .msg-sidebar .chat-name{
-    font-weight:800;
+
+  .sidebar-list {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
+  }
+
+  /* Disable old overlay backdrop */
+  .msg-sidebar-backdrop { display: none !important; }
+
+  /* ── My Chats rows: show username + sub + streak ── */
+  .msg-sidebar .chat-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .msg-sidebar .chat-meta {
+    display: block !important;
+    flex: 1;
+    min-width: 0;
+  }
+  .msg-sidebar .chat-name {
+    font-weight: 800;
     color: var(--text-dark);
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .msg-sidebar .chat-sub{
-    font-size:13px;
-    color:#9a9a9a;
-    margin-top:2px;
+  .msg-sidebar .chat-sub {
+    font-size: 13px;
+    color: #9a9a9a;
+    margin-top: 2px;
   }
-  .msg-sidebar .chat-right{
-    margin-left:auto;
-    display:flex;
-    align-items:center;
-    gap:8px;
+  .msg-sidebar .chat-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  
+
+  /* ── Main chat area ── */
+  .msg-main {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    min-width: 0 !important;
+  }
+
+  .chat-body {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
+  }
+
+  /* ── Hide back button — sidebar replaces it ── */
+  .chat-topbar .back-btn { display: none !important; }
+
+  /* ==============================================================
+     PHONE  ≤ 599px  — narrow icon-only sidebar strip
+     ============================================================== */
+  @media (max-width: 599px) {
+
+    .messages-shell {
+      height: calc(100svh - 60px) !important;
+    }
+
+    /* Collapse sidebar to avatar-only strip */
+    .msg-sidebar {
+      width: 64px !important;
+      min-width: 56px !important;
+      max-width: 68px !important;
+    }
+
+    /* Hide all text — keep only avatars */
+    .msg-sidebar .chat-meta,
+    .msg-sidebar .sidebar-title,
+    .msg-sidebar .sidebar-search,
+    .msg-sidebar .sidebar-section-label,
+    .msg-sidebar .sidebar-divider,
+    .msg-sidebar .chat-sub,
+    .msg-sidebar .chat-right,
+    .msg-sidebar .streak-badge,
+    .msg-sidebar .sidebar-streak {
+      display: none !important;
+    }
+
+    /* Center avatars in the strip */
+    .msg-sidebar .chat-item {
+      justify-content: center !important;
+      padding: 8px 0 !important;
+      position: relative !important;
+      gap: 0 !important;
+    }
+
+    /* Active item — green left border */
+    .msg-sidebar .chat-item.active {
+      background: #e8f5e9 !important;
+      border-left: 3px solid #2e7d32 !important;
+    }
+
+    /* Slightly smaller avatars */
+    .msg-sidebar .chat-avatar {
+      width: 40px !important;
+      height: 40px !important;
+      font-size: 12px !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* Community emoji avatar */
+    .msg-sidebar .community-region-box .chat-avatar {
+      font-size: 20px !important;
+    }
+
+    /* Compact sidebar top */
+    .msg-sidebar .sidebar-top {
+      padding: 8px 4px !important;
+      border-bottom: 1px solid #eee !important;
+    }
+
+    /* Chat topbar compact */
+    .chat-topbar {
+      padding: 6px 10px !important;
+      gap: 8px !important;
+    }
+
+    /* Bubbles */
+    .msg-bubble {
+      max-width: 88% !important;
+      font-size: 13px !important;
+    }
+
+    /* Composer compact */
+    .chat-composer {
+      padding: 6px 8px !important;
+      gap: 6px !important;
+    }
+  }
+
+  /* ==============================================================
+     TABLET  600–768px  — medium sidebar with names
+     ============================================================== */
+  @media (min-width: 600px) and (max-width: 768px) {
+    .msg-sidebar {
+      width: 200px !important;
+      min-width: 180px !important;
+    }
+    .msg-sidebar .chat-name { font-size: 12px !important; }
+    .msg-sidebar .chat-sub  { font-size: 10px !important; }
+  }
 </style>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/messages.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
 
 <div class="messages-wrap">
   <div class="messages-shell">
