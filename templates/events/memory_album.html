@@ -1,1449 +1,493 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ _('Memory Match Duel') }} - Legacy Garden</title>
+{% extends "base.html" %}
 
-  <style>
-    :root {
-      --primary-green: #4CAF50;
-      --card-bg: #A8D5BA;
-      --page-bg: #f3f4f3;
-      --panel-bg: #fffdf7;
-      --text-grey: #555;
-    }
+{% block content %}
+<!-- #Yq added: removed inner <!DOCTYPE html> and <head> tags — base.html already provides these -->
+<!-- #Yq added: memory album with locked/unlocked card states, real images, flush hero under navbar -->
 
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background-color: var(--page-bg);
-      margin: 0;
-      color: #333;
-      overflow-x: hidden;
-    }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-    /* Main Content Container */
-    .main-container {
-      max-width: 1000px;
-      margin: 20px auto;
-      background: white;
-      min-height: 80vh;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      padding: 30px;
-      box-sizing: border-box;
-    }
-
-    /* Info Section */
-    .game-info-panel {
-      margin-bottom: 25px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 20px;
-    }
-
-    .match-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    .instruction-box {
-      font-size: 13px;
-      color: #777;
-      line-height: 1.6;
-      max-width: 600px;
-    }
-
-    /* Stats Bar */
-    .stats-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px 30px;
-      background: #fff;
-      padding: 15px 0;
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    .stat-item span {
-      color: #000;
-      font-weight: bold;
-    }
-
-    .active-turn {
-      color: var(--primary-green);
-    }
-
-    /* Game Grid */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 10px;
-      justify-content: center;
-      margin: 30px 0;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    /* Card flip animation */
-    .card {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border-radius: 12px;
-      cursor: pointer;
-      user-select: none;
-      perspective: 600px;
-      transition: opacity 0.3s;
-    }
-
-    .card-inner {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-      transition: transform 0.25s ease;
-      border-radius: 12px;
-    }
-
-    .card.flipped .card-inner {
-      transform: rotateY(180deg);
-    }
-
-    .card-front, .card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border-radius: 12px;
-      backface-visibility: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .card-front {
-      background: var(--card-bg);
-    }
-
-    .card-back {
-      background: #f9f9f9;
-      transform: rotateY(180deg);
-      font-size: clamp(24px, 4vw, 52px);
-    }
-
-    /* Lighter shade when it's opponent's turn */
-    .card.opponent-turn:not(.matched):not(.flipped) .card-front {
-      background: #D4E8D8;
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .card.matched .card-inner {
-      transform: rotateY(180deg);
-    }
-
-    .card.matched .card-back {
-      background: #eaf6ef;
-    }
-
-    .card.matched {
-      opacity: 0.7;
-      cursor: default;
-    }
-
-    /* Footer Action Button */
-    .footer-action {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-
-    .turn-btn {
-      border: 2px solid #D1E7D3;
-      background: white;
-      color: #4A7C59;
-      padding: 10px 40px;
-      border-radius: 25px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    /* Modals */
-    .modal, .policy-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-
-    .modal-content {
-      background: white;
-      padding: 40px;
-      border-radius: 20px;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-
-    /* Policy Modal specific Styling */
-    .policy-content {
-      background: #f1f1f1;
-      padding: 25px 35px;
-      border-radius: 30px;
-      text-align: center;
-      width: 90%;
-      max-width: 460px;
-      box-shadow: 0 0 25px rgba(255, 120, 120, 0.6);
-      border: 1px solid white;
-    }
-
-    .policy-header {
-      color: #a876e6;
-      text-align: left;
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .policy-text {
-      font-size: 19px;
-      color: #4a4a4a;
-      line-height: 1.3;
-      font-weight: 600;
-      margin-bottom: 30px;
-    }
-
-    .policy-btns {
-      display: flex;
-      justify-content: center;
-      gap: 50px;
-    }
-
-    .btn-confirm-yes {
-      background: #7B3F3F;
-      color: white;
-      border: none;
-      padding: 8px 35px;
-      border-radius: 15px;
-      font-size: 28px;
-      cursor: pointer;
-      box-shadow: 0 4px 4px rgba(0,0,0,0.2);
-    }
-
-    .btn-confirm-no {
-      background: #2D5233;
-      color: white;
-      border: none;
-      padding: 8px 35px;
-      border-radius: 15px;
-      font-size: 28px;
-      cursor: pointer;
-      box-shadow: 0 4px 4px rgba(0,0,0,0.2);
-    }
-
-    .exit-btn {
-      background: var(--primary-green);
-      color: white;
-      border: none;
-      padding: 12px 30px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 20px;
-      font-size: 16px;
-    }
-
-  /* Yq added - Responsive styles */
-  @media (max-width: 750px) {
-    .main-container {
-      margin: 8px;
-      padding: 12px;
-      border-radius: 6px;
-    }
-
-    .stats-bar {
-      gap: 8px 16px;
-      font-size: 12px;
-      padding: 10px 0;
-    }
-
-    .grid {
-      grid-template-columns: repeat(6, 1fr);
-      gap: 6px;
-      margin: 12px 0;
-    }
-
-    .card-back {
-      font-size: clamp(18px, 3vw, 36px);
-    }
-
-    .match-title { font-size: 15px; }
-    .instruction-box { font-size: 11px; }
-    .turn-btn { padding: 8px 20px; font-size: 13px; }
-    .game-info-panel { margin-bottom: 12px; padding-bottom: 12px; }
+<style>
+  /* ─── Palette ─────────────────────────────────────────── */
+  :root {
+    --cream:       #f9f7f2;
+    --warm-white:  #ffffff;
+    --gold:        #c9913d;
+    --gold-light:  #f0d9a8;
+    --green:       #3e5e44;
+    --green-dark:  #2D5233;
+    --green-light: #d4ead8;
+    --text:        #333333;
+    --muted:       #7a6f63;
+    --card-shadow: 0 4px 20px rgba(0,0,0,0.10);
   }
 
-  @media (max-width: 480px) {
-    .main-container {
-      margin: 4px;
-      padding: 10px;
-    }
-
-    .grid {
-      gap: 4px;
-      margin: 8px 0;
-    }
-
-    .card-back {
-      font-size: clamp(14px, 2.5vw, 28px);
-    }
-
-    .stats-bar {
-      font-size: 11px;
-      gap: 6px 12px;
-    }
-
-    .btn-confirm-yes, .btn-confirm-no {
-      font-size: 18px;
-      padding: 6px 20px;
-    }
-
-    .policy-btns { gap: 20px; }
-    .policy-text { font-size: 14px; }
-    .match-title { font-size: 13px; }
-    .instruction-box { font-size: 10px; }
-    .turn-btn { padding: 6px 14px; font-size: 12px; }
+  /* #Yq added: remove default body margin so hero is flush under navbar */
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  @media (max-width: 360px) {
-    .main-container {
-      margin: 2px;
-      padding: 8px;
-    }
+  /* #Yq: kill the base template container's top spacing so hero sits flush under navbar */
+  .container { margin-top: 0 !important; padding-top: 0 !important; }
+  main, #content, .content { padding-top: 0 !important; margin-top: 0 !important; }
 
-    .grid {
-      gap: 3px;
-    }
-
-    .card-back {
-      font-size: clamp(12px, 2vw, 22px);
-    }
-
-    .stats-bar {
-      font-size: 10px;
-      gap: 4px 8px;
-    }
+  /* #Yq: full-bleed hero that escapes Bootstrap container padding + pulls up the 30px gap */
+  .album-hero {
+    background: linear-gradient(135deg, #2D5233 0%, #3e5e44 60%, #5a8d62 100%);
+    padding: 48px 24px 40px;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    /* break out of .container's horizontal padding */
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    /* pull up to cancel base template's container margin-top: 30px */
+    margin-top: -30px !important;
+    display: block;
   }
-  </style>
-</head>
 
-<body>
-<div id="sync-overlay" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.85);z-index:9999;font-weight:700;color:#2D5233;">Syncing match…</div>
-  <!-- COUNTDOWN OVERLAY -->
-  <div id="countdown-overlay"
-       style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000;
-              display: none; flex-direction: column; justify-content: center; align-items: center; color: white;">
-    <h1 style="font-size: 100px; margin: 0;" id="timer-count">3</h1>
-    <p style="font-size: 24px; font-weight: bold;">{{ _('Memorize the card locations!') }}</p>
+  .album-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .album-hero h1 {
+    font-family: 'Lora', serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    position: relative;
+  }
+
+  .album-hero p {
+    font-size: clamp(15px, 2.2vw, 19px);
+    opacity: 0.9;
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.5;
+    position: relative;
+  }
+
+  .progress-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.22);
+    border: 1.5px solid rgba(255,255,255,0.5);
+    border-radius: 50px;
+    padding: 8px 22px;
+    font-size: 17px;
+    font-weight: 700;
+    margin-top: 20px;
+    backdrop-filter: blur(4px);
+    position: relative;
+  }
+
+  /* #Yq added: progress bar strip */
+  .progress-bar-wrap {
+    max-width: 340px;
+    margin: 14px auto 0;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50px;
+    height: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 50px;
+  }
+
+  /* ─── Main layout ─────────────────────────────────────── */
+  .album-body {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 36px 20px 60px;
+  }
+
+  /* #Yq added - back button */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.7);
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+    margin-bottom: 14px;
+  }
+  .back-btn:hover {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  /* ─── Filter bar ──────────────────────────────────────── */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .filter-btn {
+    padding: 9px 20px;
+    border-radius: 50px;
+    border: 2px solid var(--green-light);
+    background: var(--warm-white);
+    color: var(--green);
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover,
+  .filter-btn.active {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+
+  /* ─── Memory grid ─────────────────────────────────────── */
+  .memory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 24px;
+  }
+
+  /* ─── Card base ───────────────────────────────────────── */
+  .memory-card {
+    border-radius: 18px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1.5px solid #e2ddd6;
+    box-shadow: var(--card-shadow);
+    background: var(--warm-white);
+  }
+  .memory-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.14);
+  }
+
+  /* #Yq added: image banner */
+  .card-banner-wrap {
+    position: relative;
+    height: 160px;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--green-light) 0%, var(--gold-light) 100%);
+  }
+  .card-image-banner {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-emoji-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 64px;
+  }
+
+  /* #Yq added: lock overlay on image */
+  .lock-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    color: rgba(255,255,255,0.95);
+  }
+
+  .card-body {
+    padding: 16px 18px 20px;
+  }
+
+  /* #Yq added: category badge colours */
+  .card-category {
+    display: inline-block;
+    padding: 4px 13px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin-bottom: 9px;
+  }
+  .cat-food          { background: #fde8cc; color: #a05c10; }
+  .cat-old-singapore { background: #dce8f0; color: #2a5f7a; }
+  .cat-festival      { background: #fde0e0; color: #9b2a2a; }
+
+  .card-title {
+    font-family: 'Lora', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 7px;
+    line-height: 1.2;
+  }
+  .card-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .card-date {
+    font-size: 12px;
+    color: #b0a898;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* #Yq added: locked card styles */
+  .memory-card.locked {
+    border-color: #d6d2cc;
+    opacity: 0.80;
+  }
+  .memory-card.locked .card-image-banner {
+    filter: blur(5px) grayscale(80%) brightness(0.5);
+  }
+  .memory-card.locked .card-emoji-banner {
+    filter: grayscale(100%) brightness(0.5);
+  }
+  .memory-card.locked .card-body {
+    background: #f5f3f0;
+  }
+  .memory-card.locked .lock-overlay {
+    display: flex;
+  }
+
+  /* #Yq added: locked badge pill */
+  .locked-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #e8e4df;
+    color: #999;
+    margin-bottom: 9px;
+  }
+
+  /* ─── Empty state ─────────────────────────────────────── */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 72px; margin-bottom: 20px; display: block; }
+  .empty-state h2 {
+    font-family: 'Lora', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .empty-state p { font-size: 17px; line-height: 1.6; max-width: 440px; margin: 0 auto 28px; }
+  .play-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--green);
+    color: white;
+    padding: 13px 30px;
+    border-radius: 50px;
+    font-size: 17px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 4px 14px rgba(62,94,68,0.3);
+  }
+  .play-btn:hover { background: var(--green-dark); transform: translateY(-2px); }
+
+  /* ─── Responsive ──────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .album-hero { padding: 32px 16px 28px; }
+    .album-body { padding: 20px 12px 48px; }
+    .memory-grid { grid-template-columns: 1fr; gap: 16px; }
+    .card-banner-wrap { height: 130px; }
+    .card-title { font-size: 18px; }
+    .card-desc  { font-size: 13px; }
+    .filter-btn { font-size: 14px; padding: 8px 15px; }
+  }
+
+  /* #Yq added: scroll-to-top button */
+  .scroll-top-btn {
+    position: fixed;
+    bottom: 32px;
+    right: 28px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--green);
+    color: white;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.2s, background 0.2s;
+    z-index: 9999;
+  }
+  .scroll-top-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .scroll-top-btn:hover {
+    background: var(--green-dark);
+    transform: translateY(-3px);
+  }
+</style>
+
+<!-- ──────────── HERO ──────────── -->
+<div class="album-hero">
+  <div style="text-align:left; position:relative;">
+    <a href="{{ url_for('events_home') }}" class="back-btn">← Back to Events</a>
+  </div>
+  <h1>📖 My Memory Album</h1>
+  <p>Every memory you unlock through your games lives here - a personal collection of Singapore's heritage.</p>
+
+  <div class="progress-pill">
+    ✨ {{ unlocked_count }} of {{ total_cards }} memories unlocked
   </div>
 
-  <!-- TOP BACK BUTTON -->
-  <div class="top-controls" style="padding: 10px 20px;">
-    <div onclick="showPolicyModal()" style="cursor: pointer; width: 40px;">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="19" y1="12" x2="5" y2="12"></line>
-        <polyline points="12 19 5 12 12 5"></polyline>
-      </svg>
+  {# #Yq fixed: avoid // operator and ternary — use nested if/else blocks for full Jinja2 compatibility #}
+  {% if total_cards and total_cards|int > 0 %}
+    {% set pct = (unlocked_count|int * 100 / total_cards|int)|round(0, 'floor')|int %}
+  {% else %}
+    {% set pct = 0 %}
+  {% endif %}
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" style="width: {{ pct }}%"></div>
+  </div>
+</div>
+
+<!-- ──────────── BODY ──────────── -->
+<div class="album-body">
+
+  {% if all_cards %}
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterCards('all', this)"> All</button>
+      <button class="filter-btn" onclick="filterCards('Food', this)">🍜 Food</button>
+      <button class="filter-btn" onclick="filterCards('Old Singapore', this)">🏠 Old Singapore</button>
+      <button class="filter-btn" onclick="filterCards('Festival', this)">🏮 Festivals</button>
     </div>
-  </div>
 
-  <div class="main-container" id="gameBoard">
-    <div class="game-info-panel">
-      <div class="match-title">{{ _('Memory Match Duel') }}</div>
-      <div class="instruction-box">
-        {{ _('Match Information') }}: {{ _('You') }} VS <b id="opponent-name">{{ _('Waiting for opponent...') }}</b><br />
-        <b>{{ _('Game Instruction') }}:</b> {{ _('Flip two cards at a time. If they match, you get another turn. 
-        The player with the most pairs wins. If both players have the same score, the match is a draw.') }}
-      </div>
+    <div class="memory-grid" id="memory-grid">
+      {% for card in all_cards %}
+
+        {% set cat_class = {
+            'Food': 'cat-food',
+            'Old Singapore': 'cat-old-singapore',
+            'Festival': 'cat-festival'
+          }.get(card.category, 'cat-food') %}
+
+        {# #Yq added: apply 'locked' class when card.locked == 1 #}
+        <div class="memory-card {% if card.locked %}locked{% endif %}" data-category="{{ card.category }}">
+
+          <!-- #Yq added: image or emoji banner with lock overlay for locked cards -->
+          <div class="card-banner-wrap">
+            {% if card.image_path %}
+              <img
+                class="card-image-banner"
+                src="{{ card.image_path }}"
+                alt="{{ card.title if not card.locked else 'Locked memory' }}"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+              >
+              <div class="card-emoji-banner" style="display:none;">{{ card.emoji }}</div>
+            {% else %}
+              <div class="card-emoji-banner">{{ card.emoji }}</div>
+            {% endif %}
+            <!-- #Yq added: lock icon shown over blurred image on locked cards -->
+            <div class="lock-overlay">🔒</div>
+          </div>
+
+          <div class="card-body">
+            {% if card.locked %}
+              <!-- #Yq added: locked card hides real title and description -->
+              <span class="locked-badge">🔒 Locked</span>
+              <div class="card-title" style="color:#bbb; letter-spacing:2px;">??? ??? ???</div>
+              <div class="card-desc" style="color:#bbb; font-style:italic;">
+                Win a Hangman round to reveal this {{ card.category }} memory.
+              </div>
+            {% else %}
+              <span class="card-category {{ cat_class }}">{{ card.category }}</span>
+              <div class="card-title">{{ card.title }}</div>
+              <div class="card-desc">{{ card.description }}</div>
+              <div class="card-date">
+                🗓 Unlocked {{ card.unlocked_at[:10] if card.unlocked_at else 'recently' }}
+              </div>
+            {% endif %}
+          </div>
+
+        </div>
+
+      {% endfor %}
     </div>
 
-    <div class="stats-bar">
-      <div class="stat-item">{{ _('Current Move') }}: <span id="turn-label" class="active-turn">{{ _('Your Move') }}</span></div>
-        <div class="stat-item">{{ _('Score') }}: <span id="player-score">0</span></div>
-        <div class="stat-item">{{ _('Opponent Score') }}: <span id="opponent-score">0</span></div>
-        <div class="stat-item">{{ _('Pairs Remaining') }}: <span id="pairs-left">12</span></div>
-        <div class="stat-item">⏳ {{ _('Time Left') }}: <span id="turn-timer">1:00</span></div>
-      </div>
+  {% else %}
 
-    <div class="grid" id="game-grid"></div>
-
-    <div class="footer-action">
-      <button class="turn-btn" id="footer-btn">
-        👤 <span id="footer-text">{{ _('Your turn !') }}</span>
-      </button>
+    <div class="empty-state">
+      <span class="empty-icon">🌱</span>
+      <h2>No memories found</h2>
+      <p>Play Hangman or Memory Match to unlock memories. Each correct guess reveals a piece of Singapore's story.</p>
+      <a href="{{ url_for('events_home') }}" class="play-btn">🎮 Start Playing</a>
     </div>
-  </div>
 
-  <!-- RESULT MODAL -->
-  <div class="modal" id="result-modal">
-    <div class="modal-content" style="max-width: 300px; width: 80%; padding: 30px; border-radius: 20px;">
-      <h1 id="res-emoji" style="font-size: 50px; margin-bottom: 10px;">🎉</h1>
-      <h2 id="res-title" style="font-weight: bold; margin-bottom: 5px;">{{ _('You Win !') }}</h2>
-      <p id="res-streak" style="color: #666; font-size:15px; margin-bottom:16px; line-height:1.6;"></p>
+  {% endif %}
 
-      <!-- ✅ ADDED: View Opponent's Profile button -->
-      <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-        <button class="exit-btn" id="view-opponent-btn" onclick="viewOpponentProfile()" 
-                style="margin-top: 0; padding: 10px 30px; border-radius: 12px; font-weight: bold; background: #2D5233;">
-           👤 {{ _("View Opponent's Profile") }}
-        </button>
-        <button class="exit-btn" onclick="exitToEvents()" 
-                style="margin-top: 0; padding: 10px 40px; border-radius: 12px; font-weight: bold;">
-           {{ _('Exit') }}
-        </button>
-      </div>
-      </div>
-    </div>
-  </div>
+</div>
 
-  <!-- POLICY MODAL -->
-  <div class="policy-modal" id="policy-modal">
-    <div class="policy-content">
-      <div class="policy-header">
-        <span>❖</span> {{ _('Policy') }}
-      </div>
-      <div class="policy-text">
-        {{ _("Leaving the match before it's finished will reduce your daily game streak by 1 and winning streak will be reset to 0.") }}<br><br>
-        {{ _('Do you still want to quit?') }}
-      </div>
-      <div class="policy-btns">
-        <button class="btn-confirm-yes" onclick="confirmExit()">{{ _('Yes') }}</button>
-        <button class="btn-confirm-no" onclick="closePolicyModal()">{{ _('No') }}</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ⏱️ AFK WARNING TOAST -->
-  <div id="afk-toast" style="
-    display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
-    background:#7B3F3F; color:white; padding:14px 28px; border-radius:12px;
-    font-weight:bold; font-size:15px; z-index:99999; align-items:center; gap:12px;
-    box-shadow:0 4px 16px rgba(0,0,0,0.3);">
-    ⚠️ {{ _('You have been inactive! 10 seconds left before auto-quit!') }}
-    <button onclick="resetAfkTimer()" style="
-      background:white; color:#7B3F3F; border:none; padding:6px 14px;
-      border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">
-      {{ _("I'm here!") }}
-    </button>
-  </div>
-
-  <!-- ⏱️ AFK AUTO-QUIT MODAL -->
-  <div id="afk-modal" style="
-    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
-    align-items:center; justify-content:center; z-index:99999;">
-    <div style="background:white; padding:40px; border-radius:20px; text-align:center;
-                box-shadow:0 10px 30px rgba(0,0,0,0.25); max-width:340px; width:90%;">
-      <h1 style="font-size:50px; margin-bottom:10px;">⏱️</h1>
-      <h2 style="font-weight:bold; margin-bottom:8px;">{{ _('Auto-Quit') }}</h2>
-      <p style="color:#666; font-size:14px; margin-bottom:20px; line-height:1.6;">
-        {{ _('You were inactive for 1 minute.') }}<br>
-        {{ _("Your daily game streak has been reduced by 1 and your winning streak has been reset.") }}
-      </p>
-      <button onclick="exitToEvents()" style="
-        background:#4CAF50; color:white; border:none; padding:12px 40px;
-        border-radius:8px; font-size:16px; cursor:pointer; font-weight:bold;">
-       {{ _('Return to Events') }}
-      </button>
-    </div>
-  </div>
-
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script>
-  // 🔧 FIX: Persist opponent username using sessionStorage
-  function setOpponentUsername(username) {
-    console.log("🔧 Setting opponent username:", username);
-    window.opponentUsername = username;
-    if (username && username !== "Waiting for opponent...") {
-      sessionStorage.setItem('currentOpponentUsername', username);
-      console.log("💾 Saved to sessionStorage:", username);
-    }
-  }
-
-  function getOpponentUsername() {
-    // Try window variable first, then fall back to sessionStorage
-    let username = window.opponentUsername || sessionStorage.getItem('currentOpponentUsername');
-    console.log("🔍 Retrieved opponent username:", username);
-    return username;
-  }
-
-  // Initialize from sessionStorage on page load
-  window.opponentUsername = sessionStorage.getItem('currentOpponentUsername') || null;
-  console.log("🔄 Initialized opponent username from storage:", window.opponentUsername);
-
-  let streakUpdated = false;
-  const _previewKey  = "mm_preview_"  + (new URLSearchParams(window.location.search).get("room") || "local");
-  const _gameOverKey = "mm_gameover_" + (new URLSearchParams(window.location.search).get("room") || "local");
-  let previewShown = sessionStorage.getItem(_previewKey) === "1";
-  window.gameOverShown = sessionStorage.getItem(_gameOverKey) === "1";
-  let forcedResult = null;
-
-  // ===== ⏱️ AFK TIMEOUT (4 minutes of inactivity = auto-quit) =====
-  const AFK_TIMEOUT_MS = 1 * 60 * 1000; // yq added: 1 minute
-  const AFK_WARN_MS    = 50 * 1000; // yq added: warn at 10 seconds remaining
-  let afkTimer     = null;
-  let afkWarnTimer = null;
-  let afkWarned    = false;
-
-  function resetAfkTimer() {
-    clearTimeout(afkTimer);
-    clearTimeout(afkWarnTimer);
-    afkWarned = false;
-
-    // Hide warning toast if visible
-    const toast = document.getElementById("afk-toast");
-    if (toast) toast.style.display = "none";
-
-    // Only run timer when it's our turn and game is live
-    if (!window.gameStarted || serverGameOver) return;
-    const isMyTurn = (typeof currentTurnRole !== "undefined") && (currentTurnRole === window.playerRole);
-    if (!isMyTurn) return;
-
-    // yq added: If the visual turn timer already hit 0, kick immediately — don't allow reset
-    const timerEl = document.getElementById("turn-timer");
-    if (timerEl && timerEl.textContent === "0:00") {
-      triggerAfkQuit();
-      return;
-    }
-
-    // 1-minute warning before kick
-    afkWarnTimer = setTimeout(() => {
-      if (!window.gameStarted || serverGameOver) return;
-      if (currentTurnRole !== window.playerRole) return;
-      afkWarned = true;
-      const t = document.getElementById("afk-toast");
-      if (t) { t.style.display = "flex"; }
-    }, AFK_WARN_MS);
-
-    // yq added: Auto-quit after 1 minute
-    afkTimer = setTimeout(() => {
-      if (!window.gameStarted || serverGameOver) return;
-      if (currentTurnRole !== window.playerRole) return;
-      console.warn("⏱️ AFK timeout — applying quit penalty");
-      triggerAfkQuit();
-    }, AFK_TIMEOUT_MS);
-  }
-
-  function triggerAfkQuit() {
-    // Prevent double-trigger
-    if (window.__afkQuitSent) return;
-    window.__afkQuitSent = true;
-    window.__normalExit = true;  // prevent beforeunload beacon from also firing
-    window.__beaconSent = true;
-
-    clearTimeout(afkTimer);
-    clearTimeout(afkWarnTimer);
-
-    // Freeze board
-    window.gameStarted = false;
-    serverGameOver = true;
-    busy = true;
-
-    // Notify opponent they win
-    if (roomId) {
-      socket.emit("forfeit_game", {
-        room: roomId,
-        role: window.playerRole,
-        game_type: "memory"
-      });
-    }
-
-    // Apply penalty
-    fetch("/api/streaks/quit_game", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }
-    })
-    .then(res => res.json())
-    .then(() => showAfkModal())
-    .catch(() => showAfkModal());
-  }
-
-  function showAfkModal() {
-    const modal = document.getElementById("afk-modal");
-    if (modal) modal.style.display = "flex";
-  }
-
-
-// ===== 🔒 Anti-escape guards =====
-// Beacon removed — fires on reload AND true close, causing false forfeits.
-// Server 30s grace + recent-join tracking handles everything cleanly.
-function _sendForfeitBeacon() { /* disabled */ }
-</script>
+<!-- #Yq added: scroll-to-top button -->
+<button class="scroll-top-btn" id="scrollTopBtn" title="Back to top">&#8679;</button>
 
 <script>
-  const socket = io(window.location.origin, { transports: ["websocket", "polling"] });
-
-  // ✅ Instant card reveal for both players — no waiting for pair_result
-  socket.on("card_flipped", (data) => {
-    const card = document.querySelector(`.card[data-index="${data.index}"]`);
-    if (!card || card.classList.contains("matched") || card.classList.contains("flipped")) return;
-    card.classList.add("flipped");
-    const back = card.querySelector(".card-back");
-    if (back) back.textContent = data.symbol;
-  });
-
-
-  const params = new URLSearchParams(window.location.search);
-  const roomId = params.get("room");
-
-  const rawRole = ("{{ session['role'] }}" || "").trim().toLowerCase();
-  const playerRole =
-    (rawRole === "senior" || rawRole === "elderly" || rawRole === "elder")
-      ? "Elderly"
-      : "Youth";
-
-  window.playerRole = playerRole;
-
-  // ── Memory unlock helper ─────────────────────────────────────
-  function unlockMemory(memoryKey) {
-    if (!memoryKey) return;
-    fetch("/unlock_memory", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ memory_key: memoryKey })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === "success") {
-        console.log("🏮 Memory unlocked:", memoryKey);
-        const toast = document.createElement("div");
-        toast.textContent = "🏮 New memory unlocked! Check your Memory Album.";
-        toast.style.cssText = `
-          position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
-          background:#3e6b47; color:white; padding:14px 24px; border-radius:12px;
-          font-weight:bold; font-size:16px; z-index:99999;
-          box-shadow:0 4px 16px rgba(0,0,0,0.3); white-space:nowrap;
-        `;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
-      }
-    })
-    .catch(() => {});
-  }
-  // ── End memory unlock helper ──────────────────────────────────
-
-  // ✅ FIXED: Listen for match_found and update opponent name immediately
-  socket.on("match_found", (data) => {
-    console.log("📥 Received match_found:", data);
-    if (data?.opponent_username) {
-      setOpponentUsername(data.opponent_username);  // 🔧 FIX: Use setter
-      console.log("✅ Stored from match_found:", window.opponentUsername);
-      
-      const nameEl = document.getElementById("opponent-name");
-      if (nameEl) {
-        nameEl.textContent = data.opponent_username;
-      }
-    }
-  });
-
-  // ✅ Also join the game room
-  if (roomId) {
-    console.log("🎮 Joining game room:", roomId, "as role:", playerRole);
-    socket.emit("join_game", { room: roomId, role: playerRole, game_type: "memory" });
-  }
-</script>
-<!-- #yq added: Translations stored in data attributes to avoid JS linter errors on Jinja2 syntax -->
-<div id="i18n-strings" style="display:none"
-  data-your-turn="{{ _('Your turn !') }}"
-  data-opponent-turn="{{ _('Opponent turns...') }}"
-  data-your-move="{{ _('Your Move') }}"
-  data-opponent-move="{{ _('Opponent\'s Move') }}"
-  data-game-over="{{ _('Game Over') }}"
-></div>
-<script>
-  // #yq added: Read translations from data attributes — no Jinja2 inside JS, no linter warnings
-  const _i18n = document.getElementById("i18n-strings").dataset;
-  const T = {
-    yourTurn:     _i18n.yourTurn,
-    opponentTurn: _i18n.opponentTurn,
-    yourMove:     _i18n.yourMove,
-    opponentMove: _i18n.opponentMove,
-    gameOver:     _i18n.gameOver,
-  };
-</script>
-<script>
-  // ===== ✅ Reload/Resync support (server is source of truth) =====
-  
-  let stateReady = false; // becomes true once we receive sync_state from server
-  let previewActive = false; // 3s memorize preview flag
-let serverDeck = null;
-  let serverMatched = new Set();
-  let serverFlipped = new Set();
-  let serverScores = { Elderly: 0, Youth: 0 };
-  let serverTurn = "Elderly";
-  let serverGameOver = false;
-  
-  // #yq added: Track whether the initial sync has been applied (first load/reconnect)
-  let initialSyncDone = false;
-
-  function applyServerState(state) {
-    if (!state || state.game_type !== "memory") return;
-
-    // #yq added: Block preview if server already has progress
-    if (
-      (state.matched && state.matched.length > 0) ||
-      (state.scores && (state.scores.Elderly > 0 || state.scores.Youth > 0))
-    ) {
-      previewShown = true;
-    }
-
-    // #yq added: Mid-game sync_state (from first-flip events) must NOT override
-    // scores/turn that pair_result already set. Only apply full state on:
-    //   1. First ever sync (initialSyncDone = false)
-    //   2. Reconnect after reload (window.__mm_alive was just cleared = this is a fresh load)
-    // During active play, only update the board visuals (flipped/matched cards), not scores/turn.
-    const isReconnectSync = !initialSyncDone;
-
-    stateReady = true;
-    window.gameStarted = true;
-    initialSyncDone = true;
-
-    const ov = document.getElementById("sync-overlay");
-    if (ov) ov.style.display = "none";
-
-    serverDeck = state.deck || serverDeck;
-    serverMatched = new Set(state.matched || []);
-    serverFlipped = new Set(state.flipped || []);
-    serverGameOver = !!state.game_over;
-
-    // Only update scores/turn on initial/reconnect sync
-    if (isReconnectSync) {
-      serverScores = state.scores || serverScores;
-      serverTurn   = state.current_turn || serverTurn;
-      deck = serverDeck ? [...serverDeck] : deck;
-      playerPoints   = Number(serverScores[window.playerRole] || 0);
-      const opp = (window.playerRole === "Elderly") ? "Youth" : "Elderly";
-      opponentPoints = Number(serverScores[opp] || 0);
-      currentTurnRole = serverTurn;
-
-      // Reset busy — may have been true mid-animation before reload, blocking all clicks
-      if (!serverGameOver) busy = false;
-      // Sync timer from server (not reset to 1:00)
-      if (!serverGameOver && !previewActive) {
-        const remaining = (typeof state.time_remaining === "number") ? state.time_remaining : 60;
-        startTurnTimer(remaining);
-      }
-    }
-
-    // Always rebuild board visuals and update UI
-    rebuildBoardFromServer();
-    updateUI();
-
-    // If memorize preview is active, keep all cards revealed
-    if (previewActive && serverDeck) {
-      document.querySelectorAll(".card").forEach((card) => {
-        if (!card.classList.contains("matched")) {
-          card.classList.add("flipped");
-          const back = card.querySelector(".card-back");
-          if (back) back.textContent = card.dataset.symbol;
-        }
-      });
-      return;
-    }
-
-    // Game over from sync — freeze board and mark so stale events can't re-fire popup
-    if (serverGameOver) {
-      window.gameStarted = false;
-      busy = true;
-      clearInterval(turnTimerInterval);
-      window.gameOverShown = true;
-      sessionStorage.setItem(_gameOverKey, "1");
-    }
-    // ✅ Show preview ONLY if this is a brand-new server state
-if (
-  !previewShown &&
-  (!state.matched || state.matched.length === 0) &&
-  (!state.scores || (state.scores.Elderly === 0 && state.scores.Youth === 0))
-) {
-  previewShown = true;
-  sessionStorage.setItem(_previewKey, "1"); // #fix: survive reloads, keyed by room
-  showMemorizePreview(3);
-}
-
-  } 
-
-  function rebuildBoardFromServer() {
-    if (!serverDeck) return;
-
-    const grid = document.getElementById("game-grid");
-    if (!grid) return;
-
-    const existingCount = grid.querySelectorAll(".card").length;
-    if (existingCount !== serverDeck.length) {
-      grid.innerHTML = "";
-      serverDeck.forEach((sym, index) => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.dataset.symbol = sym;
-        card.dataset.index = index;
-        card.innerHTML = `
-          <div class="card-inner">
-            <div class="card-front"></div>
-            <div class="card-back"></div>
-          </div>`;
-        card.onclick = () => handleFlip(card);
-        grid.appendChild(card);
-      });
-    } else {
-      // ensure dataset.symbol is correct
-      grid.querySelectorAll(".card").forEach((card) => {
-        const idx = Number(card.dataset.index);
-        card.dataset.symbol = serverDeck[idx];
-      });
-    }
-
-  // apply matched + flipped visuals
-  grid.querySelectorAll(".card").forEach((card) => {
-    const idx = Number(card.dataset.index);
-    const sym = card.dataset.symbol;
-    const back = card.querySelector(".card-back");
-
-    if (serverMatched.has(idx)) {
-      card.classList.add("matched");
-      card.classList.add("flipped");
-      if (back) back.textContent = sym;
-      return;
-    }
-
-    // ⛔ During animation, DO NOT touch flipped cards
-    if (busy) return;
-
-    if (serverFlipped.has(idx)) {
-      card.classList.add("flipped");
-      if (back) back.textContent = sym;
-    } else {
-      card.classList.remove("flipped");
-      if (back) back.textContent = "";
-    }
-
-  });
-}
-
-  
-
-  // When socket connects (including after reload), re-register and request state
-  socket.on("connect", () => {
-    if (roomId && playerRole) {
-      // #yq added: Reset so next sync_state is a full reconnect sync
-      initialSyncDone = false;
-      // #yq added: MUST emit join_game on every connect (not just first load)
-      // This registers the new SID in sid_to_game server-side, which:
-      //   1. Cancels any pending disconnect forfeit timer (reload safety)
-      //   2. Ensures the new SID can receive targeted events (opponent_forfeit etc.)
-      socket.emit("join_game", { room: roomId, role: playerRole, game_type: "memory" });
-    }
-  });
-
-socket.on("opponent_forfeit", (data) => {
-  console.log("🎯 opponent_forfeit:", data);
-  if (!data || data.game_type !== "memory") return;
-  // Ignore if WE are the leaver (reload race condition safety net)
-  if (data.leaver_role && data.leaver_role === window.playerRole) { console.log("🛑 We are the leaver — ignored"); return; }
-  // Ignore duplicates
-  if (serverGameOver || window.gameOverShown) { console.log("🛑 Already over — ignored"); return; }
-  console.log("✅ Opponent forfeited — YOU WIN!");
-
-  forcedResult = "win";
-  serverGameOver = true;
-  gameStarted = false;
-  window.gameOverShown = true;
-  streakUpdated = true;
-  sessionStorage.setItem(_gameOverKey, "1");
-
-  // Freeze the game board
-  busy = true;
-  
-  // Disable all card clicks
-  document.querySelectorAll(".card").forEach(card => {
-    card.onclick = null;
-  });
-
-  // Update UI text
-  document.getElementById("turn-label").textContent = T.gameOver;
-  document.getElementById("footer-text").textContent = T.yourTurn;
-
-  // #yq added: Winner gets NO streak for forfeit — only leaver is penalized
-  // Just show the result modal directly
-  const modal = document.getElementById("result-modal");
-  document.getElementById("res-emoji").textContent = "🎉";
-  document.getElementById("res-title").textContent = "You Win!";
-  document.getElementById("res-streak").textContent = "{{ _('Opponent left the game. You win by forfeit.') }}";
-  modal.style.display = "flex";
-});
-
-function notifyForfeitOnce() {
-  if (window.__forfeitSent) return;
-  window.__forfeitSent = true;
-  if (roomId) {
-    socket.emit("forfeit_game", { room: roomId, game_type: "memory", role: window.playerRole });
-  }
-}
-
-  // Fallback: if state not received quickly, request again
-  setTimeout(() => {
-    if (roomId && !stateReady) socket.emit("request_state", { room: roomId, game_type: "memory" });
-  }, 800);
-socket.on("sync_state", (state) => {
-    applyServerState(state);
-  });
-
-socket.on("pair_result", (data) => {
-  if (!data) return;
-  const a = Number(data.a);
-  const b = Number(data.b);
-  const isMatch = !!data.is_match;
-
-  // 🏮 Unlock memory if this pair has a memory_key (only for the player who made the match)
-  if (isMatch && data.memory_key && data.next_turn === window.playerRole) {
-    // next_turn stays on same player after match, so next_turn === playerRole means we matched
-    unlockMemory(data.memory_key);
-  }
-
-  if (data.scores) {
-    playerPoints = Number(data.scores[window.playerRole] || 0);
-    const opp = (window.playerRole === "Elderly") ? "Youth" : "Elderly";
-    opponentPoints = Number(data.scores[opp] || 0);
-  }
-  
-  // #yq added: Always update turn from server — on match, server keeps same player; on mismatch, it switches
-  if (data.next_turn) {
-    currentTurnRole = data.next_turn;
-  }
-
-  const cardA = document.querySelector(`.card[data-index="${a}"]`);
-  const cardB = document.querySelector(`.card[data-index="${b}"]`);
-
-  // ✅ Make sure both cards are flipped and visible first
-  if (cardA && !cardA.classList.contains("matched")) {
-    cardA.classList.add("flipped");
-    const backA = cardA.querySelector(".card-back");
-    if (backA) backA.textContent = cardA.dataset.symbol;
-  }
-  if (cardB && !cardB.classList.contains("matched")) {
-    cardB.classList.add("flipped");
-    const backB = cardB.querySelector(".card-back");
-    if (backB) backB.textContent = cardB.dataset.symbol;
-  }
-
-setTimeout(() => {
-    if (isMatch) {
-      if (cardA) cardA.classList.add("matched");
-      if (cardB) cardB.classList.add("matched");
-    } else {
-      // Flip back on mismatch
-      [cardA, cardB].forEach((c) => {
-        if (!c) return;
-        c.classList.remove("flipped");
-      });
-    }
-
-  busy = false;
-    if (!data.game_over) { startTurnTimer(60); } // yq added: reset to 1:00 after every move
-    updateUI();
-
-    if (data.game_over && !window.gameOverShown && !serverGameOver) {
-      window.gameOverShown = true;
-      serverGameOver = true;
-      showEnd();
-    } else if (data.game_over) {
-      window.gameStarted = false; busy = true;
-    }
-  }, 500);
-});
-
-</script>
-  <script>
-  const symbols = ["🍎","🐶","🎈","🍪","🚗","🌸","⭐️","🍇","🕊️","⏰","⚽️","🎂"];
-  let deck = [...symbols, ...symbols];
-
-  let flipped = [];
-  let playerPoints = 0;
-  let opponentPoints = 0;
-
-  let currentTurnRole = "Elderly";
-  let pairOwnerRole = null;
-  let busy = false;
-  let gameStarted = true;
-
-  function hashCode(str) {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) h = ((h << 5) - h) + str.charCodeAt(i) | 0;
-    return Math.abs(h);
-  }
-
-  function seededRandom(seed) {
-    let s = seed % 2147483647;
-    if (s <= 0) s += 2147483646;
-    return function() {
-      s = s * 16807 % 2147483647;
-      return (s - 1) / 2147483646;
-    };
-  }
-
-  function startingTurnFromRoom(roomId) {
-    return (hashCode(roomId || "local") % 2 === 0) ? "Elderly" : "Youth";
-  }
-
-  function initBoardOnly() {
-    const grid = document.getElementById("game-grid");
-    if (!grid) return;
-
-    // deck comes from server (reload-safe). Fallback to deterministic if server not ready.
-    if (!serverDeck) {
-      const seed = hashCode(roomId || "local");
-      const rand = seededRandom(seed);
-      deck = [...symbols, ...symbols].sort(() => rand() - 0.5);
-    } else {
-      deck = [...serverDeck];
-    }
-
-    grid.innerHTML = "";
-    deck.forEach((sym, index) => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.dataset.symbol = sym;
-      card.dataset.index = index;
-      card.innerHTML = `
-        <div class="card-inner">
-          <div class="card-front"></div>
-          <div class="card-back"></div>
-        </div>`;
-      card.onclick = () => handleFlip(card);
-      grid.appendChild(card);
-    });
-
-    updateUI();
-  }
-
-  function handleFlip(card) {
-  if (!gameStarted) return;
-  if (busy) return;
-  if (roomId && !stateReady) {
-    socket.emit("request_state", { room: roomId, game_type: "memory" });
-    return;
-  }
-  if (currentTurnRole !== window.playerRole) return;
-  if (card.classList.contains("flipped") || card.classList.contains("matched")) return;
-
-  // ✅ visual only (DO NOT touch busy)
-  card.classList.add("flipped");
-  const back = card.querySelector(".card-back");
-  if (back) back.textContent = card.dataset.symbol;
-
-  // ⏱️ Player made a move — reset AFK timer
-  resetAfkTimer();
-
-  socket.emit("flip_card", {
-    room: roomId,
-    cardIndex: card.dataset.index,
-    role: window.playerRole
-  });
-  }
-
-  function reveal(card) {
-    card.classList.add("flipped");
-    const back = card.querySelector(".card-back");
-    if (back) back.textContent = card.dataset.symbol;
-  }
-
-  function hide(card) {
-    card.classList.remove("flipped");
-  }
-
-  function checkMatch() {
-    const [c1, c2] = flipped;
-    const isMatch = c1.dataset.symbol === c2.dataset.symbol;
-
-    if (isMatch) {
-      c1.classList.add("matched");
-      c2.classList.add("matched");
-
-      // point goes to whoever started this 2-card attempt
-      if (pairOwnerRole === window.playerRole) playerPoints++;
-      else opponentPoints++;
-
-      flipped = [];
-      busy = false;
-      pairOwnerRole = null;
-
-      updateUI();
-
-      if (playerPoints + opponentPoints === 12) {
-        showEnd();
-      }
-      // if match: same player continues (no turn switch)
-      return;
-    }
-
-    // mismatch: flip back and switch turn
-    setTimeout(() => {
-      hide(c1);
-      hide(c2);
-      flipped = [];
-      busy = false;
-      pairOwnerRole = null;
-
-      currentTurnRole = (currentTurnRole === "Elderly") ? "Youth" : "Elderly";
-      updateUI();
-    }, 700);
-  }
-
-  function updateUI() {
-    document.getElementById("player-score").textContent = playerPoints;
-    document.getElementById("opponent-score").textContent = opponentPoints;
-    document.getElementById("pairs-left").textContent = 12 - (playerPoints + opponentPoints);
-
-    const label = document.getElementById("turn-label");
-    const footer = document.getElementById("footer-text");
-
-    const myTurn = (currentTurnRole === window.playerRole);
-    if (myTurn) {
-  label.textContent = T.yourMove;
-  footer.textContent = T.yourTurn;
-} else {
-  label.textContent = T.opponentMove;
-  footer.textContent = T.opponentTurn;
-}
-
-    // ⏱️ Restart AFK timer whenever turn state changes
-    resetAfkTimer();
-
-    // ✅ Apply lighter shade to cards when it's opponent's turn
-    document.querySelectorAll(".card").forEach(card => {
-      // Skip matched and flipped cards
-      if (card.classList.contains("matched") || card.classList.contains("flipped")) {
-        card.classList.remove("opponent-turn");
-        return;
-      }
-      
-      // Apply lighter shade when it's opponent's turn
-      if (myTurn) {
-        card.classList.remove("opponent-turn");
-      } else {
-        card.classList.add("opponent-turn");
-      }
+  // #Yq added: filter cards by category — works for both locked and unlocked cards
+  function filterCards(category, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.memory-card').forEach(card => {
+      const match = (category === 'all') || (card.dataset.category === category);
+      card.style.display = match ? '' : 'none';
     });
   }
 
-  // Changed
-  function showEnd() {
-  // ⏱️ Stop AFK timer — game is over
-  clearTimeout(afkTimer);
-  clearTimeout(afkWarnTimer);
-  window.gameStarted = false;
-  sessionStorage.removeItem(_previewKey);
-  sessionStorage.setItem(_gameOverKey, "1");
-
-  const modal = document.getElementById("result-modal");
-  let win;
-  let isDraw = false;
-
-  if (forcedResult === "win") {
-    win = true;
-  } else if (forcedResult === "lose") {
-    win = false;
-  } else {
-    isDraw = playerPoints === opponentPoints;
-    win = playerPoints > opponentPoints;
-  }
-
-  // ✅ Draw: do NOT change winning streak
-  if (isDraw) {
-    document.getElementById("res-title").textContent = "Draw!";
-    document.getElementById("res-emoji").textContent = "🤝";
-    document.getElementById("res-streak").textContent =
-      "{{ _('It\'s a draw. Winning streak is not affected.') }}";
-    modal.style.display = "flex";
-    return;
-  }
-
-  // #yq added: Forfeit win — no streak for winner, just show modal
-  if (forcedResult === "win") {
-    document.getElementById("res-title").textContent = "You Win!";
-    document.getElementById("res-emoji").textContent = "🎉";
-    document.getElementById("res-streak").textContent = "{{ _('Opponent left the game. You win by forfeit.') }}";
-    modal.style.display = "flex";
-    return;
-  }
-
-  // ✅ Normal game end - only update if not already done
-  if (!streakUpdated) {
-    streakUpdated = true;
-    fetch("/api/streaks/hangman_end", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ did_win: win })
-    })
-    .then(res => res.json())
-    .then(updated => {
-      document.getElementById("res-title").textContent = win ? "You Win !" : "You Lose !";
-      document.getElementById("res-emoji").textContent = win ? "🎉" : "😔";
-      document.getElementById("res-streak").textContent =
-        `🔥 Daily Game Streak: ${updated.daily_game_streak ?? "—"} • 🏆 Winning Streak: ${updated.winning_streak ?? "—"}`;
-      modal.style.display = "flex";
-    })
-    .catch(() => {
-      document.getElementById("res-title").textContent = win ? "You Win !" : "You Lose !";
-      document.getElementById("res-emoji").textContent = win ? "🎉" : "😔";
-      document.getElementById("res-streak").textContent =  "{{ _('Streak update failed (server error).') }}";
-      modal.style.display = "flex";
-    });
-  } else {
-    // Streak already updated, just show the modal
-    modal.style.display = "flex";
-  }
-}
-
-  function exitToEvents() {
-    sessionStorage.removeItem(_previewKey);
-    sessionStorage.removeItem(_gameOverKey);
-    window.location.href = "{{ url_for('events_home') }}";
-  }
-
-  function showMemorizePreview(seconds = 3) {
-    previewActive = true;
-    // block flipping during preview
-    gameStarted = false;
-    busy = true;
-
-    // reveal ALL cards
-    document.querySelectorAll(".card").forEach(card => {
-      if (!card.classList.contains("matched")) reveal(card);
-    });
-
-    const overlay = document.getElementById("countdown-overlay");
-    const timerText = document.getElementById("timer-count");
-    overlay.style.display = "flex";
-
-    let t = seconds;
-    timerText.textContent = t;
-
-    const interval = setInterval(() => {
-      t--;
-      timerText.textContent = t;
-
-      if (t <= 0) {
-        clearInterval(interval);
-
-        // hide overlay + hide cards again (only if not matched)
-        overlay.style.display = "none";
-        document.querySelectorAll(".card").forEach(card => {
-          if (!card.classList.contains("matched")) hide(card);
-        });
-
-        // end preview
-        previewActive = false;
-
-        // hide cards again (only if not matched)
-        document.querySelectorAll(".card").forEach(card => {
-          if (!card.classList.contains("matched")) hide(card);
-        });
-
-        // start game
-        busy = false;
-        gameStarted = true;
-        startTurnTimer(60); // yq added: start 1:00 timer on first turn
-
-        // Make sure UI turn matches server (authoritative)
-        currentTurnRole = (stateReady ? serverTurn : startingTurnFromRoom(roomId));
-        updateUI();
-
-        // After preview, re-render exactly what server says (flipped/matched)
-        if (stateReady) rebuildBoardFromServer();
-      }
-    }, 1000);
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-  initBoardOnly();
-});
-
-
-  socket.on("card_flipped", (data) => {
-    // ⚠️ Legacy event (disabled). Server-authoritative sync_state + pair_result is used.
-    return;
+  // #Yq added: scroll-to-top button visibility
+  const scrollBtn = document.getElementById('scrollTopBtn');
+  window.addEventListener('scroll', () => {
+    scrollBtn.classList.toggle('visible', window.scrollY > 300);
   });
-
-function armBackButtonGuard() {
-  history.pushState({ guard: true }, "", location.href);
-
-  window.addEventListener("popstate", () => {
-    // #yq added: re-push state first to keep them on the page
-    history.pushState({ guard: true }, "", location.href);
-    // #yq added: only show policy if game is still in progress and modal not already open
-    if (!policyOpen && !serverGameOver && !window.gameOverShown) {
-      showPolicyModal();
-    }
+  scrollBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
-}
-
-// call this after page loads
-document.addEventListener("DOMContentLoaded", () => {
-  armBackButtonGuard();
-});
-
-
-// ✅ Policy modal helpers (so top back button + browser back can show popup)
-let policyOpen = false;
-
-function showPolicyModal() {
-  if (serverGameOver || window.gameOverShown) return; // #yq added: don't show if game already over
-  const m = document.getElementById("policy-modal");
-  if (m) { m.style.display = "flex"; policyOpen = true; }
-  // #yq added: pause the turn timer while policy modal is open
-  clearInterval(turnTimerInterval);
-}
-
-function closePolicyModal() {
-  const m = document.getElementById("policy-modal");
-  if (m) { m.style.display = "none"; policyOpen = false; }
-  // #yq added: resume the turn timer from where it left off
-  const timerEl = document.getElementById("turn-timer");
-  if (timerEl && window.gameStarted && !serverGameOver) {
-    const parts = timerEl.textContent.split(":");
-    const remaining = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-    if (remaining > 0) startTurnTimer(remaining);
-  }
-}
-
-// Changed 
-function confirmExit() {
-  // Mark as intentional exit so beforeunload beacon doesn't also fire
-  window.__normalExit = true;
-  window.__beaconSent = true; // prevent beacon double-send
-
-  // Tell opponent you quit (so they can show "You win")
-  if (roomId) {
-    socket.emit("forfeit_game", {
-      room: roomId,
-      role: window.playerRole,
-      game_type: "memory"
-    });
-  }
-  
-  // ✅ Apply penalty via API
-  fetch("/api/streaks/quit_game", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" }
-  })
-  .then(res => res.json())
-  .then(updated => {
-    console.log("✅ Penalty applied:", updated);
-    exitToEvents();
-  })
-  .catch(() => {
-    console.log("⚠️ Penalty API failed");
-    exitToEvents();
-  });
-}
-
-socket.on("game_forfeited", (data) => {
-  // if opponent quit, you win
-  if (data.by_role && data.by_role !== window.playerRole) {
-    // Lock board
-    gameStarted = false;
-    busy = true;
-
-    // Show your existing result modal as win
-    const modal = document.getElementById("result-modal");
-    document.getElementById("res-emoji").textContent = "🎉";
-    document.getElementById("res-title").textContent = "You Win!";
-    document.getElementById("res-streak").textContent = "Opponent left early.";
-    modal.style.display = "flex";
-  }
-});
-
-function shouldShowPreview() {
-  // If server already has progress, DO NOT show preview
-  if (stateReady) {
-    if ((serverMatched && serverMatched.size > 0) ||
-        (serverFlipped && serverFlipped.size > 0)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-socket.on("opponent_info", (data) => {
-  console.log("📥 Received opponent_info:", data);
-  if (data?.opponent_username) {
-    setOpponentUsername(data.opponent_username);  // 🔧 FIX: Use setter
-    console.log("✅ Stored opponent username:", window.opponentUsername);
-    
-    const nameEl = document.getElementById("opponent-name");
-    if (nameEl) {
-      nameEl.textContent = data.opponent_username;
-    }
-  }
-});
-
-// ✅ ADDED: Function to view opponent's profile
-function viewOpponentProfile() {
-  const opponentUsername = getOpponentUsername();  // 🔧 FIX: Use getter
-  console.log("🔍 View profile clicked. Opponent:", opponentUsername);
-  
-  if (opponentUsername && opponentUsername !== "Waiting for opponent...") {
-    console.log("✅ Navigating to:", `/view_profile/${opponentUsername}`);
-    window.location.href = `/view_profile/${opponentUsername}`;
-  } else {
-    console.error("❌ No opponent username! Value:", opponentUsername);
-    alert("Opponent information not available. Please try refreshing the page.");
-  }
-}
-
-// Poll disabled — stale entries caused false "You Win" on reloaders.
-// True closes handled by server 30s grace + socket opponent_forfeit event.
-
-// Yq added
-let turnTimerInterval = null;
-
-function startTurnTimer(seconds) {
-  clearInterval(turnTimerInterval);
-
-  function formatTime(sec) {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return m + ":" + (s < 10 ? "0" + s : s);
-  }
-
-  const timerEl = document.getElementById("turn-timer");
-  if (!timerEl) return;
-
-  timerEl.textContent = formatTime(seconds);
-
-  turnTimerInterval = setInterval(() => {
-    seconds--;
-    timerEl.textContent = formatTime(seconds);
-
-    if (seconds <= 0) {
-      clearInterval(turnTimerInterval);
-      // yq added: Enforce kick when the visual timer expires
-      const isMyTurn = (typeof currentTurnRole !== "undefined") && (currentTurnRole === window.playerRole);
-      if (isMyTurn && window.gameStarted && !serverGameOver) {
-        triggerAfkQuit();
-      }
-    }
-  }, 1000);
-}
 </script>
 
-<script>
-  // ✅ Server-injected user ID for sendBeacon (avoids session cookie dependency)
-  window.__currentUserId = "{{ session['user_id'] }}";
-</script>
-</body>
-</html>
+{% endblock %}
