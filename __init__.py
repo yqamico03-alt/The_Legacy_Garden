@@ -22,7 +22,7 @@ from twilio.rest import Client #pip install twilio
 from flask_dance.contrib.google import make_google_blueprint, google #Jiawen pip install flask-dance
 from flask_mail import Mail, Message
 
-load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'features', '.env'), override=True) #Jiawen
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'features', '.env'), override=False) #Jiawen
 
 TWILIO_SID = os.getenv("TWILIO_ACCOUNT_SID") #Jiawen
 TWILIO_AUTH = os.getenv("TWILIO_AUTH_TOKEN") #Jiawen
