@@ -349,31 +349,47 @@
         font-size: 1.5rem;
     }
 
-    /* Rewards/Memories bar — stacks on mobile for breathing room */
+    /* Rewards/Memories bar — clean card layout on mobile */
     .info-bar {
         flex-direction: column;
         padding-right: 0;
         gap: 0;
+        border-radius: 14px;
     }
+
+    /* Green header label — full width rounded top */
     .info-label {
         width: 100%;
         padding: 12px 16px;
-        font-size: 0.95rem;
+        font-size: 1rem;
+        font-weight: 800;
         justify-content: flex-start;
-        border-radius: 0;
+        border-radius: 12px 12px 0 0;
     }
+
+    /* Content row: emoji + text side by side, properly aligned */
     .info-content {
-        padding: 12px 16px;
-        font-size: 0.9rem;
+        padding: 14px 16px;
+        font-size: 0.95rem;
         width: 100%;
         border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        line-height: 1.5;
+        flex-wrap: nowrap;
     }
+
+    /* Full-width claim/view button at bottom */
     .claim-btn {
         margin: 12px 16px 14px;
         width: calc(100% - 32px);
-        height: 44px;
-        font-size: 0.95rem;
+        min-width: 0;
+        height: 46px;
+        font-size: 1rem;
+        font-weight: 800;
         justify-content: center;
+        border-radius: 10px;
         white-space: nowrap;
     }
 
@@ -485,7 +501,8 @@
     <div class="info-bar">
         <div class="info-label">Rewards</div>
         <div class="info-content">
-            🌱 <strong>Seed</strong>&nbsp Play at least 1 game daily for 5 consecutive days.
+            <span style="font-size:1.3rem;flex-shrink:0;">🌱</span>
+            <span><strong>Seed</strong> — Play at least 1 game daily for 5 consecutive days.</span>
         </div>
         
         <button
@@ -519,7 +536,8 @@
         {% endif %}
     </div>
     <div class="info-content">
-        🏮 <strong>Memory Album</strong>&nbsp Unlock special memories by winning games.
+        <span style="font-size:1.3rem;flex-shrink:0;">🏮</span>
+        <span><strong>Memory Album</strong> — Unlock special memories by winning games.</span>
     </div>
 
     <a href="{{ url_for('memory_album') }}"
