@@ -94,6 +94,21 @@
   border-radius: 10px !important;
 }
 
+/* ── Mobile: stack buttons vertically and make them full-width ── */
+@media (max-width: 575px) {
+  .story-actions {
+    flex-direction: column;
+    align-items: stretch;   /* full-width buttons */
+    gap: 10px;
+  }
+  .story-actions .btn,
+  .story-actions a.btn {
+    width: 100% !important;
+    flex-grow: 0 !important;
+    text-align: center;
+  }
+}
+
 /* Consistent border radius for all form inputs */
 .form-control {
   border-radius: 10px !important;
@@ -254,7 +269,7 @@
                     onclick="document.getElementById('saveAsInput').value='draft'; document.getElementById('storyForm').submit();">
               💾 Save as Draft
             </button>
-            <button type="submit" class="btn px-5 fw-bold shadow flex-grow-1" id="submitBtn" style="border-radius: 10px; background-color: #2e7d32; color: white; border-color: #2e7d32;">Plant Story</button>
+            <button type="submit" class="btn px-5 fw-bold shadow" id="submitBtn" style="border-radius: 10px; background-color: #2e7d32; color: white; border-color: #2e7d32;">Plant Story</button>
           </div>
         </form>
       </div>
