@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}About Us | Legacy Garden{% endblock %}
+
+{% block content %}
+<style>
+  /* =========================
+   ABOUT PAGE STYLES
+   ========================= */
+
+  .about-hero {
+    border-radius: 16px;
+    border: 0;
+    background: #ffffff;
+  }
+
+  .about-hero-body {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+  }
+
+  .about-hero-text {
+    flex: 1;
+  }
+
+  .about-title {
+    font-weight: 800;
+    color: #2f5f3a;
+    margin-bottom: 8px;
+  }
+
+  .about-desc {
+    color: #5f6b63;
+    margin-bottom: 0;
+    line-height: 1.5;
+  }
+
+  .about-hero-image {
+    position: relative;
+    width: 300px;
+    flex-shrink: 0;
+  }
+
+  .about-hero-image::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4); /* black overlay */
+    border-radius: 14px;           /* match image radius */
+  }
+
+  .about-img {
+    width: 100%;
+    display: block;
+    border-radius: 14px;
+  }
+
+
+  .about-section {
+    border-radius: 16px;
+    border: 0;
+    background: #ffffff;
+  }
+
+  .about-section-title {
+    font-weight: 800;
+    color: #2f5f3a;
+    margin-bottom: 8px;
+  }
+
+  .about-section-text {
+    color: #5f6b63;
+    line-height: 1.6;
+  }
+
+  .about-feature {
+    background: #f6fbf8;
+    border: 1px solid #cde7d8;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .about-feature-title {
+    font-weight: 700;
+    color: #2f5f3a;
+    margin-bottom: 4px;
+  }
+
+  .about-feature-text {
+    color: #5f6b63;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .about-list {
+    padding-left: 18px;
+    color: #5f6b63;
+    list-style-type: none;
+  }
+
+  .about-list li {
+    margin-bottom: 8px;
+  }
+
+  /* Mobile stacking */
+  @media (max-width: 576px) {
+    .about-hero-body {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .about-hero-image {
+      width: 100%;
+    }
+  }
+</style>
+<div class="container py-4">
+
+  <!-- HERO / ABOUT US -->
+  <div class="card about-hero shadow-sm mb-4">
+    <div class="card-body about-hero-body">
+      <div class="about-hero-text">
+        <h2 class="about-title">About Us</h2>
+        <p class="about-desc">
+          Legacy Garden helps youth and seniors build meaningful connections in a world where 
+          seniors often feel lonely and youth may not get to learn from older generations.We 
+          believe every shared story strengthens understanding. This platform offers a warm space 
+          for both generations to connect and grow together.
+        </p>
+      </div>
+
+      <div class="about-hero-image">
+        <img src="{{ url_for('static', filename='uploads/aboutus.jpg') }}"
+             alt="About Legacy Garden" class="about-img">
+      </div>
+    </div>
+  </div>
+
+  <!-- OUR MISSION -->
+  <div class="card about-section shadow-sm mb-4">
+    <div class="card-body">
+      <h3 class="about-section-title">Our Mission</h3>
+      <p class="about-section-text">
+        To build a safe and joyful online space where youth and seniors can share stories, 
+        chat, play activities together, and watch their digital garden grow with every interaction.
+    </div>
+  </div>
+
+  <!-- WHAT WE BUILT -->
+  <div class="card about-section shadow-sm mb-4">
+    <div class="card-body">
+      <h3 class="about-section-title">What We Built</h3>
+
+      <p class="about-section-text mb-3">
+        Legacy Garden is simple and friendly to use. Every small action helps your garden bloom.
+      </p>
+
+      <div class="about-feature">
+        <div class="about-feature-title">🌸 Share Stories</div>
+        <div class="about-feature-text">
+            Write about your day or upload a photo. Each story gives you water droplets to grow plants in your personal garden.
+        </div>
+      </div>
+
+      <div class="about-feature">
+        <div class="about-feature-title">🎮 Play Activities Together</div>
+        <div class="about-feature-text">
+            Youth and seniors can join fun mini-games and challenges. Completing these activities earns seeds for growing flowers and trees.
+        </div>
+      </div>
+
+      <div class="about-feature">
+        <div class="about-feature-title">💬 Chat and Build Streaks</div>
+        <div class="about-feature-text">
+            Send messages regularly. Talking every day builds a streak, which rewards you with more seeds.
+        </div>
+      </div>
+
+      <div class="about-feature">
+        <div class="about-feature-title">🌱 Grow Your Garden</div>
+        <div class="about-feature-text">
+            Use your seeds and water to grow new plants. When your flowers or trees are fully grown, you can harvest them for points.
+        </div>
+      </div>
+
+      <div class="about-feature">
+        <div class="about-feature-title">🌳 Join Your Community</div>
+        <div class="about-feature-text">
+            Everyone in your region shares one big Community Tree. Your harvested plants help this tree grow and bloom. You can also see region updates, top contributors, and community achievements.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHY IT MATTERS -->
+  <div class="card about-section shadow-sm mb-4">
+    <div class="card-body">
+      <h3 class="about-section-title">Why Legacy Garden Matters</h3>
+      <p class="about-section-text">
+        Legacy Garden helps people of different ages connect through small, meaningful moments. Whether it’s sharing a story, 
+        completing a mission together, or chatting daily, these interactions help build a strong, caring community.
+        
+      </p>
+      <p class="about-section-text mb-0">
+        Our goal is to make every young user or pioneer user to feel valued, heard, and connected.
+      </p>
+    </div>
+  </div>
+
+  <!-- DESIGNED FOR EVERYONE -->
+  <div class="card about-section shadow-sm mb-2">
+    <div class="card-body">
+      <h3 class="about-section-title">Designed For Everyone</h3>
+
+      <ul class="about-list mb-0">
+        <li>✔ Large, clear text for easy reading</li>
+        <li>✔ Simple navigation with minimal steps</li>
+        <li>✔ Friendly icons and soft colours</li>
+        <li>✔ No complicated controls</li>
+        <li>✔ Encourages gentle, positive interactions</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}The Legacy Garden{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/logo_transp.png') }}">
+</head>
+
+<body class="d-flex flex-column min-vh-100 {% block body_class %}{% endblock %}">
+
+  {% include 'includes/navbar.html' %}
+
+  <main class="py-4 flex-fill">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include 'includes/footer.html' %}
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- =========================
+       FREE "Aa" PANEL (Font + Language)
+       ========================= -->
+
+  <!-- Hidden Google Translate mount (needed, but we hide it) -->
+  <div id="google_translate_element" style="display:none;"></div>
+
+  
+
+<script>
+/* =====================================
+   LEGACY GARDEN - Aa PANEL CONTROLLER
+   ===================================== */
+
+// ===== Manual labels for Aa panel =====
+const ACC_I18N = {
+  "en":    { pill:"English", font:"FONT SIZE", language:"LANGUAGE", translate:"Translate", original:"Original", close:"Close" },
+  "zh-CN": { pill:"简体中文", font:"字体大小", language:"语言", translate:"翻译", original:"原文", close:"关闭" },
+  "zh-TW": { pill:"繁體中文", font:"字體大小", language:"語言", translate:"翻譯", original:"原文", close:"關閉" },
+  "ms":    { pill:"Bahasa Melayu", font:"SAIZ FON", language:"BAHASA", translate:"Terjemah", original:"Asal", close:"Tutup" },
+  "ta":    { pill:"தமிழ்", font:"எழுத்தளவு", language:"மொழி", translate:"மொழிபெயர்", original:"அசல்", close:"மூடு" },
+  "ja":    { pill:"日本語", font:"文字サイズ", language:"言語", translate:"翻訳", original:"原文", close:"閉じる" },
+  "ko":    { pill:"한국어", font:"글자 크기", language:"언어", translate:"번역", original:"원문", close:"닫기" },
+  "th":    { pill:"ไทย", font:"ขนาดตัวอักษร", language:"ภาษา", translate:"แปล", original:"ต้นฉบับ", close:"ปิด" },
+  "vi":    { pill:"Tiếng Việt", font:"CỠ CHỮ", language:"NGÔN NGỮ", translate:"Dịch", original:"Bản gốc", close:"Đóng" },
+  "id":    { pill:"Bahasa Indonesia", font:"UKURAN HURUF", language:"BAHASA", translate:"Terjemahkan", original:"Asli", close:"Tutup" },
+  "fr":    { pill:"Français", font:"TAILLE DE POLICE", language:"LANGUE", translate:"Traduire", original:"Original", close:"Fermer" },
+  "de":    { pill:"Deutsch", font:"SCHRIFTGRÖSSE", language:"SPRACHE", translate:"Übersetzen", original:"Original", close:"Schließen" },
+  "es":    { pill:"Español", font:"TAMAÑO DE FUENTE", language:"IDIOMA", translate:"Traducir", original:"Original", close:"Cerrar" },
+  "ru":    { pill:"Русский", font:"РАЗМЕР ШРИФТА", language:"ЯЗЫК", translate:"Перевести", original:"Оригинал", close:"Закрыть" },
+  "ar":    { pill:"العربية", font:"حجم الخط", language:"اللغة", translate:"ترجمة", original:"الأصل", close:"إغلاق" },
+  "hi":    { pill:"हिन्दी", font:"फ़ॉन्ट आकार", language:"भाषा", translate:"अनुवाद", original:"मूल", close:"बंद करें" }
+};
+ACC_I18N["en"].profile = "PROFILE";
+ACC_I18N["en"].logout  = "Logout";
+
+ACC_I18N["zh-CN"].profile = "个人资料";
+ACC_I18N["zh-CN"].logout  = "退出登录";
+
+ACC_I18N["zh-TW"].profile = "個人資料";
+ACC_I18N["zh-TW"].logout  = "登出";
+
+ACC_I18N["en"].role_placeholder = "Youth / Senior";
+ACC_I18N["en"].role_youth = "Youth";
+ACC_I18N["en"].role_senior = "Senior";
+
+ACC_I18N["zh-CN"].role_placeholder = "青年 / 老年人";
+ACC_I18N["zh-CN"].role_youth = "青年";
+ACC_I18N["zh-CN"].role_senior = "老年人";   // ✅ NOT 高级
+
+ACC_I18N["en"].home = "HOME";
+ACC_I18N["zh-CN"].home = "主页";
+ACC_I18N["zh-TW"].home = "主頁";
+
+ACC_I18N["en"].events = "EVENTS";
+
+ACC_I18N["zh-CN"].events = "活动与游戏";
+ACC_I18N["zh-TW"].events = "活動與遊戲";
+
+ACC_I18N["en"].messages = "MESSAGES";
+
+ACC_I18N["zh-CN"].messages = "聊天";
+ACC_I18N["zh-TW"].messages = "聊天";
+
+ACC_I18N["en"].admin = "ADMIN";
+ACC_I18N["zh-CN"].admin = "管理中心";
+ACC_I18N["zh-TW"].admin = "管理中心";
+
+ACC_I18N["en"].events_count = (n) => `${n} total`;
+ACC_I18N["zh-CN"].events_count = (n) => `共${n}个活动`;
+ACC_I18N["zh-TW"].events_count = (n) => `共${n}個活動`;
+
+ACC_I18N["en"].senior_members_label = "Senior Members:";
+
+ACC_I18N["zh-CN"].senior_members_label = "老年成员："; 
+// // or softer tone:
+// ACC_I18N["zh-CN"].senior_members_label = "长者成员：";
+
+ACC_I18N["zh-TW"].senior_members_label = "長者成員：";
+
+ACC_I18N["ms"].senior_members_label = "Ahli Warga Emas:";
+ACC_I18N["ta"].senior_members_label = "முதியோர் உறுப்பினர்கள்:";
+ACC_I18N["ja"].senior_members_label = "高齢者メンバー：";
+ACC_I18N["ko"].senior_members_label = "어르신 회원:";
+ACC_I18N["th"].senior_members_label = "สมาชิกผู้สูงอายุ:";
+ACC_I18N["vi"].senior_members_label = "Thành viên cao tuổi:";
+ACC_I18N["id"].senior_members_label = "Anggota Lansia:";
+ACC_I18N["fr"].senior_members_label = "Membres âgés :";
+ACC_I18N["de"].senior_members_label = "Ältere Mitglieder:";
+ACC_I18N["es"].senior_members_label = "Miembros mayores:";
+ACC_I18N["ru"].senior_members_label = "Пожилые участники:";
+ACC_I18N["ar"].senior_members_label = "أعضاء كبار السن:";
+ACC_I18N["hi"].senior_members_label = "वरिष्ठ सदस्य:";
+
+function applyAccUILabels(lang){
+  const t = ACC_I18N[lang] || ACC_I18N["en"];
+
+  const label = document.getElementById("accLabel");
+  if (label) label.textContent = t.pill;
+  // ===== Navbar labels (Profile / Logout) =====
+const p = document.getElementById("navProfileText");
+const lo = document.getElementById("navLogoutText");
+
+if (p && t.profile) p.textContent = t.profile;
+if (lo && t.logout) lo.textContent = t.logout;
+
+// ===== Signup role dropdown labels =====
+const ph = document.getElementById("rolePlaceholder");
+const y  = document.getElementById("roleYouth");
+const s  = document.getElementById("roleSenior");
+
+const seniorLbl = document.getElementById("lblSeniorMembers");
+if (seniorLbl && t.senior_members_label) seniorLbl.textContent = t.senior_members_label;
+
+if (ph && t.role_placeholder) ph.textContent = t.role_placeholder;
+if (y  && t.role_youth)       y.textContent  = t.role_youth;
+if (s  && t.role_senior)      s.textContent  = t.role_senior;
+
+const home = document.getElementById("navHomeText");
+if (home && t.home) home.textContent = t.home;
+
+const events = document.getElementById("navEventsText");
+if (events && t.events) events.textContent = t.events;
+
+const msg = document.getElementById("navMessagesText");
+if (msg && t.messages) msg.textContent = t.messages;
+
+const a = document.getElementById("navAdminText");
+if (a && t.admin) a.textContent = t.admin;
+
+const badge = document.getElementById("eventsCountBadge");
+if (badge && typeof t.events_count === "function") {
+  const n = parseInt(badge.dataset.count || "0", 10);
+  badge.textContent = t.events_count(n);
+}
+
+
+  const titles = document.querySelectorAll("#accPanel .acc-title");
+  if (titles[0]) titles[0].textContent = t.font;
+  if (titles[1]) titles[1].textContent = t.language;
+
+const btnTranslate = document.getElementById("applyLang");
+const btnOriginal  = document.getElementById("backOriginal");
+const btnClose     = document.getElementById("closeAcc");
+
+if (btnTranslate) btnTranslate.textContent = t.translate;
+if (btnOriginal)  btnOriginal.textContent  = t.original;
+if (btnClose)     btnClose.textContent     = t.close;
+
+  const panel = document.getElementById("accPanel");
+  if (panel) panel.dir = (lang === "ar") ? "rtl" : "ltr";
+}
+
+// ===== Google Translate helpers =====
+function setGoogLang(lang, reload=true){
+  const value = (lang === "en") ? "/en/en" : "/en/" + lang;
+
+  document.cookie = "googtrans=" + value + ";path=/";
+  document.cookie = "googtrans=" + value + ";path=/;domain=" + location.hostname;
+
+  localStorage.setItem("site_lang", lang);
+
+  if (reload) location.reload();
+}
+
+function killGoogleBanner(){
+  document.body.style.top = "0px";
+  document.documentElement.style.marginTop = "0px";
+  const banner = document.querySelector(".goog-te-banner-frame");
+  if (banner) banner.remove();
+}
+
+// ===== Main init =====
+document.addEventListener("DOMContentLoaded", () => {
+
+  const btn = document.getElementById("accBtn");
+  const panel = document.getElementById("accPanel");
+  const langSelect = document.getElementById("langSelect");
+  
+
+  if (!btn || !panel || !langSelect) return;
+
+  const savedLang = localStorage.getItem("site_lang") || "en";
+  langSelect.value = savedLang;
+  applyAccUILabels(savedLang);
+
+  // Toggle panel
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    panel.classList.toggle("open");
+  });
+document.getElementById("closeAcc")?.addEventListener("click", () => {
+  panel.classList.remove("open");
+});
+  document.addEventListener("click", (e) => {
+    if (panel.classList.contains("open") &&
+        !panel.contains(e.target) &&
+        !btn.contains(e.target)) {
+      panel.classList.remove("open");
+    }
+  });
+
+  // Dropdown change (instant UI update)
+  langSelect.addEventListener("change", () => {
+    applyAccUILabels(langSelect.value);
+  });
+
+  // Translate button
+  document.getElementById("applyLang")?.addEventListener("click", () => {
+    const lang = langSelect.value;
+    applyAccUILabels(lang);
+    setGoogLang(lang, true);
+  });
+
+  // Original button
+  document.getElementById("backOriginal")?.addEventListener("click", () => {
+    applyAccUILabels("en");
+    setGoogLang("en", true);
+  });
+
+  // Font size
+  const root = document.documentElement;
+  const base = 16;
+  let current = base;
+
+  function applyFont(px){
+    current = Math.max(12, Math.min(22, px));
+    root.style.fontSize = current + "px";
+    localStorage.setItem("acc_font_px", String(current));
+  }
+
+  const savedFont = localStorage.getItem("acc_font_px");
+  if (savedFont) applyFont(parseInt(savedFont, 10));
+
+  panel.querySelectorAll("[data-font]").forEach(b => {
+    b.addEventListener("click", () => {
+      const t = b.getAttribute("data-font");
+      if (t === "down") applyFont(current - 2);
+      if (t === "reset") applyFont(base);
+      if (t === "up") applyFont(current + 2);
+      if (t === "up2") applyFont(current + 4);
+    });
+  });
+
+  setTimeout(killGoogleBanner, 400);
+  setTimeout(killGoogleBanner, 1200);
+});
+
+// ===== Google Translate Init (DO NOT REMOVE) =====
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement(
+    { pageLanguage: "en", autoDisplay: false },
+    "google_translate_element"
+  );
+
+  const savedLang = localStorage.getItem("site_lang") || "en";
+  if (savedLang !== "en") setGoogLang(savedLang, false);
+
+
+  setTimeout(() => {
+  const savedLang = localStorage.getItem("site_lang") || "en";
+  applyAccUILabels(savedLang);
+}, 800);
+}
+</script>
+
+  <!-- ✅ Load Google Translate script ONCE -->
+  <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+  
+</body>
+</html>

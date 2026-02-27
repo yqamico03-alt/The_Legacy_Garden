@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}{{ profile['username'] }} | {{ _('Profile')}}{% endblock %}
+
+{% block content %}
+<style>
+.profile-wrapper {
+  min-height: 100vh;
+  padding: 30px 0 100px;
+}
+.profile-card-bg {
+  background:#fff;
+  border-radius:20px;
+  padding:30px;
+}
+.profile-inner {
+  max-width:1100px;
+  margin:auto;
+}
+.profile-pic{
+  width: clamp(140px, 14vw, 220px);
+  height: clamp(140px, 14vw, 220px);
+  object-fit: cover;
+  background-color:#E8F0EA;
+  border: 2px solid #000;
+}
+.btn-outline-success{
+  border-radius:20px;
+  padding:6px 14px;
+  font-weight:500;
+}
+.story-card{
+  border-radius:16px;
+  background:white;
+  box-shadow:0 4px 15px rgba(0,0,0,0.05);
+  padding:25px;
+  margin-bottom:25px;
+}
+.story-image-left{ width:220px; flex-shrink:0; }
+.story-thumb{
+  width:100%; height:160px; object-fit:cover;
+  border-radius:12px; background:#E8F0EA;
+}
+.story-content-right{
+  padding-left:20px; display:flex;
+  flex-direction:column; justify-content:center;
+}
+@media (max-width: 768px){
+  .story-card{ flex-direction:column; }
+  .story-image-left{ width:100%; margin-bottom:12px; }
+  .story-content-right{ padding-left:0; }
+}
+.story-actions i{ font-size: 1.1rem; }
+.story-actions{ display:flex; align-items:center; gap:22px; }
+.action-btn,
+.action-link, .action-link:visited, .action-link:hover, .action-link:active {
+  color: #6c757d !important; text-decoration: none;
+}
+.action-link .count-text { color: #6c757d !important; }
+.action-btn{
+  border:none !important; outline:none !important;
+  background:transparent !important; box-shadow:none !important;
+}
+.action-btn:focus,.action-btn:focus-visible,.action-btn:active{
+  outline:none !important; box-shadow:none !important;
+}
+.action-btn:disabled{ opacity:1 !important; cursor:default; }
+.action-btn.is-static{ pointer-events:none; opacity:1; }
+.story-actions .fa-heart { color: #dc3545 !important; }
+.story-actions .fa-comment { color: #198754 !important; }
+.story-title{ color:#1f3b57; font-weight:800; }
+.meta-text{ color:#8c8c8c; font-size:0.9rem; font-weight:600; text-transform:uppercase; }
+.meta-highlight{ color:#2e7d32; font-weight:700; }
+.story-content p{ color:#6b7280; }
+.read-link{ color:#2e7d32; font-weight:700; }
+.read-link:hover{ color:#1b5e20; text-decoration:none; }
+
+/* Back button */
+.back-profile-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  color:#4a7050; font-weight:600; font-size:15px;
+  text-decoration:none; margin-bottom:18px;
+  padding:6px 14px; border-radius:20px;
+  background:#f0f7f0; border:1px solid #c6e0c6;
+  transition:background 0.15s;
+}
+.back-profile-btn:hover { background:#dff0df; color:#2e7d32; text-decoration:none; }
+
+/* Role-restriction modal */
+.role-modal-backdrop {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.45); z-index:9000;
+  align-items:center; justify-content:center;
+}
+.role-modal-backdrop.show { display:flex; }
+.role-modal-card {
+  background:#fff; border-radius:20px; padding:32px 28px;
+  max-width:420px; width:90%; text-align:center;
+  box-shadow:0 8px 30px rgba(0,0,0,.18);
+}
+.role-modal-icon { font-size:2.5rem; margin-bottom:12px; }
+.role-modal-title { font-weight:800; font-size:1.2rem; color:#1f3b57; margin-bottom:8px; }
+.role-modal-sub { color:#6b7280; font-size:0.95rem; margin-bottom:20px; line-height:1.6; }
+.role-modal-close {
+  padding:10px 28px; background:#4a7050; color:#fff;
+  border:none; border-radius:20px; font-weight:600;
+  cursor:pointer; font-size:15px;
+}
+</style>
+
+{% set my_role = session.get('role', '') | lower %}
+{% set their_role = profile['role'] | lower %}
+{% set same_role = (my_role == their_role) and (my_role != '') %}
+{% set is_own_profile = (session.get('username') == profile['username']) %}
+
+<!-- Role-restriction modal -->
+{% if not is_own_profile and same_role %}
+<div class="role-modal-backdrop show" id="roleRestrictModal">
+  <div class="role-modal-card">
+    <div class="role-modal-icon">🤝</div>
+    <div class="role-modal-title">Oops! Same Role</div>
+    <div class="role-modal-sub">
+      This user is also a <strong>{{ their_role | title }}</strong>. Our platform is designed to connect
+      <strong>Seniors</strong> and <strong>Youths</strong> together — so you can only view profiles and
+      message members from the other group. Head back to explore someone new!
+    </div>
+    <button class="role-modal-close" onclick="history.back()">← Go Back</button>
+  </div>
+</div>
+{% endif %}
+
+<div class="profile-wrapper">
+  <div class="container">
+
+    <!-- BACK BUTTON -->
+    <a href="javascript:history.back()" class="back-profile-btn">← Back</a>
+
+    <!-- PROFILE CARD -->
+    <div class="profile-inner profile-card-bg shadow-sm">
+      <div class="row align-items-center">
+
+        <!-- PROFILE PIC -->
+        <div class="col-md-3 text-center">
+          {% if profile['profile_pic'] and profile['profile_pic'] != 'profile_pic.png' %}
+            <img src="{{ url_for('static', filename='uploads/' + profile['profile_pic']) }}"
+                 class="rounded-circle profile-pic">
+          {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ profile['username'] }}&background=random&size=150"
+                 class="rounded-circle profile-pic">
+          {% endif %}
+        </div>
+
+        <!-- PROFILE INFO -->
+        <div class="col-md-9">
+          <div class="d-flex align-items-center justify-content-between">
+            <h2 class="fw-bold mb-0">{{ profile['username'] }}</h2>
+
+            {% if not is_own_profile %}
+              {% if same_role %}
+                <button type="button"
+                   class="btn btn-secondary btn-sm"
+                   style="opacity:0.5;cursor:not-allowed;border-radius:20px;pointer-events:none;"
+                   title="You can only message users with a different role">
+                  <i class="fa-regular fa-comment"></i> Message
+                </button>
+              {% else %}
+                <a href="{{ url_for('messaging.chat', other_id=profile['id']) }}"
+                   class="btn btn-outline-success btn-sm">
+                  <i class="fa-regular fa-comment"></i> Message
+                </a>
+              {% endif %}
+            {% endif %}
+          </div>
+
+          <p class="text-muted mb-3">{{ profile['name'] }}</p>
+
+          <p class="mb-1">
+            <strong>{{ _("Profile type:") }}</strong> {{ _(profile['role']) }}
+            {% if profile['show_region'] %}
+              &nbsp;&nbsp;<strong>{{ _("Region:") }}</strong> {{ _(profile['region']) }}
+            {% endif %}
+          </p>
+
+          {% if profile['show_email'] %}
+            <p class="text-muted">
+              <i class="fa-regular fa-envelope"></i> {{ profile['email'] }}
+            </p>
+          {% endif %}
+
+          <p class="mt-3" style="max-width:600px;">
+            <strong>{{ _("Bio:") }}</strong><br>
+            {{ profile['bio'] if profile['bio'] else _("No bio shared.") }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STORIES -->
+    <div class="profile-inner">
+      <hr class="my-5">
+      <h4 class="fw-bold mb-4">{{ _("Stories by") }} {{ profile['username'] }}</h4>
+
+      {% if stories and stories|length > 0 %}
+        {% for story in stories %}
+          <div class="card story-card border-0 mb-4 overflow-hidden">
+            <div class="row g-0 align-items-stretch">
+              <div class="col-md-4 story-img-col">
+                {% set img = (story.image_path or '')|trim %}
+                <img
+                  src="{% if img %}{{ url_for('static', filename='uploads/' + img) }}{% else %}{{ url_for('static', filename='uploads/logo.jpeg') }}{% endif %}"
+                  class="story-img" alt="{{ story.title }}">
+              </div>
+              <div class="col-md-8">
+                <div class="story-content">
+                  <h3 class="story-title mb-1">{{ story.title }}</h3>
+                  <div class="meta-text mb-3">
+                    CATEGORY: <span class="meta-highlight">{{ _(story.topic) if story.topic else _("General") }}</span>
+                    • {{ _("Posted By") }} {{ profile['username']|upper }}
+                  </div>
+                  <p class="text-muted mb-3">
+                    {{ story.content[:120] }}{% if story.content|length > 120 %}...{% endif %}
+                  </p>
+                  <div class="d-flex justify-content-between align-items-center mt-auto">
+                    <a href="{{ url_for('story.view_story', story_id=story.id) }}" class="read-link">
+                      {{ _("Read More") }} <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                    <div class="story-actions">
+                      <button type="button" class="action-btn js-like-btn"
+                        data-story-id="{{ story.id }}"
+                        data-liked="{{ 1 if story.user_liked else 0 }}"
+                        aria-label="Like story">
+                        <i class="{% if story.user_liked %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+                        <span class="count-text js-like-count">{{ story.like_count or 0 }}</span>
+                      </button>
+                      <a href="{{ url_for('story.view_story', story_id=story.id) }}" class="action-link" aria-label="View comments">
+                        <i class="fa-regular fa-comment"></i>
+                        <span class="count-text">{{ story.comment_count or 0 }}</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted">{{ _("No stories shared yet 🌱") }}</p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+async function toggleLike(btn) {
+  const storyId = btn.dataset.storyId;
+  const icon = btn.querySelector("i");
+  const countEl = btn.querySelector(".js-like-count");
+  btn.style.transform = "scale(1.15)";
+  setTimeout(() => (btn.style.transform = ""), 120);
+  const res = await fetch(`/story/${storyId}/like-toggle`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({})
+  });
+  const data = await res.json();
+  if (!data.ok) return;
+  countEl.textContent = data.like_count;
+  if (data.liked) {
+    icon.classList.remove("fa-regular"); icon.classList.add("fa-solid"); btn.dataset.liked = "1";
+  } else {
+    icon.classList.remove("fa-solid"); icon.classList.add("fa-regular"); btn.dataset.liked = "0";
+  }
+}
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".js-like-btn");
+  if (!btn) return;
+  toggleLike(btn);
+});
+</script>
+{% endblock %}

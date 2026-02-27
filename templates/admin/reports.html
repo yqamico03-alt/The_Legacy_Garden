@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+{% block title %}User Reports{% endblock %}
+
+{% block content %}
+<style>
+  /* ===== Match "Stories Management" vibe ===== */
+  .admin-page { padding: 40px 0 70px; }
+
+  .admin-hero { text-align: center; margin-bottom: 40px; }
+  .admin-hero h1 {
+    font-size: 48px; font-weight: 800; color: #3f7f5a; margin: 0;
+  }
+  .admin-hero p {
+    margin: 10px 0 0; font-size: 20px; color: #7a7a7a;
+  }
+
+  .section-title {
+    font-size: 36px; font-weight: 800; color: #2f6b4c;
+    margin: 40px 0 18px;
+  }
+
+  /* Container */
+  .report-card {
+    background: #fff;
+    border-radius: 28px;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+
+  .report-table { margin: 0; }
+  .report-table thead th {
+    background: rgba(63,127,90,0.06);
+    font-weight: 800;
+    border-bottom: 2px solid rgba(0,0,0,0.06);
+    padding: 18px 22px;
+  }
+  .report-table tbody td {
+    padding: 22px 22px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    vertical-align: middle;
+  }
+  .report-table tbody tr:hover {
+    background: rgba(63,127,90,0.03);
+  }
+
+  /* Pills */
+  .status-pill {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 800;
+    margin-top: 10px;
+  }
+  .status-banned { background: rgba(220,53,69,0.12); color: #dc3545; }
+  .status-active { background: rgba(25,135,84,0.12); color: #198754; }
+
+  .reason-pill {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 800;
+    background: rgba(255, 193, 7, 0.18);
+    color: #b58100;
+    text-transform: lowercase;
+  }
+
+  /* Buttons */
+  .btn-soft-danger {
+    background: #dc3545; border: none; color: #fff;
+    padding: 10px 18px; border-radius: 12px; font-weight: 800;
+  }
+  .btn-soft-secondary {
+    background: #fff; border: 1px solid rgba(0,0,0,0.25);
+    color: #111; padding: 10px 18px; border-radius: 12px; font-weight: 800;
+  }
+
+  /* ===== Modal styling ===== */
+  .lg-modal .modal-dialog { max-width: 720px; }
+  .lg-modal-content{
+    border-radius: 22px; border: 0;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.18); overflow: hidden;
+  }
+  .lg-modal-header{
+    padding: 18px 22px; border-bottom: 1px solid rgba(0,0,0,0.06);
+    background: rgba(63,127,90,0.06);
+  }
+  .lg-modal-header .modal-title{
+    font-weight: 900; color: #2f6b4c; font-size: 22px;
+  }
+  .lg-close{
+    width: 42px; height: 42px; border-radius: 12px; border: 0;
+    background: rgba(0,0,0,0.06); font-size: 28px; cursor: pointer;
+  }
+  .lg-modal-body{ padding: 18px 22px; }
+  .lg-details-box{
+    background: #f8faf9; border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 16px; padding: 12px 14px; min-height: 60px;
+    white-space: pre-wrap; color: #374151;
+  }
+
+  /* Fix modal gap */
+  html { overflow-y: scroll; }
+  body.modal-open { padding-right: 0 !important; }
+  .modal { padding-right: 0 !important; }
+
+  /* ===== MOBILE ===== */
+  @media (max-width: 576px) {
+    .report-table thead { display: none; }
+
+    .report-table tbody tr {
+    background: #fbfcfb;            /* slightly darker than page bg */
+    border: 1px solid rgba(0,0,0,0.06);  /* subtle outline */
+  }
+
+    .report-table tbody td {
+      display: block; padding: 12px 16px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .m-label {
+      display: block; font-size: 12px; font-weight: 800;
+      color: #2f6b4c; margin-bottom: 6px;
+    }
+
+    .user-cell .user-top {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .user-cell .user-name { font-size: 18px; font-weight: 900; }
+
+    .btn-soft-danger, .btn-soft-secondary {
+      width: 100%;
+    }
+  }
+
+  /* Give the whole page breathing room on mobile */
+@media (max-width: 576px) {
+  .admin-page {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+.btn-soft-success {
+  background: #198754;        /* Bootstrap green */
+  border: none;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+.btn-soft-success:hover {
+  background: #157347;
+}
+
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;   /* stack vertically */
+  align-items: flex-end;    /* align to right */
+  gap: 10px;
+}
+
+.action-buttons form {
+  margin: 0;
+}
+
+/* ✅ Desktop: keep action column perfectly aligned */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* force same width for all action items */
+.action-buttons button,
+.action-buttons .status-pill {
+  width: 140px;
+  text-align: center;
+}
+
+/* remove extra inline margins from forms */
+.action-buttons form {
+  margin: 0;
+}
+
+/* Desktop align for Details column */
+.details-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.details-buttons button {
+  width: 140px;
+  text-align: center;
+}
+
+/* =========================
+   RESPONSIVE FIX (TABLE → CARDS)
+   ========================= */
+
+/* Stop horizontal scrollbar on smaller screens */
+.report-card { overflow-x: hidden; }
+.table-responsive { overflow-x: hidden; }
+
+/* Tablet & below: turn each row into a card */
+@media (max-width: 992px) {
+  .report-table thead { display: none; }
+
+  .report-table, .report-table tbody, .report-table tr, .report-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .report-table tbody tr {
+    background: #fbfcfb;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 18px;
+    margin: 14px 0;
+    overflow: hidden;
+  }
+
+  .report-table tbody td {
+    border-top: 1px solid rgba(0,0,0,0.06);
+    padding: 14px 16px;
+  }
+
+  /* Each cell becomes a "label + value" row */
+  .m-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    color: #2f6b4c;
+    margin-bottom: 6px;
+  }
+
+  /* Make buttons full width on tablet/mobile */
+  .details-buttons button,
+  .action-buttons button,
+  .action-buttons .status-pill {
+    width: 100%;
+  }
+
+  .details-buttons {
+    display: flex;
+    justify-content: flex-start; /* better on mobile */
+  }
+
+  .action-buttons {
+    align-items: stretch; /* full width buttons */
+  }
+}
+</style>
+
+<div class="container admin-page">
+
+  <div class="admin-hero">
+    <h1>🚨 User Reports</h1>
+    <p>Review reported users and take action</p>
+  </div>
+
+  <div class="section-title">Reported Users</div>
+
+  {% if reports and reports|length > 0 %}
+  <div class="report-card">
+    <div class="table-responsive">
+      <table class="table report-table align-middle">
+        <thead>
+          <tr>
+            <th>Reported User</th>
+            <th>Reporter</th>
+            <th>Reason</th>
+            <th>Reported At</th>
+            <th>Details</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for r in reports %}
+          <tr>
+            <td class="user-cell">
+              <span class="m-label">Reported user</span>
+              <div class="user-top">
+                <div class="user-name">{{ r.reported_name or r.reported_user_id }}</div>
+                {% if (r.reported_status or '') == 'banned' %}
+                  <span class="status-pill status-banned">Banned</span>
+                {% else %}
+                  <span class="status-pill status-active">Active</span>
+                {% endif %}
+              </div>
+            </td>
+
+            <td>
+              <span class="m-label">Reporter</span>
+              {{ r.reporter_name or r.reporter_id }}
+            </td>
+
+            <td>
+              <span class="m-label">Reason</span>
+              <span class="reason-pill">{{ r.reason }}</span>
+            </td>
+
+            <td>
+              <span class="m-label">Reported at</span>
+              {{ r.created_at }}
+            </td>
+
+ <td class="details-cell">
+  <span class="m-label">Details</span>
+  <div class="details-buttons">
+    <button type="button"
+            class="btn-soft-secondary btn-sm"
+            data-toggle="modal"
+            data-target="#detailsModal{{ r.id }}">
+      View
+    </button>
+  </div>
+
+              <div class="modal fade lg-modal" id="detailsModal{{ r.id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content lg-modal-content">
+                    <div class="modal-header lg-modal-header">
+                      <h5 class="modal-title">Report Details</h5>
+                      <button type="button" class="lg-close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body lg-modal-body">
+                      <div class="fw-semibold mb-2">Optional details</div>
+                      <div class="lg-details-box">
+                        {{ r.details or "No additional details provided." }}
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn-soft-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <td class="text-end">
+  <span class="m-label">Action</span>
+
+<div class="action-buttons">
+  {% if (r.status or 'open') == 'resolved' %}
+      <span class="status-pill status-active">Resolved</span>
+  {% else %}
+      <form method="POST" action="{{ url_for('admin_resolve_user_report', report_id=r.id) }}">
+          <button class="btn-soft-secondary" type="submit">Resolve</button>
+      </form>
+
+      {% if (r.reported_status or '') == 'banned' %}
+          <form method="POST" action="{{ url_for('admin_unban_user', user_id=r.reported_user_id) }}">
+              <button class="btn-soft-success" type="submit">Unban</button>
+          </form>
+      {% else %}
+          <form method="POST" action="{{ url_for('admin_ban_user', user_id=r.reported_user_id) }}">
+              <button class="btn-soft-danger" type="submit">Ban</button>
+          </form>
+      {% endif %}
+  {% endif %}
+</div>
+</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-pill">No reported users.</div>
+  {% endif %}
+
+</div>
+{% endblock %}

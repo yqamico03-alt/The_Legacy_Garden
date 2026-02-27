@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Profile") }} | The Legacy Garden{% endblock %}
+
+{% block content %}
+<style>
+.profile-wrapper {
+    background-color: #f5f5f0;
+    min-height: 100vh;
+    padding-top: 30px;
+    padding-bottom: 120px;
+}
+
+.profile-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* Flash */
+.flash-msg {
+    background-color: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    transition: opacity 0.6s ease;
+}
+
+/* Profile Card */
+.profile-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 36px 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 32px;
+}
+
+.profile-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 36px;
+}
+
+.profile-pic-wrap { flex-shrink: 0; }
+
+.profile-pic {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #c8e6c9;
+    background-color: #e9f1ee;
+}
+
+.profile-info { flex: 1; }
+
+.profile-username {
+    font-weight: 800;
+    font-size: 1.8rem;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+}
+
+.profile-name {
+    font-size: 1rem;
+    color: #888;
+    margin-bottom: 16px;
+}
+
+.profile-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f0f7f0;
+    color: #2e7d32;
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.profile-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.profile-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.profile-contact-item i {
+    color: var(--legacy-green);
+    font-size: 0.9rem;
+}
+
+.profile-bio {
+    font-size: 0.97rem;
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    max-width: 520px;
+}
+
+.profile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background-color: var(--legacy-green);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-edit:hover {
+    background-color: #1b5e20;
+    color: #fff;
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.btn-settings {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-settings:hover {
+    background-color: #e0e0e0;
+    color: #111;
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.btn-rewards {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background-color: #fff8e1;
+    color: #f57f17;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-rewards:hover {
+    background-color: #ffecb3;
+    color: #e65100;
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+/* Section heading */
+.section-heading {
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-divider {
+    border: none;
+    border-top: 1.5px solid #eeeeee;
+    margin: 32px 0;
+}
+
+/* Story cards */
+.story-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    margin-bottom: 20px;
+    overflow: hidden;
+    display: flex;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.story-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.11);
+}
+
+.story-thumb-wrap {
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.story-thumb {
+    width: 100%;
+    height: 100%;
+    min-height: 160px;
+    object-fit: cover;
+    display: block;
+}
+
+.story-body {
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+}
+
+.story-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.story-excerpt {
+    font-size: 0.93rem;
+    color: #777;
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+
+.story-read-more {
+    color: var(--legacy-green);
+    font-weight: 700;
+    font-size: 0.92rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: gap 0.2s;
+}
+
+.story-read-more:hover {
+    gap: 8px;
+    color: #1b5e20;
+    text-decoration: none;
+}
+
+.no-stories {
+    background: #fff;
+    border-radius: 18px;
+    padding: 40px;
+    text-align: center;
+    color: #aaa;
+    font-size: 1rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+/* Floating create button */
+.create-story-btn {
+    position: fixed;
+    bottom: 36px;
+    right: 36px;
+    background-color: var(--legacy-green);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    z-index: 9999;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.create-story-btn:hover {
+    transform: scale(1.05);
+    background-color: #1b5e20;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .profile-card { padding: 24px 20px; }
+    .profile-top { flex-direction: column; align-items: center; gap: 20px; }
+    .profile-info { text-align: center; width: 100%; }
+    .profile-badges { justify-content: center; }
+    .profile-contact { justify-content: center; }
+    .profile-bio { margin: 0 auto 20px; text-align: center; }
+    .profile-actions { justify-content: center; }
+    .story-thumb-wrap { width: 120px; }
+    .create-story-btn { bottom: 20px; right: 20px; padding: 12px 20px; font-size: 0.9rem; }
+}
+
+@media (max-width: 480px) {
+    .story-card { flex-direction: column; }
+    .story-thumb-wrap { width: 100%; height: 180px; }
+    .story-body { padding: 16px; }
+}
+</style>
+
+<div class="profile-wrapper">
+
+    <!-- Flash -->
+    <div class="profile-inner" style="margin-bottom: 8px;">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-msg flash-auto-dismiss">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- PROFILE CARD -->
+    <div class="profile-inner">
+        <div class="profile-card">
+            <div class="profile-top">
+
+                <!-- Photo -->
+                <div class="profile-pic-wrap">
+                    {% if profile['profile_pic'] and profile['profile_pic'] != 'profile_pic.png' %}
+                        <img src="{{ url_for('static', filename='uploads/' + profile['profile_pic']) }}"
+                             class="profile-pic">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ profile['name'] or session['username'] }}&background=random&size=150"
+                             class="profile-pic">
+                    {% endif %}
+                </div>
+
+                <!-- Info -->
+                <div class="profile-info">
+                    <div class="profile-username">{{ session['username'] }}</div>
+                    <div class="profile-name">{{ profile['name'] }}</div>
+
+                    <!-- Badges -->
+                    <div class="profile-badges">
+                        <span class="profile-badge">
+                            <i class="fa-solid fa-user"></i>{{ _(session['role']) }}
+                        </span>
+                        {% if profile['show_region'] %}
+                        <span class="profile-badge">
+                            <i class="fa-solid fa-location-dot"></i>{{ _(profile['region']) }}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contact -->
+                    {% if profile['show_email'] or profile['show_phone'] %}
+                    <div class="profile-contact">
+                        {% if profile['show_email'] %}
+                        <div class="profile-contact-item">
+                            <i class="fa-regular fa-envelope"></i>
+                            {{ profile['email'] }}
+                        </div>
+                        {% endif %}
+                        {% if profile['show_phone'] %}
+                        <div class="profile-contact-item">
+                            <i class="fa-solid fa-phone"></i>
+                            {{ profile['phone'] }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Bio -->
+                    <div class="profile-bio">
+                        {{ profile['bio'] if profile['bio'] else _("Tell us about your love for gardening! 🌱") }}
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="profile-actions">
+                        <a href="{{ url_for('edit_profile') }}" class="btn-edit">
+                            <i class="fa-solid fa-pen"></i>{{ _("Edit Profile") }}
+                        </a>
+                        <a href="{{ url_for('settings') }}" class="btn-settings">
+                            <i class="fa-solid fa-gear"></i>{{ _("Settings") }}
+                        </a>
+                        <a href="{{ url_for('mygarden') }}" class="btn-rewards">
+                            <i class="fa-solid fa-star"></i>{{ _("My Rewards") }}
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MY STORIES -->
+    <div class="profile-inner">
+        <hr class="section-divider">
+        <div class="section-heading">
+            <i class="fa-solid fa-book-open" style="color: var(--legacy-green);"></i>
+            {{ _("My Stories") }}
+        </div>
+
+        {% if stories and stories|length > 0 %}
+            {% for story in stories %}
+            <div class="story-card">
+                <div class="story-thumb-wrap">
+                    {% set img = (story.image_path or '')|trim %}
+                    <img src="{% if img %}{{ url_for('static', filename='uploads/' + img) }}{% else %}{{ url_for('static', filename='uploads/logo.jpeg') }}{% endif %}"
+                         class="story-thumb" alt="{{ story.title }}">
+                </div>
+                <div class="story-body">
+                    <div class="story-title">{{ story['title'] }}</div>
+                    <div class="story-excerpt">
+                        {{ story['content'][:180] }}{% if story['content']|length > 180 %}...{% endif %}
+                    </div>
+                    <a href="{{ url_for('story.view_story', story_id=story['id']) }}" class="story-read-more">
+                        {{ _("Read more") }} <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-stories">
+                🌱 {{ _("You haven't shared any stories yet.") }}<br>
+                <span style="font-size:0.9rem; margin-top:6px; display:block;">{{ _("Tap the button below to share your first story!") }}</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Floating Button -->
+    <a href="{{ url_for('story.create') }}" class="create-story-btn">
+        <i class="fa-solid fa-plus"></i>{{ _("Create Story") }}
+    </a>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const alerts = document.querySelectorAll(".flash-auto-dismiss");
+    alerts.forEach(function (alert) {
+        setTimeout(function () {
+            alert.style.opacity = "0";
+            setTimeout(function () { alert.style.display = "none"; }, 600);
+        }, 2000);
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,525 @@
+{% extends "base.html" %}
+{% block title %}Edit Story - Legacy Garden{% endblock %}
+
+{% block content %}
+<style>
+  :root { --lg-green: #4caf50; --lg-green-dark: #3e8e41; --lg-border: #e2e2e2; }
+  .create-header { background: linear-gradient(135deg, var(--lg-green), var(--lg-green-dark)); color: white; padding: 30px 30px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3); }
+  .form-card { background: white; border-radius: 24px; padding: 40px; border: 1px solid var(--lg-border); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+  .validation-msg { font-size: 13px; font-weight: 700; margin-top: 6px; color: #dc3545; display: none; }
+
+  .form-card .btn { border-radius: 10px !important; }
+  .form-card .btn.rounded-pill { border-radius: 8px !important; }
+  .form-card .btn-group .btn { border-radius: 10px !important; }
+
+  .draft-img-area { max-width: 520px; }
+  .draft-img-wrap { position: relative; display: inline-block; border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); }
+  .draft-img { width: 360px; max-width: 100%; border-radius: 14px; display:block; }
+  .draft-img-remove {
+    position: absolute;
+    top: 10px; right: 10px;
+    border: 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-weight: 700;
+    background: rgba(220, 53, 69, 0.92);
+    color: white;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: 0.15s;
+    cursor: pointer;
+    z-index: 5;
+  }
+  .draft-img-wrap:hover .draft-img-remove { opacity: 1; transform: translateY(0); }
+
+  .active-lang { background-color: var(--lg-green-dark) !important; color: white !important; border-color: var(--lg-green-dark) !important; }
+  .recording-active { background-color: #dc3545 !important; border-color: #dc3545 !important; color: white !important; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+  #speechPreviewBox { background: #f8f9fa; border-left: 4px solid #3e8e41; padding: 15px; margin-bottom: 15px; display: none; border-radius: 4px; }
+  #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; }
+
+  .speech-actions { column-gap: 16px; }
+  .speech-preview-actions { gap: 14px; }
+  .speech-preview-actions .btn { border-radius: 10px; }
+
+  .upload-group input[type="file"] { padding: 10px 12px; height: 52px; }
+  .upload-group input[type="file"]::file-selector-button {
+    height: 100%;
+    margin-right: 14px;
+    border-radius: 10px;
+    border: none;
+    padding: 0 18px;
+    background-color: #f1f3f5;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .upload-group input[type="file"]::file-selector-button:hover { background-color: #e2e6ea; }
+
+  .story-actions { display: flex; align-items: center; gap: 10px; }
+  .story-actions .btn { border-radius: 10px !important; }
+  #submitBtn:hover { background-color: #1b5e20 !important; border-color: #1b5e20 !important; }
+
+  .form-control, .form-select { border-radius: 10px !important; }
+
+
+  #topicInput {
+  height: 45px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2b2b2b;
+  border-radius: 10px !important;
+  border: 1.5px solid #e2e2e2;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+#topicInput:focus {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 4px rgba(46,125,50,0.12);
+  outline: none;
+}
+
+#topicInput option {
+  font-weight: 600;
+  padding: 10px;
+}
+
+.speech-actions .btn-group {
+  gap: 10px;
+}
+
+
+</style>
+
+<div class="container py-4 pb-5">
+  <div class="row">
+    <div class="col-12">
+      <div class="create-header d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="h3 fw-bold mb-1">✏️ Edit Your Memory</h1>
+          <p class="mb-0 opacity-90 small">Update your story. Keep it meaningful and kind.</p>
+        </div>
+
+        <a href="{{ url_for('story.manage') }}" class="btn btn-light btn-sm fw-bold text-success shadow-sm">
+  <i class="fa-solid fa-box-archive"></i> My Drafts
+</a>
+      </div>
+
+      <div class="form-card">
+        <form method="POST"
+              action="{{ url_for('story.edit_story', story_id=story.id) }}"
+              enctype="multipart/form-data"
+              id="storyForm" novalidate>
+
+          <input type="hidden" name="remove_image" id="remove_image" value="0">
+
+          <div class="mb-4">
+            <label class="form-label fw-bold mb-2">Story Title <span class="text-danger">*</span></label>
+            <input type="text" name="title" id="titleInput" class="form-control form-control-lg"
+                   placeholder="e.g., Cooking with Grandma"
+                   value="{{ (form_data.title if form_data else story.title) }}">
+            <div id="titleValid" class="validation-msg"></div>
+            {% if errors and errors.title %}<div class="text-danger small mt-1 fw-bold">{{ errors.title }}</div>{% endif %}
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold mb-2">Topic <span class="text-danger">*</span></label>
+            {% set current_topic = (form_data.topic if form_data else story.topic) %}
+            <select name="topic" id="topicInput" class="form-select form-select-lg">
+              <option value="">Choose a topic...</option>
+              <option value="Travel & Trips" {% if current_topic == 'Travel & Trips' %}selected{% endif %}>✈️ Travel & Trips</option>
+              <option value="Childhood Memories" {% if current_topic == 'Childhood Memories' %}selected{% endif %}>🧸 Childhood Memories</option>
+              <option value="Career & Work" {% if current_topic == 'Career & Work' %}selected{% endif %}>💼 Career & Work</option>
+              <option value="Life Lessons" {% if current_topic == 'Life Lessons' %}selected{% endif %}>💡 Life Lessons</option>
+              <option value="Family History" {% if current_topic == 'Family History' %}selected{% endif %}>🌳 Family History</option>
+              <option value="School" {% if current_topic == 'School' %}selected{% endif %}>🎓 School</option>
+            </select>
+            <div id="topicValid" class="validation-msg"></div>
+            {% if errors and errors.topic %}<div class="text-danger small mt-1 fw-bold">{{ errors.topic }}</div>{% endif %}
+          </div>
+
+          <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-bold m-0">Your Story <span class="text-danger">*</span></label>
+
+              <div class="d-flex align-items-center speech-actions">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-outline-success active-lang px-3 fw-bold" id="langEn">EN</button>
+                  <button type="button" class="btn btn-sm btn-outline-success px-3 fw-bold" id="langZh">中</button>
+                </div>
+
+                <button type="button" class="btn btn-sm btn-success fw-bold rounded-pill px-3" id="btnStartRecord">
+                  <i class="fa-solid fa-microphone"></i> Record
+                </button>
+
+                <span id="recordingIndicator" class="badge bg-danger rounded-pill d-none">
+                  <i class="fa-solid fa-circle-dot fa-beat"></i> Listening...
+                </span>
+              </div>
+            </div>
+
+            <div id="speechPreviewBox">
+              <p class="small text-muted mb-1 fw-bold">What we heard:</p>
+              <p id="speechLiveText" class="fst-italic mb-3 text-dark border-bottom pb-2">...</p>
+              <div class="d-flex gap-2 speech-preview-actions">
+                <button type="button" class="btn btn-sm btn-success" id="btnConfirmSpeech">Add to Story</button>
+                <button type="button" class="btn btn-sm btn-warning text-dark" id="btnRetrySpeech">Record Again</button>
+                <button type="button" class="btn btn-sm btn-secondary" id="btnCancelSpeech">Cancel</button>
+              </div>
+            </div>
+
+            <textarea name="content" id="contentInput" class="form-control" rows="8" minlength="20"
+                      placeholder="Type your story here...">{{ (form_data.content if form_data else story.content) }}</textarea>
+
+            <div id="contentValid" class="validation-msg"></div>
+            {% if errors and errors.content %}<div class="text-danger small mt-1 fw-bold">{{ errors.content }}</div>{% endif %}
+          </div>
+
+          <div class="mb-4 upload-group">
+            <label class="form-label fw-semibold">Update Photo (Optional)</label>
+            <input class="form-control" type="file" name="photo" id="photoInput" accept="image/*">
+
+            <!-- ✅ Live preview for NEW uploads -->
+            <div class="draft-img-area mt-3" id="newPhotoPreview" style="display:none;">
+              <div class="draft-img-wrap">
+                <img id="photoPreviewImg" class="draft-img" alt="Photo preview">
+                <button type="button" class="draft-img-remove" id="btnClearNewPhoto">
+                  <i class="fa-solid fa-xmark"></i> Remove
+                </button>
+              </div>
+              <p class="text-muted small mt-2 mb-0">This is the photo you just selected (not saved yet).</p>
+            </div>
+
+            <!-- ✅ Existing image on the posted story -->
+            {% if story.image_path %}
+              <div class="draft-img-area mt-3" id="existingDraftImage">
+                <div class="draft-img-wrap">
+                  <img src="{{ url_for('static', filename='uploads/' ~ story.image_path) }}" class="draft-img" alt="Story photo">
+                  <button type="button" class="draft-img-remove" onclick="removeDraftImage()">
+                    <i class="fa-solid fa-xmark"></i> Remove
+                  </button>
+                </div>
+                <p class="text-muted small mt-2 mb-0">Hover the image to remove it.</p>
+              </div>
+            {% endif %}
+
+            <div id="imgStatus" class="mt-2 fw-bold small"></div>
+            {% if errors and errors.photo %}<div class="text-danger small mt-2 fw-bold">{{ errors.photo }}</div>{% endif %}
+          </div>
+
+          <div class="d-flex gap-3 pt-3 border-top align-items-center story-actions">
+            <a href="{{ url_for('story.view_story', story_id=story.id) }}" class="btn btn-outline-secondary px-4 fw-bold">
+              Cancel
+            </a>
+
+            <button type="submit"
+                    class="btn px-5 fw-bold shadow flex-grow-1"
+                    id="submitBtn"
+                    style="background-color: #2e7d32; color: white; border-color: #2e7d32;">
+              ✅ Update Story
+            </button>
+
+            {# Optional: delete button (only if you already have route) #}
+            {# 
+            <a href="{{ url_for('story.delete', story_id=story.id) }}"
+               class="btn btn-outline-danger px-4 fw-bold"
+               onclick="return confirm('Delete this story?');">
+              Delete
+            </a>
+            #}
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="loadingOverlay">
+  <div class="text-center">
+    <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;"></div>
+    <h4 class="text-success">🔍 Moderating Content...</h4>
+  </div>
+</div>
+
+<script>
+/* 1) VALIDATION (same as create) */
+const SMASH = ["qwerty","asdfgh","zxcvbn","12345","poiuy","mnbvc"];
+const state = { titleOk: false, contentOk: false, topicOk: false };
+let BANNED = [];
+
+function updateSubmit() {
+  document.getElementById('submitBtn').disabled = !(state.titleOk && state.contentOk && state.topicOk);
+}
+function normalize(raw) { return raw.toLowerCase().replace(/[^a-z0-9\s]/g, ''); }
+
+function containsBadWord(raw) {
+  if (!raw) return null;
+  const s = normalize(raw);
+  const tokens = s.split(/\s+/);
+  for (const w of BANNED) {
+    if (tokens.includes(w)) return w;
+  }
+  return null;
+}
+
+function looksGibberishText(text) {
+  const val = (text || "").trim();
+  if (!val) return false;
+  const tokens = val.split(/\s+/);
+  return tokens.some(t => {
+     if (t.length > 15 && SMASH.some(p => t.includes(p))) return true;
+     if (/[bcdfghjklmnpqrstvwxyz]{7,}/.test(t)) return true;
+     if (/(.)\1{4,}/.test(t)) return true;
+     return false;
+  });
+}
+
+function setErr(el, msgHtml) {
+  if (!msgHtml) { el.style.display = "none"; el.innerHTML = ""; }
+  else { el.style.display = "block"; el.innerHTML = msgHtml; }
+}
+
+function validateField(inputId, errorId, type) {
+  const input = document.getElementById(inputId);
+  const err = document.getElementById(errorId);
+  const val = (input.value || "").trim();
+  let valid = false;
+  let msg = "";
+
+  if (!val) {
+    valid = false;
+  } else {
+    if (type === 'title' && val.length < 5) msg = "Title is too short (min 5 characters).";
+    else if (type === 'content' && val.length < 20) msg = "Story is too short (min 20 characters).";
+    else if (looksGibberishText(val)) msg = "Warning: random words or gibberish/keyboard detected";
+    else if (containsBadWord(val)) msg = "Explicit content detected, please change";
+    valid = (msg === "");
+  }
+
+  if (type === 'title') state.titleOk = valid;
+  if (type === 'content') state.contentOk = valid;
+
+  setErr(err, msg);
+  updateSubmit();
+}
+
+function validateTopic() {
+  const input = document.getElementById('topicInput');
+  const err = document.getElementById('topicValid');
+  if (!input.value) { setErr(err, ""); state.topicOk = false; }
+  else { setErr(err, ""); state.topicOk = true; }
+  updateSubmit();
+}
+
+document.getElementById('titleInput').addEventListener('input', () => validateField('titleInput', 'titleValid', 'title'));
+document.getElementById('contentInput').addEventListener('input', () => validateField('contentInput', 'contentValid', 'content'));
+document.getElementById('topicInput').addEventListener('change', validateTopic);
+
+fetch("{{ url_for('story.api_banned_words') }}")
+  .then(r => r.json()).then(d => { BANNED = (d.words || []).map(w => w.toLowerCase().trim()); });
+
+/* 2) SPEECH (same as create) */
+const btnStart = document.getElementById('btnStartRecord');
+const indicator = document.getElementById('recordingIndicator');
+const previewBox = document.getElementById('speechPreviewBox');
+const liveText = document.getElementById('speechLiveText');
+const btnConfirm = document.getElementById('btnConfirmSpeech');
+const btnRetry = document.getElementById('btnRetrySpeech');
+const btnCancel = document.getElementById('btnCancelSpeech');
+const contentArea = document.getElementById('contentInput');
+
+let recognition = null;
+let currentLang = 'en-SG';
+let finalTranscript = "";
+
+function supportsSpeech() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+
+function buildRecognizer() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.continuous = true; r.interimResults = true; r.lang = currentLang;
+  r.onresult = (event) => {
+    let interim = "";
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+      else interim += event.results[i][0].transcript;
+    }
+    liveText.innerText = (finalTranscript + " " + interim).trim() || "...";
+  };
+  r.onerror = () => { stopRecordingOnly(); };
+  r.onend = () => { if(previewBox.style.display !== 'block') stopRecordingOnly(); };
+  return r;
+}
+
+function startSpeechUI() {
+  previewBox.style.display = 'block';
+  indicator.classList.remove('d-none');
+  btnStart.classList.add('d-none');
+}
+function stopRecordingOnly() { indicator.classList.add('d-none'); }
+
+function resetSpeechUI() {
+  if (recognition) { try { recognition.abort(); } catch(e){} }
+  stopRecordingOnly();
+  previewBox.style.display = 'none';
+  btnStart.classList.remove('d-none');
+  liveText.innerText = "...";
+  finalTranscript = "";
+}
+
+function safeStartRecognition() {
+  if (!supportsSpeech()) { alert("Use Chrome."); return; }
+  if (recognition) { try { recognition.abort(); } catch {} }
+  recognition = buildRecognizer();
+  try {
+    finalTranscript = ""; liveText.innerText = "...";
+    startSpeechUI(); recognition.start();
+  } catch (e) {
+    stopRecordingOnly();
+    alert("Microphone access denied.");
+  }
+}
+
+document.getElementById('langEn').onclick = function() {
+  if (currentLang !== 'en-SG') {
+    currentLang = 'en-SG';
+    this.classList.add('active-lang');
+    document.getElementById('langZh').classList.remove('active-lang');
+    resetSpeechUI();
+  }
+};
+document.getElementById('langZh').onclick = function() {
+  if (currentLang !== 'zh-CN') {
+    currentLang = 'zh-CN';
+    this.classList.add('active-lang');
+    document.getElementById('langEn').classList.remove('active-lang');
+    resetSpeechUI();
+  }
+};
+
+btnStart.onclick = safeStartRecognition;
+btnConfirm.onclick = function() {
+  const text = (liveText.innerText || "").trim();
+  if (text && text !== "...") {
+    contentArea.value = (contentArea.value ? (contentArea.value + " ") : "") + text;
+    validateField('contentInput', 'contentValid', 'content');
+  }
+  resetSpeechUI();
+};
+btnRetry.onclick = function() {
+  if (recognition) try { recognition.abort(); } catch {}
+  finalTranscript = "";
+  liveText.innerText = "...";
+  startSpeechUI();
+  recognition = buildRecognizer();
+  recognition.start();
+};
+btnCancel.onclick = resetSpeechUI;
+
+/* 3) Image moderation + preview (same as create) */
+const photoInput = document.getElementById('photoInput');
+const imgStatus = document.getElementById('imgStatus');
+
+function resetImgStatus() {
+  if (!imgStatus) return;
+  imgStatus.innerHTML = "";
+  imgStatus.className = "mt-2 fw-bold small";
+}
+
+function hideNewPreview(clearStatus = true) {
+  const box = document.getElementById('newPhotoPreview');
+  const img = document.getElementById('photoPreviewImg');
+  if (img && img.src) { try { URL.revokeObjectURL(img.src); } catch(e) {} }
+  if (img) img.removeAttribute('src');
+  if (box) box.style.display = 'none';
+  if (clearStatus) resetImgStatus();
+}
+
+function removeDraftImage() {
+  const flag = document.getElementById('remove_image');
+  if (flag) flag.value = '1';
+
+  const existing = document.getElementById('existingDraftImage');
+  if (existing) existing.style.display = 'none';
+
+  if (photoInput) photoInput.value = '';
+  hideNewPreview(true);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  validateField('titleInput', 'titleValid', 'title');
+  validateField('contentInput', 'contentValid', 'content');
+  validateTopic();
+  updateSubmit();
+
+  const previewBox = document.getElementById('newPhotoPreview');
+  const previewImg = document.getElementById('photoPreviewImg');
+  const clearBtn = document.getElementById('btnClearNewPhoto');
+
+  if (photoInput && previewBox && previewImg) {
+    photoInput.addEventListener('change', async () => {
+      const file = photoInput.files && photoInput.files[0];
+      if (!file) { hideNewPreview(true); return; }
+
+      // selecting new file means not removing
+      const flag = document.getElementById('remove_image');
+      if (flag) flag.value = '0';
+
+      hideNewPreview(false);
+      previewImg.removeAttribute('src');
+      previewBox.style.display = 'none';
+
+      imgStatus.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Checking photo...';
+      imgStatus.className = "mt-2 fw-bold small text-muted";
+
+      const fd = new FormData();
+      fd.append('photo', file);
+
+      try {
+        const res = await fetch("{{ url_for('story.api_check_image') }}", { method: 'POST', body: fd });
+        if (!res.ok) throw new Error("Image check failed");
+
+        const data = await res.json();
+        if (data.safe) {
+          imgStatus.innerHTML = '✅ Photo accepted';
+          imgStatus.className = "mt-2 fw-bold small text-success";
+
+          previewImg.src = URL.createObjectURL(file);
+          previewBox.style.display = 'block';
+        } else {
+          imgStatus.innerHTML = '❌ Inappropriate image detected — removed.';
+          imgStatus.className = "mt-2 fw-bold small text-danger";
+          photoInput.value = '';
+          hideNewPreview(false);
+        }
+      } catch (e) {
+        imgStatus.innerHTML = '⚠️ Could not check photo now. It will be checked when you submit.';
+        imgStatus.className = "mt-2 fw-bold small text-warning";
+      }
+    });
+  }
+
+  if (clearBtn && photoInput) {
+    clearBtn.addEventListener('click', () => {
+      photoInput.value = '';
+      hideNewPreview(true);
+    });
+  }
+});
+
+document.getElementById('storyForm').onsubmit = (e) => {
+  validateField('titleInput', 'titleValid', 'title');
+  validateField('contentInput', 'contentValid', 'content');
+  validateTopic();
+  updateSubmit();
+
+  if (document.getElementById('submitBtn').disabled) {
+    e.preventDefault();
+    return;
+  }
+  document.getElementById('loadingOverlay').style.display = 'flex';
+};
+</script>
+{% endblock %}

@@ -1,0 +1,980 @@
+{% extends "base.html" %}
+
+{% block title %}Events | Legacy Garden{% endblock %}
+
+{% block content %}
+<style>
+/* Default (locked / inactive) */
+#seed-btn {
+    background-color: #cfd8d3;
+    color: #7a7a7a;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 28px;
+    font-weight: bold;
+    cursor: not-allowed;
+    transition: all 0.25s ease;
+}
+
+/* READY TO CLAIM */
+#seed-btn.claimable {
+    background-color: #2D5233; /* dark green */
+    color: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* CLAIMED */
+#seed-btn.claimed {
+    background-color: #9fb7a6;
+    color: #ffffff;
+    cursor: default;
+    opacity: 0.6;
+}
+
+/* All your CSS from lines 1-150 go here */
+:root {
+    --primary-green: #3e5e44;
+    --accent-green: #5a8d62;
+    --light-bg: #f9f7f2;
+    --white: #ffffff;
+    --text-dark: #333333;
+    --gray-badge: #b2c2b5;
+}
+/* Policy Modal specific Styling */
+
+/* Policy Modal overlay wrapper (HIDE by default) */
+.policy-modal{
+  display:none;                /* 🔥 hidden until user clicks Join */
+  position:fixed;
+  inset:0;
+  background: rgba(0,0,0,0.35);
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+.policy-actions{
+  display:flex;
+  justify-content:center;
+  gap:14px;
+  margin-top:18px;
+}
+.policy-actions button{
+  padding:10px 22px;
+  border-radius:10px;
+  border:2px solid #333;
+  background:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+    .policy-content {
+      background: #f1f1f1;
+      padding: 25px 35px;
+      border-radius: 30px;
+      text-align: center;
+      width: 90%;
+      max-width: 460px;
+      box-shadow: 0 0 25px rgba(255, 120, 120, 0.6);
+      border: 1px solid white;
+    }
+
+.container { max-width: 920px; margin: 30px auto; padding: 0 20px; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.stat-card { background-color: var(--primary-green); color: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.stat-card h2 { margin: 10px 0 0; font-size: 2rem; }
+
+/* Rewards claim button (clean pill style) */
+.claim-btn {
+  background:#cfd8d3;
+  color:#7a7a7a;
+  border:none;
+  border-radius:999px;
+  padding:12px 22px;
+  font-weight:800;
+  min-width:140px;
+  height:42px;
+  flex-shrink: 0;
+  margin: auto 0;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  text-align:center;
+}
+.claim-btn.claimable{
+  background:#435e49;
+  color:#fff;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,0.12);
+  text-decoration: none;
+}
+.claim-btn.claimable:hover{
+  background:#2D5233;
+  color:#fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(45,82,51,0.35);
+  text-decoration: none;
+}
+.claim-btn.claimed{
+  background:#9fb7a6;
+  color:#fff;
+  cursor:default;
+  opacity:.85;
+
+  font-weight: normal;}
+.claim-btn:disabled{
+  cursor:not-allowed;
+  opacity:.9;
+}
+
+.upcoming-badge {
+    background-color: #9fb7a6;
+    color: white;
+    padding: 12px 23px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    display: inline-block;
+}
+
+.event-btn {
+    background-color: #435e49;  /* same as Join */
+    color: white;
+    padding: 12px 35px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
+    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.event-btn:hover {
+    background-color: #2D5233;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(45, 82, 51, 0.3);
+}
+
+.event-btn:active {
+    background-color: #1e3b24;
+    color: white;
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.event-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.event-info {
+    flex: 1; /* makes text area expand */
+}
+
+.event-action {
+    margin-left: auto; /* pushes button to the far right */
+}
+
+
+.info-bar {
+    display: flex;
+    align-items: stretch;
+    background: white;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    padding-right: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.info-label {
+    background: var(--primary-green);
+    color: white;
+    padding: 0 22px;
+    font-weight: bold;
+    width: 130px;
+    text-align: center;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+.info-content {
+    padding: 15px 20px;
+    flex-grow: 1;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    min-width: 0; /* allow text to shrink */
+    word-break: break-word;
+}
+/* #yq red dot */
+.notif-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 10px;
+    height: 10px;
+    background: #e53e3e;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+.days-badge { background: var(--gray-badge); color: white; padding: 5px 15px; border-radius: 20px; margin-right: 20px; font-size: 0.8rem; }
+.section-header { background-color: var(--primary-green); color: white; padding: 15px 25px; border-radius: 12px; font-size: 1.6rem; margin: 30px 0 20px; }
+.event-card { background: white; border-radius: 20px; display: flex; padding: 20px; margin-bottom: 20px; align-items: center; gap: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.event-img { width: 250px; height: 140px; background-color: #eee; border-radius: 12px; object-fit: cover; }
+
+/* Game card image (Memory Match, Hangman) */
+.event-game-img {
+    width: 150px;
+    height: 150px;
+    background: #e8f0e9;
+    border-radius: 15px;
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
+/* Game card title & description */
+.event-title {
+    font-size: 24px;
+    margin: 0 0 10px 0;
+}
+.event-desc {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Join button */
+.join-btn {
+    background-color: #435e49;
+    color: white;
+    padding: 12px 35px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    display: inline-block;
+}
+
+.join-btn:hover {
+    background-color: #2D5233;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(45, 82, 51, 0.3);
+}
+
+.join-btn:active {
+    background-color: #1e3b24;
+    color: white;
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* Ready button in "Before You Start" modal */
+.ready-btn {
+    background-color: #2D5233;
+    color: white;
+    border-radius: 12px;
+    padding: 10px 40px;
+    font-weight: bold;
+    font-size: 20px;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.ready-btn:hover {
+    background-color: #435e49;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(45, 82, 51, 0.3);
+}
+
+.ready-btn:active {
+    background-color: #1e3b24;
+    color: white;
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* ✅ NEW: Weekly reset banner animation */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-body {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* ===== RESPONSIVE FIXES ===== */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+        margin: 15px auto;
+    }
+
+    /* Stats grid stays 2-col but smaller */
+    .stats-grid {
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+    .stat-card h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Rewards/Memories bar — stacks on mobile for breathing room */
+    .info-bar {
+        flex-direction: column;
+        padding-right: 0;
+        gap: 0;
+    }
+    .info-label {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        justify-content: flex-start;
+        border-radius: 0;
+    }
+    .info-content {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        width: 100%;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .claim-btn {
+        margin: 12px 16px 14px;
+        width: calc(100% - 32px);
+        height: 44px;
+        font-size: 0.95rem;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+    /* Game cards (Memory Match, Hangman) */
+    .event-card {
+        flex-direction: row !important;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 12px;
+        padding: 15px !important;
+    }
+    .event-card img[style*="width: 150px"] {
+        width: 90px !important;
+        height: 90px !important;
+        flex-shrink: 0;
+    }
+    .event-info {
+        padding: 0 10px !important;
+    }
+    .event-info h3 {
+        font-size: 16px !important;
+        margin: 0 0 6px 0 !important;
+    }
+    .event-info p {
+        font-size: 12px !important;
+    }
+    .join-btn {
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+        white-space: nowrap;
+    }
+
+    /* Event image in upcoming/ongoing events */
+    .event-img {
+        width: 90px !important;
+        height: 90px !important;
+        flex-shrink: 0;
+    }
+
+    .section-header {
+        font-size: 1.3rem;
+        padding: 12px 18px;
+    }
+}
+
+.modal-content {
+  border-radius: 28px !important;
+  overflow: hidden;
+  border: none;
+}
+
+.section-header{
+  background-color: var(--primary-green);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 12px;
+  font-size: 1.6rem;
+  margin: 30px 0 20px;
+
+  /* ✅ new */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.section-header .title{
+  margin: 0;
+}
+.section-header .count-pill{
+  margin: 0;
+  font-size: 0.95rem;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.28);
+  color: #fff;
+  white-space: nowrap;
+}
+</style>
+
+<div class="container">
+    <!-- ✅ NEW: Weekly reset notification banner -->
+    {% if was_reset %}
+    <div id="weekly-reset-banner" style="
+        background: #2D5233;
+        color: white;
+        padding: 14px;
+        text-align: center;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-weight: bold;
+        animation: slideDown 0.5s ease;
+    ">
+        🎉 New Week! Daily streak and seed reward have been reset. Good luck!
+    </div>
+    {% endif %}
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div>🔥 Daily Game Streak</div>
+            <h2 id="daily-streak-display">{{ daily_streak }} Days</h2>
+        </div>
+        <div class="stat-card">
+            <div>🏆 Winning Streak</div>
+            <h2 id="win-streak-display">{{ win_streak }} Wins</h2>
+        </div>
+    </div>
+
+    <div class="info-bar">
+        <div class="info-label">Rewards</div>
+        <div class="info-content">
+            🌱 <strong>Seed</strong>&nbsp Play at least 1 game daily for 5 consecutive days.
+        </div>
+        
+        <button
+            id="seed-btn"
+            {% if daily_streak >= 5 and seed_claimed == 0 %}
+                class="claim-btn claimable"
+            {% elif seed_claimed == 1 %}
+                class="claim-btn claimed"
+                disabled
+            {% else %}
+                class="claim-btn"
+                disabled
+            {% endif %}
+        >
+            {% if seed_claimed == 1 %}
+                Claimed
+            {% elif daily_streak >= 5 %}
+                Claim Seed 🌱
+            {% else %}
+                Day {{ daily_streak }} / 5
+            {% endif %}
+        </button>
+
+    </div>
+
+    <div class="info-bar">
+    <div class="info-label">
+        Memories
+        {% if has_new_unlock %}
+        <span class="notif-dot" title="New memory unlocked!"></span>
+        {% endif %}
+    </div>
+    <div class="info-content">
+        🏮 <strong>Memory Album</strong>&nbsp Unlock special memories by winning games.
+    </div>
+
+    <a href="{{ url_for('memory_album') }}"
+    class="claim-btn claimable"
+    style="text-decoration:none;">
+    View Album
+    </a>
+
+    </div>
+
+    <div class="section-header">Games</div>
+
+    <div class="event-card">
+        <img src="{{ url_for('static', filename='uploads/Memory.png') }}" alt="Memory Match" class="event-game-img">
+        <div class="event-info">
+            <h3 class="event-title">Memory Match Duel</h3>
+            <p class="event-desc">
+                <strong>Details:</strong> A simple 1-on-1 matching game where each player takes turns flipping two cards. Find a pair to score a point.
+            </p>
+        </div>
+            <a href="/events/waitingroom?game=memory" class="join-btn" onclick="openJoinPolicy('memory')">
+            Join
+            </a>
+        </div>
+
+    <div class="event-card">
+    <img src="{{ url_for('static', filename='uploads/hangman.png') }}" alt="Hangman" class="event-game-img">
+    <div class="event-info">
+        <h3 class="event-title">Hangman</h3>
+        <p class="event-desc">
+            <strong>Details:</strong> A word-guessing game where each player tries to uncover a hidden word by guessing one letter at a time.
+        </p>
+    </div>
+        <a href="/events/waitingroom?game=hangman" class="join-btn" onclick="openJoinPolicy('hangman')">
+            Join
+        </a>
+    </div>
+
+    <!-- Yq Added -->
+    <div class="section-header">
+  <div class="title">Upcoming / Ongoing Events</div>
+
+  <div id="eventsCountBadge"
+       class="count-pill"
+       data-count="{{ events|length }}"></div>
+</div>
+
+    {% for event in events %} 
+    <div class="event-card">
+        {% if event.image_filename %}
+    <img src="{{ url_for('static', filename='uploads/' + event.image_filename) }}" class="event-img">
+    {% else %}
+        <img src="{{ url_for('static', filename='uploads/default_event.png') }}" class="event-img">
+    {% endif %}
+
+        <div class="event-info">
+            <h3>{{ event.title }}</h3>
+
+            <p><strong>Date:</strong> {{ event.event_date }}</p>
+
+            <p>{{ event.short_description }}</p>
+        </div>
+
+        <div class="event-action">
+    {% if event.status == "details" %}
+        <button type="button"
+        class="event-btn"
+        data-toggle="modal"
+        data-target="#eventModal{{ event.id }}">
+    Details
+</button>
+    {% elif event.status == "upcoming" %}
+        <span class="upcoming-badge">Upcoming</span>
+    {% endif %}
+</div>
+
+
+    </div>
+
+    <!-- Modal for each event — styled like admin detail popup -->
+<div class="modal fade" id="eventModal{{ event.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:520px; margin: 12vh auto;">
+    <div class="modal-content" style="border-radius:28px; overflow:hidden; border:none; display:flex; flex-direction:column; max-height:78vh;">
+
+      <!-- Header -->
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 18px; background:#f7f6f2;">
+        <div style="font-weight:900; color:#24563E; font-size:1.2rem;">
+          {{ event.title }}
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                style="font-size:28px; opacity:.7; background:none; border:none; line-height:1;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Scrollable Body -->
+      <div style="flex:1 1 auto; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:18px; max-height:58vh;">
+
+        <!-- Image -->
+        <div style="border-radius:16px; overflow:hidden; border:1px solid rgba(0,0,0,0.08); margin-bottom:14px;">
+          {% if event.image_filename %}
+            <img src="{{ url_for('static', filename='uploads/' + event.image_filename) }}"
+                 alt="Event image"
+                 style="width:100%; height:auto; max-height:340px; object-fit:contain; display:block; background:#f5f5f5;">
+          {% else %}
+            <img src="{{ url_for('static', filename='uploads/default_event.png') }}"
+                 alt="Event image"
+                 style="width:100%; height:150px; object-fit:cover; display:block;">
+          {% endif %}
+        </div>
+
+        <!-- Date -->
+        <p style="margin:0 0 10px; color:#51615a;">
+          📅 <strong>Date:</strong> {{ event.event_date }}
+        </p>
+
+        <!-- Full Description -->
+        <p style="margin:0 0 6px; font-weight:900; color:#142019;">Details</p>
+        <p style="margin:0; color:#2c3a33; line-height:1.6;">{{ event.full_description }}</p>
+
+        <!-- Rewards -->
+        {% if event.rewards %}
+          <div style="margin-top:14px; padding:12px 14px; background:rgba(47,109,79,0.06); border:1px solid rgba(47,109,79,0.12); border-radius:14px;">
+            <p style="margin:0 0 6px; font-weight:900; color:#24563E;">Rewards</p>
+            <p style="margin:0; color:#2c3a33; line-height:1.6;">{{ event.rewards }}</p>
+          </div>
+        {% endif %}
+
+      </div>
+
+      <!-- Footer -->
+      <div style="padding:14px 18px; display:flex; justify-content:flex-end; border-top:1px solid rgba(0,0,0,0.06);">
+        <button type="button" data-dismiss="modal"
+                style="background:#2F8F4E; color:#fff; border:none; border-radius:12px; padding:10px 22px; font-weight:900; cursor:pointer;">
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+    {% endfor %}
+
+
+    <!-- <button type="button" class="btn" data-toggle="modal" data-target="#eventModal" style="background-color: #3e5e44; color: white; padding: 10px 25px; border-radius: 8px; font-weight: bold;">
+        Details
+    </button> -->
+    </div>
+    
+            <div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 25px; padding: 20px; border: none;">
+            
+            <div style="text-align: left;">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="font-size: 30px; opacity: 1;">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <h2 style="font-weight: bold; margin-bottom: 20px;">🔍 Park Photo Scavenger Hunt ☘️🌻</h2>
+                
+                <div style="line-height: 1.8; color: #333;">
+                    <p><strong>Date:</strong> 16 May 2026</p>
+                    <p><strong>Registration Date:</strong> 13 April 2026 - 19 April 2026</p>
+                    <p><strong>Time:</strong> 9:00 AM – 12:00 PM</p>
+                    <p><strong>Venue:</strong> Admiralty Park</p>
+                    <p><strong>Gathering Time:</strong> Please arrive by 8:45 AM at the park shelter area.</p>
+                    
+                    <p><strong>Details:</strong><br>
+                    Team up with an elderly participant and explore the park together! Complete a series of simple and fun photo prompts using your phone.</p>
+                    
+                    <p><strong>Rewards:</strong><br>
+                    Participants who successfully complete all prompts will receive an attractive prize (revealed on event day!)</p>
+                </div>
+
+                <p style="font-style: italic; color: #777; margin-top: 15px; font-size: 0.9rem;">
+                    Note: This activity is light, beginner-friendly, and perfect for bonding while enjoying nature.
+                </p>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="startGameModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; text-align: center; padding: 25px; border: none; background: #fff; box-shadow: 0 0 25px rgba(255, 120, 120, 0.6);">
+            <div class="modal-body">
+                <h2 style="color: #2D5233; font-weight: bold; margin-bottom: 15px;">⚠️ Before You Start</h2>
+                <p style="font-size: 16px; color: #4a4a4a; line-height: 1.4;">
+                    Press <b>Ready</b> to enter the waiting room.<br><br><b>No penalty</b> for acknowledging this. Penalty only applies if you quit after the game has started.
+                </p>
+                <div class="d-flex justify-content-center align-items-center" style="margin-top: 30px; gap: 40px;">
+                    <a id="start-game-link"
+                    href="#"
+                    class="ready-btn">
+                    Ready
+                    </a>
+                    
+                    <button type="button" data-dismiss="modal" style="background: none; border: none; font-size: 20px; font-weight: bold; color: #4a4a4a; text-decoration: underline; cursor: pointer;">Exit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="policy-modal" id="policy-modal">
+  <div class="policy-content">
+    <h3>⚠️ Leaving Game Early</h3>
+    <p>
+      If you exit the game before it ends, your daily game streak will decrease by 1
+      and winning streak will reset to 0.
+    </p>
+    <div class="policy-actions">
+      <button id="policy-confirm-btn" class="confirm-btn">Ready</button>
+      <button id="policy-cancel-btn" class="cancel-btn">Exit</button>
+    </div>
+  </div>
+</div>
+
+<div class="policy-modal" id="policy-modal-ingame">
+    <div class="policy-content">
+      <div class="policy-header">
+        <span>❖</span> Policy
+      </div>
+      <div class="policy-text">
+        Leaving the match before it's finished will reduce your daily game streak by 1 and winning streak will be reset to 0.<br><br>
+        Do you still want to quit?
+      </div>
+      <div class="policy-btns">
+        <button class="btn-confirm-yes" onclick="confirmExit()">Yes</button>
+        <button class="btn-confirm-no" onclick="closePolicyModal()">No</button>
+      </div>
+    </div>
+  </div>
+
+
+
+
+<!-- ✅ Scripts placed inside content so they always load (base.html may not include block scripts) -->
+<script>
+(function(){
+  if (window.__eventsInit) return;
+  window.__eventsInit = true;
+
+
+// ✅ Make Join policy popup always work (inline onclick depends on this)
+let pendingJoinGame = null;
+
+function openJoinPolicy(gameType) {
+  pendingJoinGame = gameType;
+
+  const modal = document.getElementById("policy-modal");
+  if (modal) modal.style.display = "flex";
+
+  const confirmBtn = document.getElementById("policy-confirm-btn");
+  const cancelBtn  = document.getElementById("policy-cancel-btn");
+
+  // Ready → go waiting room
+  if (confirmBtn) confirmBtn.onclick = () => {
+    window.location.href = `/events/waitingroom?game=${pendingJoinGame}`;
+  };
+
+  // Exit → just close modal (NO penalty)
+  if (cancelBtn) cancelBtn.onclick = () => {
+    if (modal) modal.style.display = "none";
+    pendingJoinGame = null;
+  };
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const policyModal = document.getElementById("policy-modal");
+    const confirmBtn = document.getElementById("policy-confirm-btn");
+    const exitBtn = document.getElementById("policy-cancel-btn");
+    const joinButtons = document.querySelectorAll(".join-btn"); // Ensure your join buttons have this class
+
+    let pendingUrl = "";
+
+    // 1. When user clicks "Join"
+    joinButtons.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            // Get the destination (e.g., /events/waitingroom?game=hangman)
+            pendingUrl = btn.getAttribute("href");
+            
+            // Show the modal
+            policyModal.style.display = "flex";
+        });
+    });
+
+    // 2. When user clicks "Ready" -> Go to Waiting Room
+    confirmBtn.onclick = () => {
+        if (pendingUrl) {
+            window.location.href = pendingUrl;
+        }
+    };
+
+    // 3. When user clicks "Exit" -> Close modal, no penalty
+    exitBtn.onclick = () => {
+        policyModal.style.display = "none";
+        pendingUrl = ""; // Clear the URL
+    };
+
+    // ✅ Rewards: Claim Seed button
+    const seedBtn = document.getElementById("seed-btn");
+    if (seedBtn) {
+        seedBtn.addEventListener("click", async () => {
+            try {
+                seedBtn.disabled = true; // prevent double click
+                const res = await fetch("/api/rewards/claim_seed", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+
+                // If backend returns ok false, re-enable so user can try again
+                if (!data || data.ok === false) {
+                    seedBtn.disabled = false;
+                    alert((data && data.message) ? data.message : "Unable to claim reward. Please try again.");
+                    return;
+                }
+
+                // Update UI to claimed
+                seedBtn.textContent = "Claimed";
+                seedBtn.classList.add("claimed");
+                seedBtn.style.background = "#9fb7a6";
+                seedBtn.style.cursor = "default";
+                seedBtn.disabled = true;
+            } catch (e) {
+                console.error(e);
+                seedBtn.disabled = false;
+                alert("Network error. Please try again.");
+            }
+        });
+    }
+
+});
+
+  // (startGameModal legacy JS removed to prevent breaking Join/Rewards)
+
+})();
+</script>
+
+{% endblock %}
+
+{% block scripts %}
+
+
+<script>
+
+// ✅ Make Join policy popup always work (inline onclick depends on this)
+let pendingJoinGame = null;
+
+function openJoinPolicy(gameType) {
+  pendingJoinGame = gameType;
+
+  const modal = document.getElementById("policy-modal");
+  if (modal) modal.style.display = "flex";
+
+  const confirmBtn = document.getElementById("policy-confirm-btn");
+  const cancelBtn  = document.getElementById("policy-cancel-btn");
+
+  // Ready → go waiting room
+  if (confirmBtn) confirmBtn.onclick = () => {
+    window.location.href = `/events/waitingroom?game=${pendingJoinGame}`;
+  };
+
+  // Exit → just close modal (NO penalty)
+  if (cancelBtn) cancelBtn.onclick = () => {
+    if (modal) modal.style.display = "none";
+    pendingJoinGame = null;
+  };
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const policyModal = document.getElementById("policy-modal");
+    const confirmBtn = document.getElementById("policy-confirm-btn");
+    const exitBtn = document.getElementById("policy-cancel-btn");
+    const joinButtons = document.querySelectorAll(".join-btn"); // Ensure your join buttons have this class
+
+    let pendingUrl = "";
+
+    // 1. When user clicks "Join"
+    joinButtons.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            // Get the destination (e.g., /events/waitingroom?game=hangman)
+            pendingUrl = btn.getAttribute("href");
+            
+            // Show the modal
+            policyModal.style.display = "flex";
+        });
+    });
+
+    // 2. When user clicks "Ready" -> Go to Waiting Room
+    confirmBtn.onclick = () => {
+        if (pendingUrl) {
+            window.location.href = pendingUrl;
+        }
+    };
+
+    // 3. When user clicks "Exit" -> Close modal, no penalty
+    exitBtn.onclick = () => {
+        policyModal.style.display = "none";
+        pendingUrl = ""; // Clear the URL
+    };
+
+    // ✅ Rewards: Claim Seed button
+    const seedBtn = document.getElementById("seed-btn");
+    if (seedBtn) {
+        seedBtn.addEventListener("click", async () => {
+            try {
+                seedBtn.disabled = true; // prevent double click
+                const res = await fetch("/api/rewards/claim_seed", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+
+                // If backend returns ok false, re-enable so user can try again
+                if (!data || data.ok === false) {
+                    seedBtn.disabled = false;
+                    alert((data && data.message) ? data.message : "Unable to claim reward. Please try again.");
+                    return;
+                }
+
+                // Update UI to claimed
+                seedBtn.textContent = "Claimed";
+                seedBtn.classList.add("claimed");
+                seedBtn.style.background = "#9fb7a6";
+                seedBtn.style.cursor = "default";
+                seedBtn.disabled = true;
+            } catch (e) {
+                console.error(e);
+                seedBtn.disabled = false;
+                alert("Network error. Please try again.");
+            }
+        });
+    }
+
+});
+
+  // MUST be global — used by inline onclick
+  function openJoinPolicy() {
+    const modal = document.getElementById("join-policy-modal");
+    if (modal) {
+      modal.style.display = "flex";
+    }
+  }
+
+
+</script>
+
+
+{% endblock %}

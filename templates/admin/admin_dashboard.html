@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Stories | The Legacy Garden{% endblock %}
+
+{% block content %}
+
+<style>
+.card {
+    border: none;
+    border-radius: 24px !important;
+}
+
+.soft-shadow {
+    box-shadow: 0 12px 30px rgba(0,0,0,0.10);
+}
+
+.admin-title {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #4F8A55;
+    margin-top: 40px;
+}
+
+.admin-subtitle {
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.95rem;
+    margin-bottom: 35px;
+}
+
+.admin-section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #2f5f3a;
+}
+
+.admin-badge {
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 999px;
+}
+
+.badge-reported {
+    background: #fdeaea;
+    color: #b42318;
+}
+
+.badge-comment {
+    background: #e8f4ff;
+    color: #1d4ed8;
+}
+
+.admin-report-box {
+    margin-top: 12px;
+    background: #fff5f5;
+    border-left: 5px solid #dc3545;
+    padding: 12px 15px;
+    border-radius: 12px;
+}
+
+.admin-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+}
+
+.admin-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-btn-approve {
+    background: #457F5B;
+    color: white;
+}
+
+.admin-btn-delete {
+    background: #dc3545;
+    color: white;
+}
+</style>
+
+<h2 class="admin-title">Stories Management</h2>
+<p class="admin-subtitle">Review reported stories and comments</p>
+
+<div class="container py-4">
+
+    <!-- ================= STORIES ================= -->
+    <h4 class="admin-section-title">Reported Stories</h4>
+
+    {% if stories %}
+        {% for story in stories %}
+        <div class="card soft-shadow mb-4">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="font-weight-bold">{{ story.title }}</div>
+                        <small class="text-muted">by {{ story.username }}</small>
+                    </div>
+                    <span class="admin-badge badge-reported">Reported</span>
+                </div>
+
+                {% if story.report_reason %}
+                <div class="admin-report-box">
+                    <strong>Report reason:</strong><br>
+                    {{ story.report_reason }}
+                </div>
+                {% endif %}
+
+                <div class="mt-3">
+                    {{ story.content }}
+                </div>
+
+                <div class="admin-actions">
+                    <a href="{{ url_for('story.view_story', story_id=story.id) }}" class="admin-btn" style="background:#6c757d; color:white; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-eye"></i> View Story
+                    </a>
+
+                    <form method="POST" action="{{ url_for('approve_story', story_id=story.id) }}">
+                        <button type="submit" class="admin-btn admin-btn-approve">
+                            Approve
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('delete_story', story_id=story.id) }}">
+                        <button type="submit" class="admin-btn admin-btn-delete">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="card soft-shadow mb-4">
+            <div class="card-body text-muted text-center">
+                No reported stories.
+            </div>
+        </div>
+    {% endif %}
+
+
+    <!-- ================= COMMENTS ================= -->
+    <h4 class="admin-section-title mt-5">Reported Comments</h4>
+
+    {% if reported_comments %}
+        {% for comment in reported_comments %}
+        <div class="card soft-shadow mb-4">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="font-weight-bold">
+                            Comment on: "{{ comment.story_title }}"
+                        </div>
+                        <small class="text-muted">
+                            by {{ comment.username }}
+                        </small>
+                    </div>
+                    <span class="admin-badge badge-comment">Comment</span>
+                </div>
+
+                {% if comment.report_reason %}
+                <div class="admin-report-box">
+                    <strong>Report reason:</strong><br>
+                    {{ comment.report_reason }}
+                </div>
+                {% endif %}
+
+                <div class="mt-3">
+                    {{ comment.content }}
+                </div>
+
+                <div class="admin-actions">
+                    <form method="POST"
+                          action="{{ url_for('approve_comment', comment_id=comment.id) }}">
+                        <button type="submit" class="admin-btn admin-btn-approve">
+                            Approve
+                        </button>
+                    </form>
+
+                    <form method="POST"
+                          action="{{ url_for('delete_comment_admin', comment_id=comment.id) }}">
+                        <button type="submit" class="admin-btn admin-btn-delete">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="card soft-shadow">
+            <div class="card-body text-muted text-center">
+                No reported comments.
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

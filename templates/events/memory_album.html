@@ -1,0 +1,493 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- #Yq added: removed inner <!DOCTYPE html> and <head> tags — base.html already provides these -->
+<!-- #Yq added: memory album with locked/unlocked card states, real images, flush hero under navbar -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  /* ─── Palette ─────────────────────────────────────────── */
+  :root {
+    --cream:       #f9f7f2;
+    --warm-white:  #ffffff;
+    --gold:        #c9913d;
+    --gold-light:  #f0d9a8;
+    --green:       #3e5e44;
+    --green-dark:  #2D5233;
+    --green-light: #d4ead8;
+    --text:        #333333;
+    --muted:       #7a6f63;
+    --card-shadow: 0 4px 20px rgba(0,0,0,0.10);
+  }
+
+  /* #Yq added: remove default body margin so hero is flush under navbar */
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* #Yq: kill the base template container's top spacing so hero sits flush under navbar */
+  .container { margin-top: 0 !important; padding-top: 0 !important; }
+  main, #content, .content { padding-top: 0 !important; margin-top: 0 !important; }
+
+  /* #Yq: full-bleed hero that escapes Bootstrap container padding + pulls up the 30px gap */
+  .album-hero {
+    background: linear-gradient(135deg, #2D5233 0%, #3e5e44 60%, #5a8d62 100%);
+    padding: 48px 24px 40px;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    /* break out of .container's horizontal padding */
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    /* pull up to cancel base template's container margin-top: 30px */
+    margin-top: -30px !important;
+    display: block;
+  }
+
+  .album-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .album-hero h1 {
+    font-family: 'Lora', serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    position: relative;
+  }
+
+  .album-hero p {
+    font-size: clamp(15px, 2.2vw, 19px);
+    opacity: 0.9;
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.5;
+    position: relative;
+  }
+
+  .progress-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.22);
+    border: 1.5px solid rgba(255,255,255,0.5);
+    border-radius: 50px;
+    padding: 8px 22px;
+    font-size: 17px;
+    font-weight: 700;
+    margin-top: 20px;
+    backdrop-filter: blur(4px);
+    position: relative;
+  }
+
+  /* #Yq added: progress bar strip */
+  .progress-bar-wrap {
+    max-width: 340px;
+    margin: 14px auto 0;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50px;
+    height: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 50px;
+  }
+
+  /* ─── Main layout ─────────────────────────────────────── */
+  .album-body {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 36px 20px 60px;
+  }
+
+  /* #Yq added - back button */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.7);
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+    margin-bottom: 14px;
+  }
+  .back-btn:hover {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  /* ─── Filter bar ──────────────────────────────────────── */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .filter-btn {
+    padding: 9px 20px;
+    border-radius: 50px;
+    border: 2px solid var(--green-light);
+    background: var(--warm-white);
+    color: var(--green);
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover,
+  .filter-btn.active {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+
+  /* ─── Memory grid ─────────────────────────────────────── */
+  .memory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 24px;
+  }
+
+  /* ─── Card base ───────────────────────────────────────── */
+  .memory-card {
+    border-radius: 18px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1.5px solid #e2ddd6;
+    box-shadow: var(--card-shadow);
+    background: var(--warm-white);
+  }
+  .memory-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.14);
+  }
+
+  /* #Yq added: image banner */
+  .card-banner-wrap {
+    position: relative;
+    height: 160px;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--green-light) 0%, var(--gold-light) 100%);
+  }
+  .card-image-banner {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-emoji-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 64px;
+  }
+
+  /* #Yq added: lock overlay on image */
+  .lock-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    color: rgba(255,255,255,0.95);
+  }
+
+  .card-body {
+    padding: 16px 18px 20px;
+  }
+
+  /* #Yq added: category badge colours */
+  .card-category {
+    display: inline-block;
+    padding: 4px 13px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin-bottom: 9px;
+  }
+  .cat-food          { background: #fde8cc; color: #a05c10; }
+  .cat-old-singapore { background: #dce8f0; color: #2a5f7a; }
+  .cat-festival      { background: #fde0e0; color: #9b2a2a; }
+
+  .card-title {
+    font-family: 'Lora', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 7px;
+    line-height: 1.2;
+  }
+  .card-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .card-date {
+    font-size: 12px;
+    color: #b0a898;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* #Yq added: locked card styles */
+  .memory-card.locked {
+    border-color: #d6d2cc;
+    opacity: 0.80;
+  }
+  .memory-card.locked .card-image-banner {
+    filter: blur(5px) grayscale(80%) brightness(0.5);
+  }
+  .memory-card.locked .card-emoji-banner {
+    filter: grayscale(100%) brightness(0.5);
+  }
+  .memory-card.locked .card-body {
+    background: #f5f3f0;
+  }
+  .memory-card.locked .lock-overlay {
+    display: flex;
+  }
+
+  /* #Yq added: locked badge pill */
+  .locked-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #e8e4df;
+    color: #999;
+    margin-bottom: 9px;
+  }
+
+  /* ─── Empty state ─────────────────────────────────────── */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 72px; margin-bottom: 20px; display: block; }
+  .empty-state h2 {
+    font-family: 'Lora', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .empty-state p { font-size: 17px; line-height: 1.6; max-width: 440px; margin: 0 auto 28px; }
+  .play-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--green);
+    color: white;
+    padding: 13px 30px;
+    border-radius: 50px;
+    font-size: 17px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 4px 14px rgba(62,94,68,0.3);
+  }
+  .play-btn:hover { background: var(--green-dark); transform: translateY(-2px); }
+
+  /* ─── Responsive ──────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .album-hero { padding: 32px 16px 28px; }
+    .album-body { padding: 20px 12px 48px; }
+    .memory-grid { grid-template-columns: 1fr; gap: 16px; }
+    .card-banner-wrap { height: 130px; }
+    .card-title { font-size: 18px; }
+    .card-desc  { font-size: 13px; }
+    .filter-btn { font-size: 14px; padding: 8px 15px; }
+  }
+
+  /* #Yq added: scroll-to-top button */
+  .scroll-top-btn {
+    position: fixed;
+    bottom: 32px;
+    right: 28px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--green);
+    color: white;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.2s, background 0.2s;
+    z-index: 9999;
+  }
+  .scroll-top-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .scroll-top-btn:hover {
+    background: var(--green-dark);
+    transform: translateY(-3px);
+  }
+</style>
+
+<!-- ──────────── HERO ──────────── -->
+<div class="album-hero">
+  <div style="text-align:left; position:relative;">
+    <a href="{{ url_for('events_home') }}" class="back-btn">← Back to Events</a>
+  </div>
+  <h1>📖 My Memory Album</h1>
+  <p>Every memory you unlock through your games lives here - a personal collection of Singapore's heritage.</p>
+
+  <div class="progress-pill">
+    ✨ {{ unlocked_count }} of {{ total_cards }} memories unlocked
+  </div>
+
+  {# #Yq fixed: avoid // operator and ternary — use nested if/else blocks for full Jinja2 compatibility #}
+  {% if total_cards and total_cards|int > 0 %}
+    {% set pct = (unlocked_count|int * 100 / total_cards|int)|round(0, 'floor')|int %}
+  {% else %}
+    {% set pct = 0 %}
+  {% endif %}
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" style="width: {{ pct }}%"></div>
+  </div>
+</div>
+
+<!-- ──────────── BODY ──────────── -->
+<div class="album-body">
+
+  {% if all_cards %}
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterCards('all', this)"> All</button>
+      <button class="filter-btn" onclick="filterCards('Food', this)">🍜 Food</button>
+      <button class="filter-btn" onclick="filterCards('Old Singapore', this)">🏠 Old Singapore</button>
+      <button class="filter-btn" onclick="filterCards('Festival', this)">🏮 Festivals</button>
+    </div>
+
+    <div class="memory-grid" id="memory-grid">
+      {% for card in all_cards %}
+
+        {% set cat_class = {
+            'Food': 'cat-food',
+            'Old Singapore': 'cat-old-singapore',
+            'Festival': 'cat-festival'
+          }.get(card.category, 'cat-food') %}
+
+        {# #Yq added: apply 'locked' class when card.locked == 1 #}
+        <div class="memory-card {% if card.locked %}locked{% endif %}" data-category="{{ card.category }}">
+
+          <!-- #Yq added: image or emoji banner with lock overlay for locked cards -->
+          <div class="card-banner-wrap">
+            {% if card.image_path %}
+              <img
+                class="card-image-banner"
+                src="{{ card.image_path }}"
+                alt="{{ card.title if not card.locked else 'Locked memory' }}"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+              >
+              <div class="card-emoji-banner" style="display:none;">{{ card.emoji }}</div>
+            {% else %}
+              <div class="card-emoji-banner">{{ card.emoji }}</div>
+            {% endif %}
+            <!-- #Yq added: lock icon shown over blurred image on locked cards -->
+            <div class="lock-overlay">🔒</div>
+          </div>
+
+          <div class="card-body">
+            {% if card.locked %}
+              <!-- #Yq added: locked card hides real title and description -->
+              <span class="locked-badge">🔒 Locked</span>
+              <div class="card-title" style="color:#bbb; letter-spacing:2px;">??? ??? ???</div>
+              <div class="card-desc" style="color:#bbb; font-style:italic;">
+                Win a Hangman round to reveal this {{ card.category }} memory.
+              </div>
+            {% else %}
+              <span class="card-category {{ cat_class }}">{{ card.category }}</span>
+              <div class="card-title">{{ card.title }}</div>
+              <div class="card-desc">{{ card.description }}</div>
+              <div class="card-date">
+                🗓 Unlocked {{ card.unlocked_at[:10] if card.unlocked_at else 'recently' }}
+              </div>
+            {% endif %}
+          </div>
+
+        </div>
+
+      {% endfor %}
+    </div>
+
+  {% else %}
+
+    <div class="empty-state">
+      <span class="empty-icon">🌱</span>
+      <h2>No memories found</h2>
+      <p>Play Hangman or Memory Match to unlock memories. Each correct guess reveals a piece of Singapore's story.</p>
+      <a href="{{ url_for('events_home') }}" class="play-btn">🎮 Start Playing</a>
+    </div>
+
+  {% endif %}
+
+</div>
+
+<!-- #Yq added: scroll-to-top button -->
+<button class="scroll-top-btn" id="scrollTopBtn" title="Back to top">&#8679;</button>
+
+<script>
+  // #Yq added: filter cards by category — works for both locked and unlocked cards
+  function filterCards(category, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.memory-card').forEach(card => {
+      const match = (category === 'all') || (card.dataset.category === category);
+      card.style.display = match ? '' : 'none';
+    });
+  }
+
+  // #Yq added: scroll-to-top button visibility
+  const scrollBtn = document.getElementById('scrollTopBtn');
+  window.addEventListener('scroll', () => {
+    scrollBtn.classList.toggle('visible', window.scrollY > 300);
+  });
+  scrollBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+
+{% endblock %}

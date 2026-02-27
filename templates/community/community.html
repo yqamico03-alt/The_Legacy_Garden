@@ -1,0 +1,797 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Community') }} | Legacy Garden{% endblock %}
+
+{% block content %}
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <style>
+  /* * =========================
+     GLOBAL WEBSITE STYLES
+     ========================= */
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* make Bootstrap cards look closer to your design */
+  .card {
+    border: none;
+    border-radius: 18px;
+  }
+
+  .rounded-lg {
+    border-radius: 18px !important;
+  }
+
+  /* ===== Titles ===== */
+  .community-title {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #4F8A55;
+    font-weight: 700;
+  }
+
+  .community-subtitle {
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  /* ===== Region ===== */
+  .community-title-region {
+    text-align: center;
+    color: black;
+    font-weight: 400;
+  }
+
+  .community-region-name {
+    font-weight: 700;
+    color: #4F8A55;
+  }
+
+  .community-region-summary-title {
+    font-size: 1.5rem;
+    color: #4F8A55;
+  }
+
+  .community-region-summary-line {
+    font-size: 0.95rem;
+    color: #4f4f4f;
+    padding-left: 20px;
+  }
+
+  .community-region-label {
+    font-weight: 650;
+  }
+
+  .community-region-name-highlight {
+    font-weight: 600;
+    color: #2f7d4f;
+  }
+
+  .community-map {
+    height: 230px;
+    background: #e9ecef;
+    border-radius: 15px;
+    overflow: hidden;
+  }
+
+.community-region-chat-btn{
+  background-color:#2f7d4f;
+  color:#fff;
+  border:1.5px solid #2f7d4f;
+  font-weight:600;
+  border-radius:8px;
+  height:45px;
+
+  /* ✅ better vertical alignment */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  /* ✅ move the word higher a bit */
+  transform: translateY(-1px);
+
+  padding: 0;
+  line-height: 1;
+}
+
+  .community-region-chat-btn:hover {
+    background-color: #ffffff;
+    color: #2f7d4f;
+    border: 2px solid #2f7d4f;
+  }
+
+  /* ===== Notice ===== */
+  .community-notice-item {
+    background: #f6fbf8;
+    border-color: #cde7d8 !important;
+    border-radius: 15px;
+  }
+
+  .community-notice-icon {
+    font-size: 20px;
+  }
+
+  .community-notice-block {
+  background: #f6fbf8;
+  border: 1.5px solid #4F8A55;
+  border-left: 6px solid #4F8A55;
+  border-radius: 13px;
+  padding: 14px 18px;   /* ⬅️ more height */
+  margin-bottom: 10px; /* ⬅️ more spacing between blocks */
+}
+
+
+  /* ===== Achievement ===== */
+  .community-achieve-block {
+    background: #fff7e6;
+    border: 1.5px solid #AC7F5E;
+    border-left: 6px solid #AC7F5E;
+    border-radius: 13px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+
+  .community-achieve-subtext {
+    font-size: 0.8rem;
+    color: black;
+  }
+
+  /* ===== Tree ===== */
+  .community-tree-box {
+    background: rgba(191, 232, 207, 0.2);
+    border-radius: 15px;
+  }
+
+  .community-tree-img {
+    max-width: 450px;
+  }
+
+  .community-tree-level-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #2f5f3a;
+    background: rgba(244, 250, 249, 1);
+    border: 0.5px solid #4f8a55;
+    border-radius: 999px;
+  }
+
+  .community-harvest-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #549E70;
+  }
+
+  .community-harvest-list {
+    list-style: none;
+    padding-left: 20px;
+    margin-bottom: 0;
+  }
+
+  .community-harvest-item {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #4f4f4f;
+  }
+
+  /* Extra small helpers to match screenshot spacing */
+  .soft-shadow {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  }
+  .mini-muted {
+    color: #6c757d;
+    font-size: 0.82rem;
+  }
+
+  /* Make long summary line wrap nicely instead of cutting off */
+  .community-summary-wrap {
+    line-height: 1.6;
+    word-break: break-word;
+  }
+
+  /* Mobile tweaks */
+  @media (max-width: 576px) {
+    .community-title-region { font-size: 1.25rem; }
+    .community-region-summary-title { font-size: 1.25rem; }
+    .card-body { padding: 16px; }
+  }
+
+  /* ===== GUIDELINE MODAL (CENTERED) ===== */
+.guideline-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 99999;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  overflow-y: auto;     
+  padding: 80px 16px;   /* top spacing + mobile safe */
+}
+
+
+.guideline-modal{
+  width: min(700px, 95vw);
+  /* REMOVE fixed height */
+  height: auto;
+  max-height: none;
+  margin-top: 130px;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  padding: 22px;
+
+  /* allow page to grow */
+  overflow: visible;
+
+  display: block;
+}
+
+/* REMOVE scrolling from guideline-box */
+.guideline-box{
+  background: #f4fbf6;
+  border: 1px solid #d7eadc;
+  border-radius: 14px;
+  padding: 14px;
+
+  overflow: visible;
+}
+
+
+
+/* lock background scroll */
+html.modal-open,
+body.modal-open{
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
+
+
+
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.community-modal {
+  max-width: 520px;
+  width: 90%;
+  max-height: 75vh;
+  margin: auto;
+  border-radius: 18px;
+}
+
+
+.guideline-title{
+  text-align:center;
+  color:#2f7d4f;
+  font-weight:800;
+  margin-bottom: 14px;
+}
+
+.community-modal {
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.g-item{
+  display:flex;
+  gap: 12px;
+  padding: 10px 6px;
+}
+
+.g-icon{ font-size: 20px; line-height: 1.2; }
+.g-sub{ color:#5f6b63; font-size: 0.85rem; margin-top: 2px; }
+
+.g-check{
+  display:flex;
+  gap: 10px;
+  align-items:flex-start;
+  margin: 14px 6px 12px;
+  font-size: 0.82rem;
+  color:#3e3e3e;
+}
+
+.g-btn{
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  background: #2f5f3a;
+  color: white;
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
+.g-btn:disabled{
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.g-error{
+  color: #d43b3b;
+  text-align:center;
+  font-size: 0.78rem;
+  margin-top: 8px;
+}
+
+
+  </style>
+  {% if guidelines_accepted == 0 %}
+<div class="guideline-overlay" id="guidelineOverlay">
+  <div class="guideline-modal">
+    <h4 class="guideline-title">Community Guideline</h4>
+
+    <div class="guideline-box">
+      <div class="g-item">
+        <span class="g-icon">🌱</span>
+        <div>
+          <b>1. {{ _('Be respectful and kind to all members') }}</b>
+          <div class="g-sub">{{ _('Treat youth and seniors with patience, empathy, and understanding.') }}</div>
+        </div>
+      </div>
+
+      <div class="g-item">
+        <span class="g-icon">🌱</span>
+        <div>
+          <b>2. {{ _('Share positive and meaningful stories')}}</b>
+          <div class="g-sub">{{ _('Avoid harmful or sensitive topics.')}}</div>
+        </div>
+      </div>
+
+      <div class="g-item">
+        <span class="g-icon">🌱</span>
+        <div>
+          <b>3. {{ _('Support one another whenever possible')}}</b>
+          <div class="g-sub">{{ _('Small actions help build a warm, caring community.')}}</div>
+        </div>
+      </div>
+
+      <div class="g-item">
+        <span class="g-icon">🌱</span>
+        <div>
+          <b>4. {{ _('Keep the community safe and respectful')}}</b>
+          <div class="g-sub">{{ _('Do not share personal details; report unsafe content.')}}</div>
+        </div>
+      </div>
+
+      <div class="g-item">
+        <span class="g-icon">🌱</span>
+        <div>
+          <b>5. {{ _('Celebrate differences and learn from each other')}}</b>
+          <div class="g-sub">{{ _('Stay open-minded and enjoy discovering new perspectives.')}}</div>
+        </div>
+      </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('accept_guidelines') }}" id="guidelineForm">
+      <label class="g-check" id="agreeWrap">
+      <input type="checkbox" id="agreeCheck">
+      <span>{{ _('I agree to follow the Community Guidelines and treat all youth and seniors with kindness, respect, and support.') }}</span>
+    </label>
+
+    <button type="submit" class="g-btn" id="enterBtn" disabled> {{ _('Enter Community') }}</button>
+
+    <div class="g-error" id="gError" style="display:none;">
+      {{ _('Please agree to the Community Guidelines before entering the Community Page.') }}
+    </div>
+
+    </form>
+  </div>
+</div>
+{% endif %}
+
+
+  <div class="container py-4">
+    <!-- REGION CARD -->
+    <div class="card rounded-lg soft-shadow mb-4">
+      <div class="card-body">
+        {% set region_en_map = {
+  '北部': 'North',
+  '南部': 'South',
+  '东部': 'East',
+  '西部': 'West',
+  '中部': 'Central',
+  '东北部': 'North-East'
+} %}
+{% set region_en = region_en_map.get(profile['region'], profile['region']) %}
+        <h4 class="community-title-region">
+  {{ _('Your Region:') }}
+  <span class="community-region-name">
+    {{ region_en }}
+  </span>
+</h4>
+
+
+        <p class="community-subtitle mb-3">
+          {{ _('This is your assigned community region based on your profile.') }}
+        </p>
+
+        <!-- Map -->
+        <div id="sgMap" class="mb-3 community-map"></div>
+
+
+        <h5 class="font-weight-bold community-region-summary-title mb-2">{{ _('Region Summary') }}</h5>
+
+        <p class="mb-1 community-region-summary-line">
+          <span class="community-region-label">{{ _("Region Group:") }}</span>
+          <span class="community-region-name-highlight">{{ region_en }} Community Circle</span>
+        </p>
+
+        <p class="mb-3 community-region-summary-line">
+          <span class="community-region-label">{{ _("Youth Members:") }}</span>
+          <span class="community-region-value">{{ youth_members }}</span>
+          &nbsp;|&nbsp;
+          <span id="lblSeniorMembers" class="community-region-label notranslate" translate="no">
+            Senior Members:
+          </span>
+          <span class="community-region-value">{{ senior_members }}</span>
+          &nbsp;|&nbsp;
+          <span class="community-region-label">{{ _("Total Members:") }}</span>
+          <span class="community-region-value">{{ total_members }}</span>
+        </p>
+
+        <a href="{{ url_for('messaging.inbox') }}" class="btn community-region-chat-btn btn-block">
+          {{ _("Open Community Chat") }}
+        </a>
+
+      </div>
+    </div>
+
+    <!-- NOTICEBOARD -->
+    <div class="card rounded-lg soft-shadow mb-4">
+      <div class="card-body">
+
+        <h5 class="community-title mb-2">
+          {{ _("Noticeboard in %(region)s Region", region=region_en) }}
+        </h5>
+
+        <div class="mini-muted text-center mb-3">
+          {{ _("Last updated:") }} {{ last_notice_update | time_ago }}
+        </div>
+
+        {% if notices and notices|length > 0 %}
+          {% for n in notices %}
+          <div class="community-notice-block">
+            <span class="mr-3 community-notice-icon">
+              {{ n.emoji or "ℹ️" }}
+            </span>
+<span>
+  {% set uname = session.get('username','') %}
+  {% set msg = (n.message or '') %}
+  {% if uname and (uname in msg) %}
+    {{ msg | replace(uname, '<b>You</b>') | safe }}
+  {% else %}
+    {{ msg | safe }}
+  {% endif %}
+</span>
+
+          </div>
+        {% endfor %}
+
+        {% else %}
+          <div class="community-notice-block">
+            <span class="mr-3 community-notice-icon">ℹ️</span>
+            <span>{{ _("No notices yet for this region.") }}</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ACHIEVEMENT BOARD -->
+    <div class="card rounded-lg soft-shadow mb-4">
+      <div class="card-body">
+
+        <h5 class="community-title mb-2">
+         {{ _("Singapore Achievement Board") }}
+        </h5>
+
+        <div class="mini-muted text-center mb-3">
+          {{ _("Last updated: Weekly refresh —") }} {{ achievement_last_update.strftime("%d %b %Y") }}
+        </div>
+
+
+        <div class="community-achieve-block">
+          🏆 <b>{{ _("Most Active Region of the Week:") }}</b> {{ most_active_region }}
+          <div class="community-achieve-subtext">
+            {{ _("Most activity this week (stories posted, games played, and community actions).") }}
+          </div>
+
+        </div>
+
+        <div class="community-achieve-block">
+          🌿 <b>{{ _("Best Plant Harvest Region:") }}</b> {{ best_harvest_region or "—" }}
+          <div class="community-achieve-subtext">
+            {{ _("Most harvested plants (trees + flowers) this week") }}
+          </div>
+        </div>
+
+
+
+        <div class="community-achieve-block mb-0">
+          🧑‍🤝‍🧑 <b>{{ _("Community Participation Award:") }}</b> {{ participation_region }}
+          <div class="community-achieve-subtext">{{ _("Most members participated this week") }}</div>
+        </div>
+
+
+      </div>
+    </div>
+
+    <!-- COMMUNITY TREE -->
+    <div class="card rounded-lg soft-shadow mb-4">
+      <div class="card-body">
+
+        <h5 class="community-title mb-1">{{ _("%(region)s Community Tree", region=region_en) }}</h5>
+
+        <p class="community-subtitle mb-2">
+          {{ _("This is the shared tree for %(region)s region. All harvested plants from members contribute to its growth.", region=region_en) }}
+        </p>
+
+        {# ✅ Force Babel to extract these 4 strings #}
+{% set stage_map = {
+  "Flourishing Stage": _("Flourishing Stage"),
+  "Growing Stage": _("Growing Stage"),
+  "Budding Stage": _("Budding Stage"),
+  "Seedling Stage": _("Seedling Stage")
+} %}
+
+<span class="community-tree-level-badge">
+  🌱 {{ _("Level:") }} {{ stage_map.get(stage, stage) }}
+</span>
+
+        <div class="text-center p-3 mb-3 community-tree-box">
+          <div class="tree-stage"
+              data-trees="{{ trees_harvested }}"
+              data-flowers="{{ flowers_harvested }}">
+
+            <img src="{{ url_for('static', filename='uploads/' ~ tree_image) }}"
+              class="tree-base"
+              alt="Community Tree">
+
+    
+          </div>
+        </div>
+
+
+        <h6 class="community-harvest-title">{{ _("Region Harvest Contribution") }}</h6>
+
+      <ul class="community-harvest-list">
+        <li class="community-harvest-item">
+          🌳 {{ _("Trees harvested:") }}
+          <span class="community-harvest-value">{{ trees_harvested or 0 }}</span>
+        </li>
+
+        <li class="community-harvest-item">
+          🌸 {{ _("Flowers harvested:") }}
+          <span class="community-harvest-value">{{ flowers_harvested or 0 }}</span>
+        </li>
+
+        <li class="community-harvest-item">
+          ⭐ {{ _("Community Tree Points:") }}
+          <span class="community-harvest-value">{{ community_points or 0 }}</span>
+        </li>
+      </ul>
+      </div>
+    </div>
+
+  </div>
+
+{% if latest_notice %}
+<div class="toast" id="noticeToast" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"
+     data-delay="3500">
+  <div class="toast-header">
+    <strong class="mr-auto">{{ _("New Notice") }}</strong>
+    <small>{{ _("now")}}</small>
+    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>
+  </div>
+  <div class="toast-body">
+    {{ latest_notice.message | safe }}
+  </div>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const overlay = document.getElementById("guidelineOverlay");
+  if (!overlay) return; // accepted already, no overlay
+
+  // lock scroll behind modal
+  document.body.style.overflow = "hidden";
+
+  const agree = document.getElementById("agreeCheck");
+  const btn = document.getElementById("enterBtn");
+  const err = document.getElementById("gError");
+  const form = document.getElementById("guidelineForm");
+
+  agree.addEventListener("change", () => {
+    btn.disabled = !agree.checked;
+    err.style.display = "none";
+  });
+
+  form.addEventListener("submit", (e) => {
+    if (!agree.checked) {
+      e.preventDefault();
+      err.style.display = "block";
+    }
+  });
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const overlay = document.getElementById("guidelineOverlay");
+  if (!overlay) return; // no modal, do nothing
+
+  // lock scroll behind modal ONLY when overlay exists
+  document.documentElement.classList.add("modal-open");
+  document.body.classList.add("modal-open");
+
+  const agree = document.getElementById("agreeCheck");
+  const btn = document.getElementById("enterBtn");
+  const err = document.getElementById("gError");
+  const form = document.getElementById("guidelineForm");
+
+  agree.addEventListener("change", () => {
+    btn.disabled = !agree.checked;
+    err.style.display = "none";
+  });
+
+  form.addEventListener("submit", (e) => {
+    if (!agree.checked) {
+      e.preventDefault();
+      err.style.display = "block";
+    }
+  });
+});
+</script>
+
+{% endif %}
+
+  <!-- libary for map -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> 
+
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Get region from Flask/Jinja (EN keys used for lookup)
+  const userRegion = "{{ region_en }}";
+
+  // Singapore region centers (approx)
+  const regionCenters = {
+    "North":     { lat: 1.438, lng: 103.799, zoom: 12 },
+    "South":     { lat: 1.272, lng: 103.819, zoom: 12 },
+    "East":      { lat: 1.349, lng: 103.945, zoom: 12 },
+    "West":      { lat: 1.352, lng: 103.703, zoom: 12 },
+    "Central":   { lat: 1.304, lng: 103.832, zoom: 12 },
+    "North-East":{ lat: 1.383, lng: 103.892, zoom: 12 }
+  };
+
+  // ✅ translated labels (uses Flask-Babel translations)
+  const regionLabel = {
+    "North": "{{ _('North') }}",
+    "South": "{{ _('South') }}",
+    "East": "{{ _('East') }}",
+    "West": "{{ _('West') }}",
+    "Central": "{{ _('Central') }}",
+    "North-East": "{{ _('North-East') }}"
+  };
+
+  const fallback = { lat: 1.3521, lng: 103.8198, zoom: 11 };
+  const target = regionCenters[userRegion] || fallback;
+
+  const map = L.map("sgMap").setView([target.lat, target.lng], target.zoom);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  // Force English key even if profile.region becomes Chinese
+const regionReverseMap = {
+  "北部": "North",
+  "南部": "South",
+  "东部": "East",
+  "西部": "West",
+  "中部": "Central",
+  "东北部": "North-East"
+};
+
+// userRegion is what comes from Flask (might be Chinese)
+const regionEnglish = regionReverseMap[userRegion] || userRegion;
+
+// Popup always English
+L.marker([target.lat, target.lng]).addTo(map)
+  .bindPopup("Your Region: " + regionEnglish)
+  .openPopup();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const stage = document.querySelector(".tree-stage");
+  if (!stage) return;
+
+  const trees = parseInt(stage.dataset.trees || 0);
+  const flowers = parseInt(stage.dataset.flowers || 0);
+  const layer = stage.querySelector(".tree-icons");
+
+  // Branch anchor points (percentages based on YOUR tree image)
+  const TREE_BRANCHES = [
+    { x: 45, y: 32 },
+    { x: 55, y: 34 },
+    { x: 38, y: 40 },
+    { x: 62, y: 42 },
+    { x: 42, y: 48 },
+    { x: 58, y: 48 }
+  ];
+
+  const FLOWER_BRANCHES = [
+    { x: 28, y: 26 },
+    { x: 72, y: 26 },
+    { x: 22, y: 36 },
+    { x: 78, y: 36 },
+    { x: 30, y: 46 },
+    { x: 70, y: 46 },
+    { x: 36, y: 22 },
+    { x: 64, y: 22 }
+  ];
+
+  function placeIcons(count, emoji, anchors, max) {
+    const used = new Set();
+    const n = Math.min(count, max);
+
+    for (let i = 0; i < n; i++) {
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * anchors.length);
+      } while (used.has(idx));
+
+      used.add(idx);
+      const a = anchors[idx];
+
+      const el = document.createElement("div");
+      el.className = "tree-icon";
+      el.textContent = emoji;
+
+      el.style.left = a.x + "%";
+      el.style.top = a.y + "%";
+      el.style.fontSize = (16 + Math.random() * 6).toFixed(0) + "px";
+
+      layer.appendChild(el);
+    }
+  }
+
+  layer.innerHTML = "";
+
+  placeIcons(trees, "🌳", TREE_BRANCHES, 6);
+  placeIcons(flowers, "🌸", FLOWER_BRANCHES, 10);
+});
+</script>
+
+
+  <!-- Bootstrap JS (optional) -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+{% endblock %}

@@ -1,0 +1,48 @@
+<style>
+  /* ===== 4. FOOTER STYLES ===== */
+  .legacy-footer {
+    background-color: #ffffff;
+    border-top: 1px solid #e6e1d8;
+    margin-top: 0;   /* ✅ FIX */
+}
+
+
+  .footer-link {
+      color: #2f7d4f;
+      font-weight: 500;
+      font-size: 0.85rem;
+      text-decoration: none;
+  }
+
+  .footer-link:hover { text-decoration: underline; }
+
+  .footer-contact, .footer-copy {
+      color: #2f7d4f;
+      font-size: 0.85rem;
+      line-height: 1.4;
+  }
+</style>
+
+<footer class="legacy-footer">
+  <div class="container text-center py-4">
+    <div class="footer-links mb-2">
+      <!-- <a href="#" class="footer-link">About Us</a>
+      <span class="mx-2">|</span>
+      <a href="#" class="footer-link">FAQ</a> -->
+      <a href="{{ url_for('about') }}" class="footer-link">{{ _("About Us") }}</a>
+      <span class="mx-2">|</span>
+      <a href="{{ url_for('faq') }}" class="footer-link">{{ _("FAQ") }}</a>
+
+
+    </div>
+
+    <div class="footer-contact mb-2">
+      📧 {{ _("Contact us:") }}<a href="mailto:support@legacygarden.com" class="footer-link">support@legacygarden.com</a>
+    </div>
+
+    <div class="footer-copy text-muted">
+      © 2026 The Legacy Garden · {{ _("Growing Connections Together") }}
+    </div>
+  </div>
+</footer>
+

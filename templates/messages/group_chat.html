@@ -1,0 +1,549 @@
+{% extends "base.html" %}
+{% block title %}{{ region|title }} Group - Legacy Garden{% endblock %}
+
+{% block content %}
+
+<style>
+  /* ── Make messaging fill the full viewport height ── */
+  html, body { height: 100%; overflow: hidden !important; }
+  footer, .footer, .site-footer { display: none !important; }
+  .messages-wrap {
+    height: calc(100vh - 80px) !important;
+    max-height: calc(100vh - 80px) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .messages-shell { flex: 1 !important; height: 100% !important; overflow: hidden !important; }
+  .msg-main { display: flex !important; flex-direction: column !important; height: 100% !important; overflow: hidden !important; }
+  .chat-body { flex: 1 !important; overflow-y: auto !important; min-height: 0 !important; }
+  .msg-sidebar { height: 100% !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
+  .sidebar-list { flex: 1 !important; overflow-y: auto !important; min-height: 0 !important; }
+
+  /* ✅ Force "My Chats" rows to show username + role + streak */
+  .msg-sidebar .chat-item{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .msg-sidebar .chat-meta{
+    display:block !important;
+    flex:1;
+    min-width:0;
+  }
+  .msg-sidebar .chat-name{
+    font-weight:800;
+    color: var(--text-dark);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .msg-sidebar .chat-sub{
+    font-size:13px;
+    color:#9a9a9a;
+    margin-top:2px;
+  }
+  .msg-sidebar .chat-right{
+    margin-left:auto;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  
+</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/messages.css') }}">
+
+<div class="messages-wrap">
+  <div class="messages-shell">
+    
+<div class="msg-sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-title">Chats</div>
+        <div class="sidebar-search">
+          <span>🔎</span>
+          <input id="chatSearch" placeholder="Search chats">
+        </div>
+      </div>
+<div class="sidebar-list">
+  <div class="sidebar-section-label">Community</div>
+ <div class="community-region-box">
+    <a class="chat-item active" href="{{ url_for('messaging.group_chat', region=region) }}">
+      <div class="chat-avatar">
+        {% if region|lower == 'north' %}🧭
+        {% elif region|lower == 'south' %}☀️
+        {% elif region|lower == 'east' %}🌅
+        {% else %}🌱{% endif %}
+      </div>
+      <div class="chat-meta">
+        <div class="chat-name">{{ region|title }} Region</div>
+        <div class="chat-sub">Community</div>
+      </div>
+    </a>
+</div>
+        <hr class="sidebar-divider">
+
+        <div class="sidebar-section-label">My Chats</div>
+        {% for p in people %}
+<a class="chat-item" href="{{ url_for('messaging.chat', other_id=p.id) }}"
+   data-name="{{ p.username|lower }}" data-peer-id="{{ p.id }}">
+
+  <!-- ✅ colored avatar -->
+  <div class="chat-avatar avatar-{{ p.id % 6 }}">
+    {% if p.pfp and p.pfp != 'profile_pic.png' %}
+      <img src="{{ url_for('static', filename='uploads/' + p.pfp) }}"
+           alt="{{ p.username }}"
+           onerror="this.onerror=null; this.remove(); this.parentElement.classList.add('no-img');">
+    {% endif %}
+    <span class="avatar-initials">
+      {{ (p.username[:2] if p.username else 'U')|upper }}
+    </span>
+  </div>
+
+  <div class="chat-meta">
+    <div class="chat-name">{{ p.username }}</div>
+    <div class="chat-sub" id="preview-{{ p.id }}">
+      {% if p.last_preview %}
+        {{ p.last_preview[:40] }}{% if p.last_preview|length > 40 %}…{% endif %}
+      {% elif p.last_msg %}
+        {{ p.last_msg[11:16] if p.last_msg|length >= 16 else p.last_msg[:10] }}
+      {% else %}
+        {{ p.role|title }}
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ✅ streak -->
+  <div class="chat-right">
+    {% if p.streak and p.streak > 0 %}
+      <span class="streak-badge" id="sidebar-streak-{{ p.id }}">🔥 {{ p.streak }}</span>
+    {% else %}
+      <span class="streak-badge" id="sidebar-streak-{{ p.id }}" style="display:none">🔥 0</span>
+    {% endif %}
+  </div>
+
+</a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="msg-main">
+      <div class="chat-topbar">
+        <a class="back-btn" href="{{ url_for('messaging.inbox') }}">← Back</a>
+        <div class="chat-topbar-left">
+          <div class="chat-avatar" style="background:linear-gradient(135deg,#3ecfb2,#1a9e84);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;">
+            {% if region|lower == 'north' %}🧭
+            {% elif region|lower == 'south' %}☀️
+            {% elif region|lower == 'east' %}🌅
+            {% else %}🌱{% endif %}
+          </div>
+          <div class="peer-info">
+            <div class="peer-username">{{ region|title }} Region Community</div>
+            <div class="peer-status">Group Chat</div>
+          </div>
+        </div>
+      </div>
+
+<div class="chat-body" id="chatBody">
+  {% if messages and messages|length > 0 %}
+    {% for m in messages %}
+      {% set mine = (m.sender_id == me.id) %}
+      <div class="msg-row {{ 'mine' if mine else 'theirs' }}"
+           data-msg-id="{{ m.id }}"
+           data-msg-type="{{ m.message_type or 'text' }}"
+           data-mine="{{ 'true' if mine else 'false' }}">
+
+        {% if not mine %}
+        <!-- Sender avatar for group chat — clickable to view profile -->
+        <a href="{{ url_for('view_profile', username=m.sender_username) }}"
+           title="View {{ m.sender_username }}'s profile"
+           style="flex-shrink:0;align-self:flex-end;text-decoration:none;">
+          <div class="chat-avatar avatar-{{ m.sender_id % 6 }}" style="width:32px;height:32px;font-size:12px;">
+            {% if m.sender_pfp and m.sender_pfp != 'profile_pic.png' %}
+              <img src="{{ url_for('static', filename='uploads/' + m.sender_pfp) }}" alt="{{ m.sender_username or '' }}" onerror="this.onerror=null;this.remove();">
+            {% endif %}
+            <span class="avatar-initials">{{ (m.sender_username[:2] if m.sender_username else 'U')|upper }}</span>
+          </div>
+        </a>
+        {% endif %}
+
+        {% if mine %}
+        <button class="msg-dots-btn" title="Options">⋮</button>
+        {% endif %}
+
+        <div class="msg-bubble">
+          {% if not mine %}
+            <div class="msg-sender-name" style="font-size:11px;font-weight:700;color:#4a7050;margin-bottom:3px;">{{ m.sender_username or 'Unknown' }}</div>
+          {% endif %}
+          {% if m.is_deleted %}
+            <div class="msg-text msg-deleted">🚫 Message deleted</div>
+          {% elif (m.message_type or 'text') == 'image' %}
+            <img class="msg-img" src="{{ url_for('static', filename=m.media_path) }}" alt="image">
+            {% if m.file_name %}<div class="msg-fn">{{ m.file_name }}</div>{% endif %}
+          {% elif (m.message_type or 'text') == 'audio' %}
+            <audio controls class="msg-audio">
+              <source src="{{ url_for('static', filename=m.audio_path) }}">
+            </audio>
+            {% if m.file_name %}<div class="msg-fn">{{ m.file_name }}</div>{% endif %}
+          {% else %}
+            <div class="msg-text">{{ (m.message_text or '') | e }}</div>
+            {% if m.is_edited %}<div class="msg-edited">edited</div>{% endif %}
+          {% endif %}
+          <div class="msg-meta">
+            <span class="msg-clock">{{ (m.timestamp or '')[11:16] }}</span>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="chat-empty">
+      <div>
+        <div class="big">🍃</div>
+        <div class="title">Welcome to the {{ region|title }} Garden</div>
+        <div class="sub">Say hello to your neighbors! This is a public space for everyone in your region.</div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+      <!-- COMMUNITY CHAT: text messages only -->
+      <form class="chat-composer" onsubmit="return false;">
+        <input id="textInput" placeholder="Message the community…" autocomplete="off">
+        <button type="button" id="sendBtn">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<style>
+  .msg-dots-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 18px; color: #555; padding: 0 4px 0 6px;
+    line-height: 1; flex-shrink: 0; display: inline-flex;
+    align-items: center; vertical-align: middle; font-weight: 700;
+  }
+  .msg-dots-btn:hover { color: #222; }
+  .msg-row.mine { gap: 6px; }
+  .msg-row.theirs { gap: 8px; align-items: flex-end; }
+  .msg-audio { max-width: 220px; }
+  .msg-img { max-width: 220px; border-radius: 10px; display: block; }
+</style>
+<script>
+  // ── Constants ──────────────────────────────────────────────
+  const socket   = io();
+  const myId     = "{{ session.get('user_id') }}";
+  const myUsername = "{{ me.username }}";
+  const myPfp    = "{{ me.pfp }}";
+  const region   = "{{ region }}";
+  const input    = document.getElementById("textInput");
+  const sendBtn  = document.getElementById("sendBtn");
+  const chatBody = document.getElementById("chatBody");
+
+  // ── Sidebar search ─────────────────────────────────────────
+  const searchInput = document.getElementById("chatSearch");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll(".chat-item").forEach(item => {
+        item.style.display = (item.dataset.name || "").includes(q) ? "" : "none";
+      });
+    });
+  }
+
+  // ── Append a bubble to the chat ────────────────────────────
+  function appendMessage(data) {
+    const emptyState = document.querySelector(".chat-empty");
+    if (emptyState) emptyState.remove();
+
+    const isMine = String(data.sender_id) === String(myId);
+    const type   = data.message_type || "text";
+    const row    = document.createElement("div");
+    row.className = "msg-row " + (isMine ? "mine" : "theirs");
+    if (data.id) row.dataset.msgId = data.id;
+    row.dataset.msgType = type;
+    row.dataset.mine = isMine ? "true" : "false";
+
+    // Clickable avatar for others → their profile
+    if (!isMine) {
+      const pfp = data.sender_pfp || "profile_pic.png";
+      const uname = data.sender_username || "?";
+      const colorIdx = (Number(data.sender_id) || 0) % 6;
+      const link = document.createElement("a");
+      link.href = "/view_profile/" + encodeURIComponent(uname);
+      link.title = "View " + uname + "'s profile";
+      link.style.cssText = "flex-shrink:0;align-self:flex-end;text-decoration:none;";
+      const av = document.createElement("div");
+      av.className = `chat-avatar avatar-${colorIdx}`;
+      av.style.cssText = "width:32px;height:32px;font-size:12px;";
+      if (pfp && pfp !== "profile_pic.png") {
+        const img = document.createElement("img");
+        img.src = "/static/uploads/" + pfp;
+        img.alt = uname;
+        img.onerror = () => img.remove();
+        av.appendChild(img);
+      }
+      const initials = document.createElement("span");
+      initials.className = "avatar-initials";
+      initials.textContent = uname.slice(0, 2).toUpperCase();
+      av.appendChild(initials);
+      link.appendChild(av);
+      row.appendChild(link);
+    }
+
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble";
+
+    // Sender name for others
+    if (!isMine) {
+      const nameEl = document.createElement("div");
+      nameEl.className = "msg-sender-name";
+      nameEl.style.cssText = "font-size:11px;font-weight:700;color:#4a7050;margin-bottom:3px;";
+      nameEl.textContent = data.sender_username || "Unknown";
+      bubble.appendChild(nameEl);
+    }
+
+    // Text content only for community chat
+    const div = document.createElement("div");
+    div.className = "msg-text";
+    div.textContent = data.message_text || "";
+    bubble.appendChild(div);
+
+    const meta = document.createElement("div");
+    meta.className = "msg-meta";
+
+    // Dots btn inside meta for own messages
+    if (isMine) {
+      const dotsBtn = document.createElement("button");
+      dotsBtn.className = "msg-dots-btn";
+      dotsBtn.textContent = "⋮";
+      dotsBtn.title = "Options";
+      dotsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const rect = dotsBtn.getBoundingClientRect();
+        showCtxMenu({ clientX: rect.left, clientY: rect.bottom }, row);
+      });
+      meta.appendChild(dotsBtn);
+    }
+
+    const clock = document.createElement("span");
+    clock.className = "msg-clock";
+    clock.textContent = (data.timestamp || "").slice(11, 16);
+    meta.appendChild(clock);
+    bubble.appendChild(meta);
+    row.appendChild(bubble);
+    chatBody.appendChild(row);
+    chatBody.scrollTop = chatBody.scrollHeight;
+    return row;
+  }
+
+  // ── Send text message ──────────────────────────────────────
+  function sendText() {
+    const text = input.value.trim();
+    if (!text || !socket.connected) return;
+
+    appendMessage({
+      sender_id: myId, sender_username: myUsername, sender_pfp: myPfp,
+      message_type: "text", message_text: text,
+      timestamp: new Date().toISOString().slice(0, 19).replace("T", " ")
+    });
+
+    socket.emit("dm_send_message", { region_name: region, message_type: "text", message_text: text });
+    input.value = "";
+  }
+
+  // ── Unified send (text only for community chat) ───────────────────────────
+  function handleSend() {
+    sendText();
+  }
+
+  sendBtn.addEventListener("click", handleSend);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  });
+
+  // ── Socket: join room ──────────────────────────────────────
+  socket.on("connect", () => {
+    socket.emit("presence_join");
+    socket.emit("dm_join", { region_name: region });
+  });
+
+  // ── Receive incoming messages ──────────────────────────────
+  socket.on("dm_receive_message", (data) => {
+    const pageRegion = region.trim().toLowerCase();
+    const msgRegion  = (data.region_name || "").trim().toLowerCase();
+    if (msgRegion !== pageRegion) return;
+    if (String(data.sender_id) === String(myId)) return; // already shown optimistically
+    appendMessage(data);
+  });
+
+  // ── Context menu ───────────────────────────────────────────
+  const ctxMenu = document.createElement("div");
+  ctxMenu.style.cssText = "position:fixed;z-index:9999;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.15);padding:6px 0;display:none;min-width:160px;";
+  ctxMenu.innerHTML = `
+    <button id="gcEdit"   style="display:block;width:100%;padding:12px 18px;border:none;background:none;text-align:left;cursor:pointer;font-size:15px;">✏️ Edit</button>
+    <button id="gcDelete" style="display:block;width:100%;padding:12px 18px;border:none;background:none;text-align:left;cursor:pointer;font-size:15px;color:#e74c3c;">🗑️ Delete</button>
+  `;
+  document.body.appendChild(ctxMenu);
+
+  const editBar = document.createElement("div");
+  editBar.style.cssText = "display:none;padding:8px 12px;background:#f0f0f0;border-top:1px solid #ddd;align-items:center;gap:8px;";
+  editBar.innerHTML = `
+    <input id="gcEditInput" placeholder="Edit message…" style="flex:1;padding:8px 12px;border-radius:20px;border:1px solid #ccc;font-size:14px;">
+    <button id="gcEditSave"   style="padding:8px 14px;background:#3ecfb2;color:#fff;border:none;border-radius:20px;cursor:pointer;font-weight:600;">Save</button>
+    <button id="gcEditCancel" style="padding:8px 14px;background:#ccc;border:none;border-radius:20px;cursor:pointer;">Cancel</button>
+  `;
+  const composer = document.querySelector(".chat-composer");
+  if (composer) composer.parentNode.insertBefore(editBar, composer);
+
+  const gcEdit       = document.getElementById("gcEdit");
+  const gcDelete     = document.getElementById("gcDelete");
+  const gcEditInput  = document.getElementById("gcEditInput");
+  const gcEditSave   = document.getElementById("gcEditSave");
+  const gcEditCancel = document.getElementById("gcEditCancel");
+  let activeRow = null;
+
+  function showCtxMenu(e, row) {
+    activeRow = row;
+    const isText = (row.dataset.msgType || "text") === "text";
+    gcEdit.style.display = isText ? "block" : "none";
+    ctxMenu.style.display = "block";
+    let x = e.clientX, y = e.clientY;
+    ctxMenu.style.left = x + "px";
+    ctxMenu.style.top  = y + "px";
+    requestAnimationFrame(() => {
+      const r = ctxMenu.getBoundingClientRect();
+      if (r.right  > window.innerWidth)  ctxMenu.style.left = (x - r.width)  + "px";
+      if (r.bottom > window.innerHeight) ctxMenu.style.top  = (y - r.height) + "px";
+    });
+  }
+
+  // 3-dot delegate for static messages
+  chatBody.addEventListener("click", (e) => {
+    const dotsBtn = e.target.closest(".msg-dots-btn");
+    if (!dotsBtn) return;
+    e.stopPropagation();
+    const row = dotsBtn.closest(".msg-row");
+    if (!row) return;
+    const rect = dotsBtn.getBoundingClientRect();
+    showCtxMenu({ clientX: rect.left, clientY: rect.bottom }, row);
+  });
+
+  document.addEventListener("click", () => { ctxMenu.style.display = "none"; });
+
+  gcDelete.addEventListener("click", () => {
+    if (!activeRow) return;
+    if (!confirm("Delete this message for everyone?")) return;
+    socket.emit("group_delete_message", { msg_id: Number(activeRow.dataset.msgId), region_name: region });
+  });
+
+  gcEdit.addEventListener("click", () => {
+    if (!activeRow) return;
+    const bubble = activeRow.querySelector(".msg-text");
+    if (!bubble || bubble.classList.contains("msg-deleted")) return;
+    gcEditInput.value = bubble.textContent.trim();
+    editBar.style.display = "flex";
+    gcEditInput.focus();
+  });
+
+  gcEditCancel.addEventListener("click", () => { editBar.style.display = "none"; activeRow = null; });
+
+  gcEditSave.addEventListener("click", () => {
+    if (!activeRow) return;
+    const newText = gcEditInput.value.trim();
+    if (!newText) return;
+    socket.emit("group_edit_message", { msg_id: Number(activeRow.dataset.msgId), new_text: newText, region_name: region });
+    editBar.style.display = "none";
+    activeRow = null;
+  });
+
+  gcEditInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter")  { e.preventDefault(); gcEditSave.click(); }
+    if (e.key === "Escape") { gcEditCancel.click(); }
+  });
+
+  socket.on("group_message_edited", (data) => {
+    const row = document.querySelector(`.msg-row[data-msg-id="${data.msg_id}"]`);
+    if (!row) return;
+    const bubble = row.querySelector(".msg-text");
+    if (bubble) bubble.textContent = data.new_text;
+    if (!row.querySelector(".msg-edited")) {
+      const tag = document.createElement("div");
+      tag.className = "msg-edited";
+      tag.textContent = "edited";
+      row.querySelector(".msg-bubble").insertBefore(tag, row.querySelector(".msg-meta"));
+    }
+  });
+
+  socket.on("group_message_deleted", (data) => {
+    const row = document.querySelector(`.msg-row[data-msg-id="${data.msg_id}"]`);
+    if (!row) return;
+    const bubble = row.querySelector(".msg-text");
+    if (bubble) { bubble.textContent = "🚫 Message deleted"; bubble.classList.add("msg-deleted"); }
+    const edited = row.querySelector(".msg-edited");
+    if (edited) edited.remove();
+  });
+
+  // ── Scroll to bottom on load ───────────────────────────────
+  if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+
+  // ── Navbar red dot ─────────────────────────────────────────
+  function updateNavDot() {
+    let total = 0;
+    document.querySelectorAll(".unread-badge").forEach(el => {
+      if (el.style.display !== "none") total += parseInt(el.textContent || "0", 10);
+    });
+    let dot = document.getElementById("navMsgDot");
+    if (!dot) {
+      document.querySelectorAll("a, .nav-link").forEach(el => {
+        if ((el.textContent || "").trim().toUpperCase() === "MESSAGES") {
+          el.style.position = "relative";
+          dot = document.createElement("span");
+          dot.id = "navMsgDot";
+          dot.style.cssText = "position:absolute;top:-4px;right:-8px;width:10px;height:10px;background:#e53e3e;border-radius:50%;display:none;";
+          el.appendChild(dot);
+        }
+      });
+    }
+    if (dot) dot.style.display = total > 0 ? "inline-block" : "none";
+  }
+  updateNavDot();
+</script>
+
+<!-- Role-restriction modal for clicking on same-role profiles in community chat -->
+<div id="roleRestrictModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:32px 28px;max-width:420px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.18);">
+    <div style="font-size:2.5rem;margin-bottom:12px;">🤝</div>
+    <div style="font-weight:800;font-size:1.2rem;color:#1f3b57;margin-bottom:8px;">Same Role — Can't Connect</div>
+    <div id="roleRestrictMsg" style="color:#6b7280;font-size:0.95rem;margin-bottom:20px;line-height:1.6;"></div>
+    <button onclick="document.getElementById('roleRestrictModal').style.display='none';"
+      style="padding:10px 28px;background:#4a7050;color:#fff;border:none;border-radius:20px;font-weight:600;cursor:pointer;font-size:15px;">
+      Got It
+    </button>
+  </div>
+</div>
+
+<script>
+  // Intercept profile avatar clicks in community chat for role check
+  const myRole = {{ me.role | tojson }};
+
+  chatBody.addEventListener("click", (e) => {
+    // Look for a profile link click (avatar links in group chat)
+    const link = e.target.closest("a[href*='view_profile']");
+    if (!link) return;
+
+    const uname = decodeURIComponent(link.href.split("/view_profile/")[1] || "");
+    if (!uname) return;
+
+    // Find the sender's role from the message row
+    const row = link.closest(".msg-row");
+    if (!row) return;
+
+    // We need to get the sender role — look it up from the data we have
+    // The avatar link goes to view_profile; we check the sender_id against known roles
+    // Since we don't store roles on each message row in the DOM, we intercept and
+    // redirect to the profile — role check happens on the profile page itself.
+    // So we just allow the navigation and let the profile page show the modal.
+    // No interception needed here — view_profile.html already handles this.
+  });
+</script>
+{% endblock %}

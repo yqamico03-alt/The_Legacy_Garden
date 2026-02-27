@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  font-weight: 700;
+  border-radius: 999px;
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+
+.back-btn:hover {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+  transform: translateX(-2px);
+}
+
+.back-btn,
+.back-btn:hover,
+.back-btn:focus,
+.back-btn:active {
+  text-decoration: none !important;
+}
+
+.garden-title {
+    color:  #2e7d32;
+    font-weight: 800;
+    font-size: 2.2rem;
+    margin-bottom: 6px;    /* 👈 reduce space under "My Garden" */
+    line-height: 1.15;     /* tighter title */
+    letter-spacing: -0.5px;
+}
+.history-header .garden-title{
+  font-size: 2.2rem;   /* ⬅ increase this (try 2.6–3rem) */
+  font-weight: 900;
+}
+/* Header wrapper */
+
+.history-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:6px;
+  margin-bottom:14px;
+}
+
+/* Emoji/icon size */
+.history-emoji{
+  font-size: 2rem;
+  line-height: 1;
+}
+
+/* Color themes */
+.history-title.tree   { color: #2e7d32; }   /* green */
+.history-title.flower { color: #ff4d88; }   /* pink */
+.history-title.water  { color: #1e88e5; }   /* blue */
+.history-title.points { color: #f59e0b; }   /* orange */
+
+
+/* History list -> garden card style */
+.history-list{
+  display:flex;
+  flex-direction:column;
+  gap:14px;                 /* space between rows */
+  margin-top:18px;
+}
+
+.history-card{
+  background:#fff;
+  border:1px solid #e7e7e7;
+  border-radius:16px;
+  padding:18px 20px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.05);
+}
+
+.history-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+}
+
+.history-title{
+  font-size:1.25rem;
+  font-weight:800;
+  margin:0;
+  color:#1f1f1f;
+}
+
+.history-meta{
+  margin-top:6px;
+  color:#6b7280;
+  font-size:0.98rem;
+}
+
+.history-date{
+  color:#1f1f1f;
+  font-size:1.05rem;
+  white-space:nowrap;
+}
+
+.history-empty{
+  background:#fff;
+  border:1px dashed #cfd8d3;
+  border-radius:16px;
+  padding:18px 20px;
+  color:#6b7280;
+}
+</style>
+
+<div class="container mt-4">
+  <a href="javascript:history.back()" class="back-btn">
+    <i class="fa-solid fa-arrow-left"></i> {{ _("Back to Garden") }}
+  </a>
+
+  <div class="history-header">
+  {% if item_type|lower == 'tree' %}
+    <span class="history-emoji">🌲</span>
+    <h2 class="garden-title history-title tree m-0">{{ _("Tree History") }}</h3>
+
+  {% elif item_type|lower == 'flower' %}
+    <span class="history-emoji">🌸</span>
+    <h3 class="garden-title history-title flower m-0">{{ _("Flower History") }}</h3>
+
+  {% elif item_type|lower == 'water' %}
+    <span class="history-emoji">💧</span>
+    <h3 class="garden-title history-title water m-0">{{ _("Water History") }}</h3>
+
+  {% elif item_type|lower == 'points' %}
+    <span class="history-emoji">⭐</span>
+    <h3 class="garden-title history-title points m-0">{{ _("Points History") }}</h3>
+  {% endif %}
+</div>
+
+
+
+  <div class="history-list">
+  {% for log in logs %}
+    <div class="history-card">
+      <div class="history-top">
+        <div>
+          <p class="history-title">{{ _(log.title) }}</p>
+          
+          <div class="history-meta">
+            {% if log.amount and log.amount < 0 %}
+              {{ _("Used") }} {{ log.amount|abs }} {{ _(log.category|title) }}
+            {% elif log.amount and log.amount > 0 %}
+              {{ _("Earned") }} {{ log.amount }} {{ _(log.category|title) }}
+            {% else %}
+              {{ _(log.category|title) }}
+            {% endif %}
+          </div>
+
+        </div>
+
+        <div class="history-date">{{ log.created_at[:10] }}</div>
+      </div>
+    </div>
+  {% else %}
+    <div class="history-empty">{{ _("No history yet 🌱") }}</div>
+  {% endfor %}
+</div>
+
+</div>
+
+{% endblock %}

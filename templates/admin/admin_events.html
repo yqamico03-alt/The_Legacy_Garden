@@ -1,0 +1,774 @@
+{% extends "base.html" %}
+{% block title %}Admin Events | The Legacy Garden{% endblock %}
+
+{% block content %}
+
+<style>
+  :root{
+    --lg-green:#2F6D4F;
+    --lg-green-2:#24563E;
+    --lg-bg:#FBF9F3;
+    --lg-card:#ffffff;
+    --lg-text:#142019;
+    --lg-muted:#51615a;
+    --lg-border: rgba(0,0,0,0.08);
+    --lg-shadow: 0 18px 55px rgba(0,0,0,0.08);
+    --lg-shadow-2: 0 12px 30px rgba(0,0,0,0.07);
+    --lg-radius: 22px;
+  }
+
+
+
+  /* Header */
+/* ===== Header (match "Our Legacy Garden" style) ===== */
+/* ===== Header (center + smaller) ===== */
+.page-head{
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.page-title{
+  font-size: clamp(2.0rem, 3vw, 2.9rem);  /* smaller than before */
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1.12;
+  color: #2e7d32;
+  margin: 0 0 8px;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}
+
+.page-sub{
+  margin: 0 auto;
+  max-width: 60ch;
+  color: #6C757D;
+  font-size: 1.05rem;                  /* smaller subtitle */
+  line-height: 1.55;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}
+
+  /* Premium card */
+  .card-lg{
+    border-radius: var(--lg-radius);
+    background: var(--lg-card);
+    border: 1px solid var(--lg-border);
+    box-shadow: var(--lg-shadow);
+  }
+  .card-pad{
+    padding: 26px;
+  }
+
+  /* Section title row */
+.section-row{
+  margin-bottom: 12px;   /* reduce space under whole block */
+}
+
+.section-title{
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 4px;   /* was 20px — too big */
+  color: #2f5f3a;
+}
+
+.hint{
+  margin: 0;            /* remove extra spacing */
+  color: #5f6f7a;
+  font-size: 1.05rem;
+}
+
+  /* Form grid */
+  .event-form{
+    margin-bottom: 22px;
+  }
+/* ✅ FORCE ONE COLUMN LAYOUT */
+.grid{
+  display: grid;
+  grid-template-columns: 1fr;   /* was 1.2fr 0.8fr */
+  gap: 14px;
+}
+
+.row2{
+  display: grid;
+  grid-template-columns: 1fr;   /* was 1fr 1fr */
+  gap: 14px;
+}
+  @media (max-width: 991.98px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+  .row2{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 767.98px){
+    .row2{ grid-template-columns: 1fr; }
+  }
+
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap: 7px;
+  }
+  .label{
+    font-weight: 800;
+    color: var(--lg-text);
+    font-size: 0.92rem;
+  }
+
+  .ctrl{
+    width:100%;
+    border-radius: 14px;
+    border: 1px solid var(--lg-border);
+    padding: 12px 14px;
+    font-size: 0.98rem;
+    outline: none;
+    background: #fff;
+    transition: box-shadow .18s ease, border-color .18s ease, transform .18s ease;
+  }
+  .ctrl:focus{
+    border-color: rgba(47,109,79,0.35);
+    box-shadow: 0 0 0 4px rgba(47,109,79,0.14);
+  }
+  textarea.ctrl{ resize: vertical; min-height: 110px; }
+
+  /* File input polish */
+  .file-wrap{
+    border: 1px dashed rgba(0,0,0,0.18);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(47,109,79,0.04);
+  }
+
+  /* Buttons */
+  .btn-lgx{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap: 8px;
+    border: none;
+    border-radius: 14px;
+    padding: 11px 16px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: transform .18s ease, filter .18s ease, box-shadow .18s ease, background .18s ease;
+    white-space: nowrap;
+  }
+  .btn-primary{
+    background: linear-gradient(135deg, var(--lg-green), #43A047);
+    color:#fff;
+    box-shadow: 0 12px 24px rgba(47,109,79,0.20);
+  }
+  .btn-primary:hover{ transform: translateY(-1px); filter: brightness(1.02); }
+  .btn-primary:active{ transform: translateY(0px); }
+
+/* ===== Solid buttons like your "View / Edit / Delete" style ===== */
+.btn-lgx{
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 900;
+  box-shadow: none;
+}
+
+/* View / Details (Green) */
+.btn-soft{
+  background: #2F8F4E;              /* nice garden green */
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+.btn-soft:hover{
+  background: #257A41;
+  transform: translateY(-1px);
+}
+.btn-soft:active{
+  transform: translateY(0);
+}
+
+/* Edit (Blue) */
+.btn-edit{
+  background: #1E88E5;              /* clean admin blue */
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+.btn-edit:hover{
+  background: #156FBE;
+  transform: translateY(-1px);
+}
+.btn-edit:active{ transform: translateY(0); }
+
+/* Delete (Red) */
+.btn-delete{
+  background: #E53935;              /* clear delete red */
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+.btn-delete:hover{
+  background: #C62828;
+  transform: translateY(-1px);
+}
+.btn-delete:active{ transform: translateY(0); }
+
+/* Optional: make all action buttons same width (looks neat) */
+.event-actions .btn-lgx{
+  min-width: 120px;
+  justify-content: center;
+}
+
+  /* Events list */
+  .list-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap: 14px;
+    margin: 28px 0 14px;
+  }
+  .count-pill{
+    font-weight: 900;
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(47,109,79,0.10);
+    color: var(--lg-green-2);
+    border: 1px solid rgba(47,109,79,0.18);
+  }
+
+  .event-card{
+    display:flex;
+    gap: 16px;
+    align-items: stretch;
+    padding: 16px;
+    border-radius: var(--lg-radius);
+    background: #fff;
+    border: 1px solid var(--lg-border);
+    box-shadow: var(--lg-shadow-2);
+    transition: transform .18s ease, box-shadow .18s ease;
+    margin-bottom: 14px;
+  }
+  .event-card:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 22px 60px rgba(0,0,0,0.10);
+  }
+
+  .event-img{
+    width: 190px;
+    min-width: 190px;
+    height: 130px;
+    border-radius: 18px;
+    object-fit: cover;
+    background: #eee;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  @media (max-width: 767.98px){
+    .event-card{ flex-direction: column; }
+    .event-img{ width: 100%; min-width: 100%; height: 180px; }
+  }
+
+  .event-info{ flex:1; display:flex; flex-direction:column; }
+  .event-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 12px;
+  }
+
+  .event-title{
+    font-size: 1.12rem;
+    font-weight: 950;
+    color: var(--lg-text);
+    margin: 0;
+  }
+  .event-meta{
+    color: var(--lg-muted);
+    font-size: 0.95rem;
+    margin: 6px 0 10px;
+  }
+  .event-desc{
+    color: #2c3a33;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    margin: 0 0 14px;
+  }
+
+  .badge-soft{
+    display:inline-flex;
+    align-items:center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 0.85rem;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: rgba(0,0,0,0.03);
+    color: #2e2e2e;
+    white-space: nowrap;
+  }
+  .badge-upcoming{
+    background: rgba(30,136,229,0.12);
+    border-color: rgba(30,136,229,0.22);
+    color: #0B4A8B;
+  }
+  .badge-details{
+    background: rgba(67,160,71,0.12);
+    border-color: rgba(67,160,71,0.22);
+    color: #1b5e20;
+  }
+
+  .event-actions{
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: auto;
+  }
+
+  /* Empty state */
+  .empty{
+    text-align:center;
+    padding: 30px 18px;
+    border-radius: var(--lg-radius);
+    border: 1px dashed rgba(0,0,0,0.18);
+    background: rgba(255,255,255,0.6);
+    color: var(--lg-muted);
+  }
+  .empty h4{
+    margin: 0 0 8px;
+    color: var(--lg-text);
+    font-weight: 950;
+  }
+
+
+/* ===== Image preview (Create-page style) ===== */
+.img-preview{
+  margin-top: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.10);
+  overflow: hidden;
+  position: relative;
+  background: #fff;
+  box-shadow: 0 12px 26px rgba(0,0,0,0.06);
+}
+/* ===== Compact Fixed Image Preview ===== */
+
+.img-preview{
+  margin-top: 12px;
+  width: 260px;              /* fixed width */
+  max-width: 100%;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.10);
+  overflow: hidden;
+  position: relative;
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+}
+
+.img-preview img{
+  width: 100%;
+  height: 160px;             /* fixed height */
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 767.98px){
+  .img-preview img{ height: 180px; }
+}
+
+.hidden{ display:none; }
+
+/* hover overlay */
+.img-overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(0,0,0,0.45);
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+
+.img-preview:hover .img-overlay{
+  opacity: 1;
+}
+
+.img-remove-btn{
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 900;
+  cursor: pointer;
+  background: rgba(255,255,255,0.92);
+  color: #B02A37;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.18);
+  transition: transform .18s ease, filter .18s ease;
+}
+.img-remove-btn:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+}
+
+.img-tip{
+  display:block;
+  margin-top: 10px;
+  color: var(--lg-muted);
+  line-height: 1.4;
+}
+
+.admin-events-wrap{
+  padding: 42px 0 70px;
+  min-height: 85vh;
+}
+/* ===== Better Modal Positioning ===== */
+
+
+/* Keep it nicely centered on taller screens */
+@media (min-height: 800px) {
+  .modal-dialog {
+    margin-top: 10vh;
+  }
+}
+
+/* ========================================= */
+/* FIX NAVBAR OVERLAP + MOVE MODAL DOWN */
+/* ========================================= */
+
+/* 1️⃣ Make sure modal is ABOVE navbar */
+.modal{
+  z-index: 2000 !important;
+}
+
+.modal-backdrop{
+  z-index: 1990 !important;
+}
+
+/* 2️⃣ Push modal lower so it doesn't touch navbar */
+.modal-dialog{
+  margin-top: 70px !important;   /* adjust if needed */
+}
+
+/* 3️⃣ Prevent layout shift when modal opens */
+body.modal-open{
+  padding-right: 0 !important;
+}
+
+/* Limit total modal height */
+.lg-modal{
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;   /* was 90vh */
+}
+
+/* Reduce body height */
+.lg-modal-body{
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px;
+  max-height: 60vh;   /* was 75vh */
+}
+
+/* Limit image height */
+.lg-modal-img{
+  width: 100%;
+  max-height: 220px;   /* NEW: keeps image compact */
+  object-fit: cover;   /* clean crop */
+  border-radius: 16px;
+  display: block;
+}
+
+.lg-modal-footer{
+  padding: 10px 16px;
+}
+
+/* ===== More Rounded Modal ===== */
+.modal-content{
+  border-radius: 28px !important;   /* was default ~6-8px */
+  overflow: hidden;                 /* keeps corners clean */
+  border: none;                     /* remove bootstrap harsh border */
+}
+
+/* Style the file input container */
+input[type="file"].ctrl{
+  padding: 8px;
+  background: #fff;
+}
+
+/* Style the actual Choose file button */
+input[type="file"].ctrl::file-selector-button{
+  background: #E5E7EB;        /* soft grey */
+  border: none;
+  padding: 10px 22px;
+  border-radius: 18px;        /* rounded pill */
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .18s ease, transform .18s ease;
+  margin-right: 14px;
+}
+
+/* Hover effect */
+input[type="file"].ctrl::file-selector-button:hover{
+  background: #D1D5DB;
+  transform: translateY(-1px);
+}
+
+/* Active click */
+input[type="file"].ctrl::file-selector-button:active{
+  transform: translateY(0);
+}
+</style>
+
+<section class="admin-events-wrap">
+  <div class="container">
+
+    <div class="page-head">
+      <h2 class="page-title">Manage Events</h2>
+<p class="page-sub">Create warm community events and keep them friendly for seniors.</p>
+    </div>
+
+    <!-- ADD EVENT -->
+    <div class="card-lg card-pad">
+      <div class="section-row">
+        <div>
+          <h3 class="section-title">Add a New Event</h3>
+          <p class="hint">Upload a warm, clear photo and keep the short description under ~2 lines.</p>
+        </div>
+      </div>
+
+      <form class="event-form" method="POST" action="{{ url_for('add_event') }}" enctype="multipart/form-data">
+        <div class="grid">
+
+          <!-- Left: main info -->
+          <div class="field">
+            <div class="row2">
+              <div class="field">
+                <span class="label">Event Title</span>
+                <input class="ctrl" type="text" name="title" placeholder="e.g., Spring Planting Day" required>
+              </div>
+
+              <div class="field">
+                <span class="label">Event Date</span>
+                <input class="ctrl" type="date" name="event_date" required>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="label">Short Description</span>
+              <textarea class="ctrl" name="short_description" placeholder="A short, friendly summary (shown on the card)." rows="3" required></textarea>
+            </div>
+
+            <div class="field">
+              <span class="label">Full Description</span>
+              <textarea class="ctrl" name="full_description" placeholder="More details (shown on the details page)." rows="4" required></textarea>
+            </div>
+          </div>
+
+          <!-- Right: image + settings -->
+          <div class="field">
+            <div class="field file-wrap">
+                <span class="label">Event Image</span>
+
+                <!-- Hidden-ish file input (still accessible) -->
+                <input id="eventImageInput"
+                        class="ctrl"
+                        type="file"
+                        name="image"
+                        accept="image/*"
+                        required>
+
+                <!-- Preview card -->
+                <div id="eventImagePreview" class="img-preview hidden" aria-live="polite">
+                    <img id="eventImagePreviewImg" src="" alt="Selected event image preview">
+
+                    <!-- Hover overlay -->
+                    <div class="img-overlay">
+                    <button type="button" id="removeEventImageBtn" class="img-remove-btn">
+                        🗑 Remove
+                    </button>
+                    </div>
+                </div>
+
+                <small class="img-tip">
+                    Tip: Use bright photos with faces/gardens. Avoid tiny text in images.
+                </small>
+                </div>
+
+            <div class="field">
+              <span class="label">Rewards</span>
+              <textarea class="ctrl" name="rewards" placeholder="e.g., +10 Seeds, +1 Water, Badge: Garden Buddy" rows="4" required></textarea>
+            </div>
+
+            <div class="field">
+              <span class="label">Display Style</span>
+              <select class="ctrl" name="status" required>
+                <option value="details">Show Details Button</option>
+                <option value="upcoming">Show Upcoming Badge</option>
+              </select>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top: 6px; flex-wrap:wrap;">
+              <button type="submit" class="btn-lgx btn-primary">➕ Add Event</button>
+              <button type="reset" class="btn-lgx btn-soft">Reset</button>
+            </div>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <!-- LIST HEADER -->
+    <div class="list-head">
+      <div>
+        <h3 class="section-title" style="margin:0;">Current Events</h3>
+        <p class="hint" style="margin:6px 0 0;">Edit, delete, or review event details.</p>
+      </div>
+      <div id="eventsCountBadge"
+     class="count-pill"
+     data-count="{{ events|length }}"></div>
+    </div>
+
+    <!-- EVENT LIST -->
+    {% for event in events %}
+<div class="event-card">
+  {% if event.image_filename %}
+    <img src="{{ url_for('static', filename='uploads/' + event.image_filename) }}" class="event-img" alt="Event image">
+  {% else %}
+    <img src="{{ url_for('static', filename='uploads/default_event.png') }}" class="event-img" alt="Event image">
+  {% endif %}
+
+  <div class="event-info">
+    <div class="event-top">
+      <div>
+        <h4 class="event-title">{{ event.title }}</h4>
+        <div class="event-meta">📅 Date: {{ event.event_date }}</div>
+      </div>
+
+      {% if event.status == "upcoming" %}
+        <span class="badge-soft badge-upcoming">⏳ Upcoming</span>
+      {% endif %}
+    </div>
+
+    <p class="event-desc">{{ event.short_description }}</p>
+
+    <div class="event-actions">
+
+      {% if event.status == "details" %}
+        <button type="button"
+                class="btn-lgx btn-soft"
+                data-toggle="modal"
+                data-target="#eventModal{{ event.id }}">
+          🔎 Details
+        </button>
+      {% endif %}
+
+      <form method="GET" action="{{ url_for('edit_event', event_id=event.id) }}">
+        <button type="submit" class="btn-lgx btn-edit">✏️ Edit</button>
+      </form>
+
+      <form method="POST" action="{{ url_for('delete_event_admin', event_id=event.id) }}">
+        <button type="submit" class="btn-lgx btn-delete"
+                onclick="return confirm('Delete this event?');">
+          🗑️ Delete
+        </button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% if event.status == "details" %}
+  <!-- ✅ Modal OUTSIDE the card -->
+  <div class="modal fade" id="eventModal{{ event.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content lg-modal">
+
+        <div class="lg-modal-header" style="display:flex; align-items:center; justify-content:space-between; padding:16px 18px; background:#f7f6f2;">
+          <div style="font-weight:900; color:#24563E; font-size:1.2rem;">
+            {{ event.title }}
+          </div>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                  style="font-size:28px; opacity:.7; background:none; border:none; line-height:1;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="lg-modal-body">
+          <div style="border-radius:16px; overflow:hidden; border:1px solid rgba(0,0,0,0.08); margin-bottom:14px;">
+            {% if event.image_filename %}
+              <img src="{{ url_for('static', filename='uploads/' + event.image_filename) }}"
+                    alt="Event image"
+                    class="lg-modal-img">
+            {% else %}
+              <img src="{{ url_for('static', filename='uploads/default_event.png') }}"
+                   alt="Event image"
+                    class="lg-modal-img">
+            {% endif %}
+          </div>
+
+          <p style="margin:0 0 10px; color:#51615a;">
+            📅 <strong>Date:</strong> {{ event.event_date }}
+          </p>
+
+          <p style="margin:0 0 6px; font-weight:900; color:#142019;">Details</p>
+          <p style="margin:0; color:#2c3a33; line-height:1.6;">{{ event.full_description }}</p>
+
+          {% if event.rewards %}
+            <div style="margin-top:14px; padding:12px 14px; background:rgba(47,109,79,0.06); border:1px solid rgba(47,109,79,0.12); border-radius:14px;">
+              <p style="margin:0 0 6px; font-weight:900; color:#24563E;">Rewards</p>
+              <p style="margin:0; color:#2c3a33; line-height:1.6;">{{ event.rewards }}</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="lg-modal-footer" style="padding: 14px 18px; display:flex; justify-content:flex-end;">
+          <button type="button" class="btn-lgx btn-soft" data-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endif %}
+    {% else %}
+      <div class="empty">
+        <h4>No events yet</h4>
+        <p style="margin:0;">Create your first event using the form above. Keep it simple and friendly.</p>
+      </div>
+    {% endfor %}
+
+  </div>
+</section>
+<script>
+  (function(){
+    const input = document.getElementById("eventImageInput");
+    const wrap = document.getElementById("eventImagePreview");
+    const img = document.getElementById("eventImagePreviewImg");
+    const removeBtn = document.getElementById("removeEventImageBtn");
+
+    if(!input || !wrap || !img || !removeBtn) return;
+
+    input.addEventListener("change", function(){
+      const file = this.files && this.files[0];
+      if(!file){
+        wrap.classList.add("hidden");
+        img.src = "";
+        return;
+      }
+
+      if(!file.type.startsWith("image/")){
+        alert("Please upload an image file.");
+        input.value = "";
+        wrap.classList.add("hidden");
+        img.src = "";
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      img.src = url;
+      wrap.classList.remove("hidden");
+
+      // Clean up old object URLs when changing image
+      img.onload = () => URL.revokeObjectURL(url);
+    });
+
+    removeBtn.addEventListener("click", function(){
+      input.value = "";              // clear file input
+      img.src = "";
+      wrap.classList.add("hidden");  // hide preview
+    });
+  })();
+</script>
+{% endblock %}

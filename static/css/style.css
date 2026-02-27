@@ -1,0 +1,191 @@
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+img, svg {
+  max-width: 100%;
+}
+
+
+
+/* ===== 1. GLOBAL & BASE STYLES ===== */
+:root {
+    --legacy-green: #457F5B;
+    --legacy-beige: #f9f7f0;
+    --text-dark: #333333;
+    --border-light: #d6d6d6;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--legacy-beige);
+    color: var(--text-dark);
+    margin: 0;
+    min-height: 100vh;
+}
+
+.lang-toggle{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 9999;
+
+  border: 1px solid rgba(0,0,0,.12);
+  background: #111;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+
+.lang-toggle:hover{
+  filter: brightness(1.05);
+}
+
+
+
+
+/* --- Navbar language dropdown --- */
+.lang-wrap{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.lang-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;                 /* match profile button height */
+  padding: 0 12px;
+  border-radius: 12px;        /* pill shape */
+  border: 1.5px solid #5fbf73; /* green outline */
+  background: #fff;
+  color: #2f7a4f;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.lang-menu{
+  position: absolute;
+  right: 0;
+  top: 42px;
+  min-width: 140px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 12px;
+  box-shadow: 0 12px 26px rgba(0,0,0,.12);
+  padding: 6px;
+  display: none;
+  z-index: 9999;
+}
+
+.lang-menu.show{ display: block; }
+
+.lang-item{
+  width: 100%;
+  text-align: left;
+  padding: 10px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.lang-btn:hover{
+  background: #f4fbf6;
+}
+
+.lang-icon{
+  font-size: 16px;
+  line-height: 1;
+}
+
+.lang-text{
+  font-size: 14px;
+}
+
+.lang-caret{
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Dropdown menu (simple) */
+.lang-menu{
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  padding: 6px;
+  display: none;
+  min-width: 120px;
+  z-index: 100001;
+}
+
+.lang-wrap.open .lang-menu{
+  display: block;
+}
+
+.lang-item{
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 8px 10px;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.lang-item:hover{
+  background: #f0f7f3;
+}
+.lang-item:hover{ background: rgba(0,0,0,.06); }
+
+/* --- Hide Google Translate UI completely --- */
+#google_translate_element{ display:none !important; }
+.goog-te-banner-frame.skiptranslate{ display:none !important; }
+body{ top: 0 !important; }
+.goog-te-gadget{ display:none !important; }
+.goog-te-balloon-frame{ display:none !important; }
+
+/* --- FORCE hide Google translate top banner --- */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+}
+
+.goog-te-banner-frame {
+  height: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Google also shifts the page down; undo that */
+body {
+  top: 0px !important;
+}
+
+/* Sometimes it wraps everything in "skiptranslate" */
+.skiptranslate {
+  display: none !important;
+}
+
+/* Keep your own content visible */
+body .skiptranslate * {
+  display: revert !important;
+}
+
+/* Hide the little tooltip bubble too */
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+
+

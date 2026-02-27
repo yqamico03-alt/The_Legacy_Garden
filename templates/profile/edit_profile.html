@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Edit Profile") }} | The Legacy Garden{% endblock %}
+
+{% block content %}
+<style>
+.edit-page-wrap {
+    max-width: 860px;
+    margin: 40px auto 80px;
+    padding: 0 16px;
+}
+
+.edit-heading {
+    font-weight: 800;
+    font-size: 2rem;
+    color: #2e7d32;
+    margin-bottom: 24px;
+}
+
+.edit-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 44px 50px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.09);
+    border: 1px solid #f0f0f0;
+}
+
+/* Photo section */
+.photo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-right: 40px;
+    border-right: none;
+}
+
+.profile-pic-wrap {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 14px;
+}
+
+.profile-pic-large {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #c8e6c9;
+    background-color: #e9f1ee;
+    display: block;
+}
+
+.photo-overlay {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 36px;
+    height: 36px;
+    background: var(--legacy-green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid #fff;
+    transition: background 0.2s;
+}
+
+.photo-overlay:hover { background: #1b5e20; }
+.photo-overlay i { color: #fff; font-size: 0.85rem; }
+
+.photo-name {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #1a1a1a;
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.photo-role {
+    font-size: 0.85rem;
+    color: #888;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.remove-photo-link {
+    font-size: 0.85rem;
+    color: #e53935;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.remove-photo-link:hover { color: #b71c1c; text-decoration: underline; }
+
+/* Form section */
+.form-section {
+    padding-left: 40px;
+    flex: 1;
+}
+
+.field-group {
+    margin-bottom: 20px;
+}
+
+.field-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.field-input {
+    width: 100%;
+    height: 48px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    background: #fafafa;
+    color: #333;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.field-input:focus {
+    outline: none;
+    border-color: var(--legacy-green);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.field-input:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.select-wrap {
+    position: relative;
+}
+
+.select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #888;
+    pointer-events: none;
+}
+
+select.field-input {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    padding-right: 36px;
+}
+
+textarea.field-input {
+    height: auto;
+    min-height: 110px;
+    padding: 12px 14px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+/* Action buttons */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+    margin-top: 28px;
+}
+
+.btn-cancel {
+    color: #888;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.btn-cancel:hover { color: #333; }
+
+.btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--legacy-green);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 32px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-save:hover { background-color: #1b5e20; transform: translateY(-1px); }
+.btn-save:active { transform: translateY(0); }
+
+@media (max-width: 768px) {
+    .edit-card { padding: 28px 20px; }
+    .photo-section {
+        padding-right: 0;
+        padding-bottom: 24px;
+        margin-bottom: 24px;
+    }
+    .form-section { padding-left: 0; }
+    .form-actions { flex-direction: column-reverse; width: 100%; }
+    .btn-save { width: 100%; justify-content: center; }
+}
+</style>
+
+<div class="edit-page-wrap">
+    <h2 class="edit-heading">{{ _("Edit Profile") }}</h2>
+
+    <div class="edit-card">
+        <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data">
+            <div class="d-flex flex-column flex-md-row">
+
+                <!-- Photo Column -->
+                <div class="photo-section">
+                    <div class="profile-pic-wrap">
+                        {% if profile['profile_pic'] and profile['profile_pic'] != 'profile_pic.png' %}
+                        <img src="{{ url_for('static', filename='uploads/' + profile['profile_pic']) }}"
+                             id="preview" class="profile-pic-large">
+                        {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ profile['name'] or session['username'] }}&background=random&size=150"
+                             id="preview" class="profile-pic-large">
+                        {% endif %}
+                        <label for="file-upload" class="photo-overlay" title="{{ _('Change Photo') }}">
+                            <i class="fa-solid fa-camera"></i>
+                        </label>
+                    </div>
+
+                    <div class="photo-name">{{ profile['name'] or session['username'] }}</div>
+                    <div class="photo-role">{{ _(profile['role']) }} · {{ _(profile['region']) }}</div>
+
+                    {% if profile['profile_pic'] and profile['profile_pic'] != 'profile_pic.png' %}
+                    <a class="remove-photo-link" onclick="confirmRemoval()">
+                        <i class="fa-solid fa-trash-can" style="margin-right:4px;"></i>{{ _("Remove Photo") }}
+                    </a>
+                    {% endif %}
+
+                    <input id="file-upload" type="file" name="profile_image"
+                           style="display:none;" onchange="previewImage(event)">
+                </div>
+
+                <!-- Form Column -->
+                <div class="form-section">
+
+                    <!-- Name -->
+                    <div class="field-group">
+                        <label class="field-label">{{ _("Name") }}</label>
+                        <input type="text" name="name" class="field-input"
+                               value="{{ profile['name'] }}"
+                               placeholder="{{ _('Enter your name') }}">
+                    </div>
+
+                    <!-- Profile Type -->
+                    <div class="field-group">
+                        <label class="field-label">{{ _("Profile Type") }}</label>
+                        <input type="text" class="field-input"
+                               value="{{ _(profile['role']) }}"
+                               disabled>
+                        <input type="hidden" name="role" value="{{ profile['role'] }}">
+                    </div>
+
+                    <!-- Region -->
+                    <div class="field-group">
+                        <label class="field-label">{{ _("Region") }}</label>
+                        <div class="select-wrap">
+                            <select name="region" class="field-input">
+                                {% for r in ['North', 'South', 'East', 'West', 'Central'] %}
+                                <option value="{{ r }}" {% if profile['region'] == r %}selected{% endif %}>{{ _(r) }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="field-group">
+                        <label class="field-label">{{ _("Bio") }}</label>
+                        <textarea name="bio" class="field-input"
+                                  placeholder="{{ _('Tell the community about yourself...') }}">{{ profile['bio'] }}</textarea>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="form-actions">
+                        <a href="{{ url_for('profile') }}" class="btn-cancel">{{ _("Cancel") }}</a>
+                        <button type="submit" class="btn-save">
+                            <i class="fa-solid fa-floppy-disk"></i>{{ _("Save Changes") }}
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<form id="remove-photo-form" action="{{ url_for('remove_photo') }}" method="POST" style="display:none;"></form>
+<span id="removePhotoMsg" data-msg="{{ _('Are you sure you want to remove your profile photo?') }}"></span>
+
+<script>
+function confirmRemoval() {
+    const msg = document.getElementById("removePhotoMsg").dataset.msg;
+    if (confirm(msg)) {
+        document.getElementById("remove-photo-form").submit();
+    }
+}
+
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview').src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+}
+</script>
+
+{% endblock %}

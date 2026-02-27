@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Settings") }} | The Legacy Garden{% endblock %}
+
+{% block content %}
+<style>
+.settings-wrap {
+    max-width: 960px;
+    margin: 40px auto 80px;
+    padding: 0 16px;
+}
+
+.settings-title {
+    font-weight: 800;
+    font-size: 2.4rem;
+    color: #2e7d32;
+    margin-bottom: 6px;
+}
+
+.settings-subtitle {
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    margin-bottom: 24px;
+}
+
+/* Back button */
+.back-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    margin-bottom: 28px;
+    transition: background-color 0.2s, transform 0.2s;
+    display: inline-flex;
+}
+
+.back-pill:hover {
+    background-color: #c8e6c9;
+    color: #1b5e20;
+    transform: translateX(-2px);
+    text-decoration: none;
+}
+
+/* Section label */
+.section-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    margin-top: 28px;
+    padding-left: 4px;
+}
+
+/* Action cards */
+.action-group {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.action-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: #1a1a1a;
+    font-weight: 600;
+    font-size: 1.15rem;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.action-item:last-child { border-bottom: none; }
+
+.action-item:hover {
+    background-color: #f0f7f0;
+    text-decoration: none;
+    color: #1a1a1a;
+}
+
+.action-item.danger:hover {
+    background-color: #fff3f3;
+    color: #c0392b;
+}
+
+.action-item.danger .action-icon { color: #e53935; }
+
+.action-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.action-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #f0f7f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--legacy-green);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.action-item.danger .action-icon {
+    background: #fff3f3;
+}
+
+.action-arrow {
+    color: #ccc;
+    font-size: 1rem;
+}
+
+/* Privacy toggle group */
+.privacy-group {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.privacy-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f5f5f5;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.privacy-item:last-child { border-bottom: none; }
+
+.privacy-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.privacy-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #f0f7f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--legacy-green);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* Switch */
+.switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px; width: 20px;
+    left: 4px; bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider { background-color: var(--legacy-green); }
+input:checked + .slider:before { transform: translateX(22px); }
+
+/* Support */
+.support-group {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+/* Logout */
+.logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    background-color: #e53935;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 18px;
+    font-weight: 700;
+    font-size: 1.15rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s, transform 0.1s;
+    margin-top: 8px;
+}
+
+.logout-btn:hover {
+    background-color: #c62828;
+    color: #fff;
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .settings-wrap { max-width: 680px; padding: 0 12px; }
+    .settings-title { font-size: 1.6rem; }
+}
+</style>
+
+<div class="settings-wrap">
+
+    <h1 class="settings-title">{{ _("Settings") }}</h1>
+    <p class="settings-subtitle">{{ _("Manage your account and preferences") }}</p>
+
+    <a href="{{ url_for('profile') }}" class="back-pill">
+        <i class="fa-solid fa-arrow-left"></i> {{ _("Back to Profile") }}
+    </a>
+
+    <!-- ACCOUNT -->
+    <div class="section-label">{{ _("Account") }}</div>
+    <div class="action-group">
+        <a href="{{ url_for('story.manage') }}" class="action-item">
+            <div class="action-left">
+                <div class="action-icon"><i class="fa-solid fa-book-open"></i></div>
+                <span>{{ _("View / Manage Stories") }}</span>
+            </div>
+            <i class="fa-solid fa-chevron-right action-arrow"></i>
+        </a>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="section-label">{{ _("Security") }}</div>
+    <div class="action-group">
+        <a href="{{ url_for('reset_password_settings') }}" class="action-item">
+            <div class="action-left">
+                <div class="action-icon"><i class="fa-solid fa-lock"></i></div>
+                <span>{{ _("Change Password") }}</span>
+            </div>
+            <i class="fa-solid fa-chevron-right action-arrow"></i>
+        </a>
+        <a href="{{ url_for('change_email') }}" class="action-item">
+            <div class="action-left">
+                <div class="action-icon"><i class="fa-solid fa-envelope"></i></div>
+                <span>{{ _("Change Email") }}</span>
+            </div>
+            <i class="fa-solid fa-chevron-right action-arrow"></i>
+        </a>
+        <a href="{{ url_for('change_phone') }}" class="action-item">
+            <div class="action-left">
+                <div class="action-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+                <span>{{ _("Change Phone Number") }}</span>
+            </div>
+            <i class="fa-solid fa-chevron-right action-arrow"></i>
+        </a>
+    </div>
+
+    <!-- PRIVACY -->
+    <div class="section-label">{{ _("Privacy") }}</div>
+    <form method="POST" action="{{ url_for('settings') }}">
+        <div class="privacy-group">
+            <div class="privacy-item">
+                <div class="privacy-left">
+                    <div class="privacy-icon"><i class="fa-solid fa-envelope"></i></div>
+                    <span>{{ _("Hide Email") }}</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" name="show_email"
+                        {% if not settings['show_email'] %}checked{% endif %}
+                        onchange="updateSetting(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="privacy-item">
+                <div class="privacy-left">
+                    <div class="privacy-icon"><i class="fa-solid fa-location-dot"></i></div>
+                    <span>{{ _("Hide Region") }}</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" name="show_region"
+                        {% if not settings['show_region'] %}checked{% endif %}
+                        onchange="updateSetting(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="privacy-item">
+                <div class="privacy-left">
+                    <div class="privacy-icon"><i class="fa-solid fa-phone"></i></div>
+                    <span>{{ _("Hide Phone Number") }}</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" name="show_phone"
+                        {% if not settings['show_phone'] %}checked{% endif %}
+                        onchange="updateSetting(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </form>
+
+    <!-- SUPPORT -->
+    <div class="section-label">{{ _("Support") }}</div>
+    <div class="support-group">
+        <a href="{{ url_for('community_guidelines') }}" class="action-item">
+            <div class="action-left">
+                <div class="action-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <span>{{ _("Community Guidelines") }}</span>
+            </div>
+            <i class="fa-solid fa-chevron-right action-arrow"></i>
+        </a>
+        <a href="{{ url_for('terms') }}" class="action-item">
+            <div class="action-left">
+                <div class="action-icon"><i class="fa-solid fa-file-lines"></i></div>
+                <span>{{ _("Terms & Privacy Policy") }}</span>
+            </div>
+            <i class="fa-solid fa-chevron-right action-arrow"></i>
+        </a>
+    </div>
+
+    <!-- DANGER ZONE -->
+    <div class="section-label">{{ _("Danger Zone") }}</div>
+    <div class="action-group">
+        <div class="action-item danger" onclick="confirmDelete()">
+            <div class="action-left">
+                <div class="action-icon"><i class="fa-solid fa-trash-can"></i></div>
+                <span>{{ _("Delete Account") }}</span>
+            </div>
+            <i class="fa-solid fa-chevron-right action-arrow"></i>
+        </div>
+    </div>
+
+    <!-- LOGOUT -->
+    <a href="{{ url_for('logout') }}" class="logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i>{{ _("Log Out") }}
+    </a>
+
+</div>
+
+<form id="delete-form" action="{{ url_for('delete_account') }}" method="POST" style="display:none;"></form>
+<span id="deleteMsg" data-msg="{{ _('Are you sure you want to delete your account?') }}"></span>
+
+<script>
+function confirmDelete() {
+    const msg = document.getElementById("deleteMsg").dataset.msg;
+    if (confirm(msg)) {
+        document.getElementById('delete-form').submit();
+    }
+}
+
+function updateSetting(checkbox) {
+    fetch("{{ url_for('settings') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `${checkbox.name}=${checkbox.checked ? 0 : 1}`
+    });
+}
+</script>
+
+{% endblock %}

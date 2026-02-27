@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Community Guidelines") }} | The Legacy Garden{% endblock %}
+
+{% block content %}
+<style>
+/* ===== COMMUNITY GUIDELINES ===== */
+.guideline-container{
+  max-width: 1140px;   /* same as settings-container */
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* responsive like Bootstrap container */
+@media (max-width: 1200px){
+  .guideline-container{ max-width: 960px; }
+}
+@media (max-width: 992px){
+  .guideline-container{ max-width: 720px; }
+}
+@media (max-width: 768px){
+  .guideline-container{ max-width: 540px; }
+}
+@media (max-width: 576px){
+  .guideline-container{ max-width: 100%; }
+}
+
+
+/* ===== TITLE ===== */
+.guideline-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #2F7D4E;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* ===== CARD ===== */
+.guideline-card {
+    background-color: #F3FBF6;
+    border-radius: 20px;
+    padding: 35px 40px;
+    border: 1px solid #D6ECDD;
+}
+
+/* ===== ITEMS ===== */
+.guideline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.guideline-icon {
+    font-size: 1.8rem;
+    margin-top: 2px;
+}
+
+.guideline-text h4 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #2F2F2F;
+}
+
+.guideline-text p {
+    margin: 0;
+    color: #5F6F65;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* ===== REUSED AUTH BUTTON STYLE ===== */
+.auth-btn {
+    display: inline-block;
+    background-color: var(--legacy-green);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 40px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.auth-btn:hover {
+    background-color: #31513C;
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+.terms-container{
+  padding: 60px 0 100px;   /* no flex center */
+}
+
+/* SAME WIDTH FEEL AS SETTINGS (container width) */
+.terms-card{
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 50px 45px;
+  width: 100%;
+  max-width: 600px;        /* match your settings-container */
+  margin: 0 auto;          /* center it */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.back-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 26px;
+    border-radius: 999px;
+    background-color: #DFF3E6; /* mint */
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.back-pill:hover {
+    transform: translateX(-3px);
+    text-decoration: none;
+}
+
+/* arrow */
+.back-pill.blue {
+    color: #1b5e20;
+}
+
+.back-pill.blue .arrow {
+    color: #1b5e20;
+}
+
+.back-pill.blue:hover {
+    background-color: #c8e6c9;
+}
+
+/* ===== GUIDELINES HEADER CARD ===== */
+.guidelines-header-card {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 26px 32px;           /* smaller padding */
+    margin: 0 auto 32px;
+    max-width: 900px;             /* ⬅️ smaller card */
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+}
+
+/* Title inside card */
+.guidelines-title {
+    text-align: center;
+    color: #2e7d32;
+    font-weight: 800;
+    font-size: 2.4rem;
+    letter-spacing: -0.5px;
+    margin: 10px 0 0;
+}
+
+</style>
+<div class="guideline-container">
+
+  <div class="guidelines-back-wrapper">
+    <a href="{{ url_for('settings') }}" class="back-pill blue mb-3 d-inline-block">
+        <i class="fa-solid fa-arrow-left"></i> {{ _("Back to Settings") }}
+    </a>
+    <div class="guidelines-header-card">
+        <h1 class="guideline-title">{{ _("Community Guidelines") }}</h1>
+
+    <!-- CARD -->
+    <div class="guideline-card">
+
+        <div class="guideline-item">
+            <div class="guideline-icon">🌱</div>
+            <div class="guideline-text">
+                <h4>{{ _("1. Be respectful and kind to all members") }}</h4>
+                <p>{{ _("Treat youth and seniors with patience, empathy, and understanding.") }}</p>
+            </div>
+        </div>
+
+        <div class="guideline-item">
+            <div class="guideline-icon">🌱</div>
+            <div class="guideline-text">
+                <h4>{{ _("2. Share positive and meaningful stories") }}</h4>
+                <p>{{ _("Avoid harmful or sensitive topics.") }}</p>
+            </div>
+        </div>
+
+        <div class="guideline-item">
+            <div class="guideline-icon">🌱</div>
+            <div class="guideline-text">
+                <h4>{{ _("3. Support one another whenever possible") }}</h4>
+                <p>{{ _("Small actions help build a warm, caring community.") }}</p>
+            </div>
+        </div>
+
+        <div class="guideline-item">
+            <div class="guideline-icon">🌱</div>
+            <div class="guideline-text">
+                <h4>{{ _("4. Keep the community safe and respectful") }}</h4>
+                <p>{{ _("Do not share personal details; report unsafe content.") }}</p>
+            </div>
+        </div>
+
+        <div class="guideline-item">
+            <div class="guideline-icon">🌱</div>
+            <div class="guideline-text">
+                <h4>{{ _("5. Celebrate differences and learn from each other") }}</h4>
+                <p>{{ _("Stay open-minded and enjoy discovering new perspectives.") }}</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+  </div>
+
+</div>
+{% endblock %}

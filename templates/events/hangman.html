@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman - Legacy Garden</title>
+
+<style>
+    :root {
+        --primary-green: #4CAF50;
+        --page-bg: #f3f4f3;
+        --text-grey: #555;
+        --btn-border: #D1E7D3;
+    }
+
+    body {
+        overflow-x: hidden;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background-color: var(--page-bg);
+        margin: 0;
+        color: #333;
+    }
+
+    /* Top Navigation Bar */
+    .nav-bar {
+        background: white;
+        padding: 10px 50px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #ddd;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .nav-links span {
+        margin: 0 15px;
+        color: var(--text-grey);
+        cursor: pointer;
+    }
+
+    .browser-header {
+        background: #eee;
+        padding: 8px 20px;
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .main-container {
+        max-width: 800px;
+        margin: 20px auto;
+        background: white;
+        min-height: 70vh;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        padding: 30px;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    .game-info-panel {
+        margin-bottom: 25px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 20px;
+        text-align: left;
+    }
+
+    .match-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .instruction-box {
+        font-size: 13px;
+        color: #777;
+        line-height: 1.6;
+    }
+
+    .stats-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+        background: #fff;
+        padding: 15px 0;
+        font-size: 14px;
+        font-weight: 500;
+        justify-content: center;
+    }
+
+    .stat-item span {
+        color: #000;
+        font-weight: bold;
+    }
+
+    .active-turn {
+        color: var(--primary-green);
+        text-decoration: underline;
+    }
+
+    /* ========================= */
+    /* ✅ FIXED WORD DISPLAY     */
+    /* ========================= */
+
+    .word-container {
+        background: #f9fdfa;
+        padding: 40px 20px;
+        border-radius: 15px;
+        border: 2px dashed #e0e0e0;
+        margin: 20px 0;
+
+        overflow: hidden;          /* ✅ removed horizontal scroll */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .word {
+        font-size: clamp(20px, 5vw, 42px);           /* ✅ responsive scaling */
+        letter-spacing: clamp(4px, 1.5vw, 12px);     /* ✅ responsive spacing */
+
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        color: #2D5233;
+
+        white-space: nowrap;       /* keep single line */
+        text-align: center;
+    }
+
+    /* ========================= */
+
+    .letters {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .letters button {
+        width: 45px;
+        height: 45px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 8px;
+        border: 1px solid var(--btn-border);
+        background: white;
+        transition: all 0.2s;
+        color: #4A7C59;
+    }
+
+    .letters button:hover:not(:disabled) {
+        background: #f0f9f1;
+        transform: translateY(-2px);
+    }
+
+    .letters button:disabled {
+        background: #eee;
+        color: #bbb;
+        cursor: not-allowed;
+        border-color: #ddd;
+    }
+
+    .letters button.used {
+        background: #cfd8d3;
+        color: #6f6f6f;
+        border-color: #b8c6bf;
+        cursor: not-allowed;
+    }
+/* Footer Action Button */
+    .footer-action {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .turn-btn {
+        border: 2px solid var(--btn-border);
+        background: white;
+        color: #4A7C59;
+        padding: 10px 40px;
+        border-radius: 25px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Modals (Matching Memory Match) */
+    .modal, .policy-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .policy-content {
+        background: #f1f1f1;
+        padding: 25px 35px;
+        border-radius: 30px;
+        text-align: center;
+        width: 90%;
+        max-width: 460px;
+        box-shadow: 0 0 25px rgba(255, 120, 120, 0.6); 
+        border: 1px solid white;
+    }
+
+    .policy-header {
+        color: #a876e6;
+        text-align: left;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .btn-confirm-yes { background: #7B3F3F; color: white; border: none; padding: 8px 30px; border-radius: 15px; font-size: 24px; cursor: pointer; }
+    .btn-confirm-no { background: #2D5233; color: white; border: none; padding: 8px 30px; border-radius: 15px; font-size: 24px; cursor: pointer; }
+    .exit-btn { background: var(--primary-green); color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+
+    /* Yq added - Responsive styles */
+    @media (max-width: 700px) {
+      .main-container {
+        margin: 8px;
+        padding: 12px;
+        border-radius: 6px;
+      }
+
+      .stats-bar {
+        gap: 6px 14px;
+        font-size: 12px;
+        justify-content: flex-start;
+        padding: 10px 0;
+      }
+
+      .word-container {
+        padding: 20px 10px;
+      }
+
+      .word {
+        font-size: 28px;
+        letter-spacing: 8px;
+        white-space: nowrap;
+      }
+
+      .letters {
+        gap: 5px;
+        max-width: 100%;
+      }
+
+      .letters button {
+        width: 36px;
+        height: 36px;
+        font-size: 13px;
+      }
+
+      .match-title { font-size: 15px; }
+      .instruction-box { font-size: 11px; }
+      .turn-btn { padding: 8px 20px; font-size: 13px; }
+      .game-info-panel { margin-bottom: 12px; padding-bottom: 12px; }
+    }
+
+    @media (max-width: 480px) {
+      .main-container {
+        margin: 4px;
+        padding: 10px;
+      }
+
+      .word {
+        font-size: 22px;
+        letter-spacing: 4px;
+        white-space: nowrap;
+      }
+
+      .letters button {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+      }
+
+      .stats-bar { font-size: 11px; gap: 5px 10px; }
+      .turn-btn { padding: 6px 14px; font-size: 12px; }
+    }
+
+    @media (max-width: 360px) {
+      .main-container {
+        margin: 2px;
+        padding: 8px;
+      }
+
+      .word {
+        font-size: 17px;
+        letter-spacing: 3px;
+        white-space: nowrap;
+      }
+
+      .letters button {
+        width: 27px;
+        height: 27px;
+        font-size: 10px;
+      }
+
+      .stats-bar { font-size: 10px; gap: 4px 8px; }
+
+      .btn-confirm-yes, .btn-confirm-no {
+        font-size: 16px;
+        padding: 5px 16px;
+      }
+    }
+</style>
+
+</head>
+<body>
+
+<div class="top-controls" style="padding: 10px 20px;">
+    <div onclick="showPolicyModal()" style="cursor: pointer; width: 40px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+    </div>
+</div>
+
+<div class="main-container" id="hangmanGame">
+    <div class="game-info-panel">
+        <div class="match-title">Hangman Duel</div>
+        <div class="instruction-box">
+            Match Information: You VS <b id="opponent-name">Waiting for opponent...</b><br>
+            <b>Game Instruction:</b> Guess the word one letter at a time. If you guess correctly, you keep your turn! Miss, and the opponent takes over.
+        </div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-item">Current Turn: <span id="turn-label" class="active-turn">Your Move</span></div>
+        <div class="stat-item">Status: <span id="status-text">Good Luck!</span></div>
+        <!-- Yq added -->
+        <div class="stat-item">
+          ⏳ Time Left: <span id="turn-timer">1:00</span>
+        </div>
+    </div>
+
+    <!-- Category hint banner -->
+    <div id="category-banner" style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 12px 0 4px;
+        padding: 8px 20px;
+        background: #f0faf1;
+        border: 1px solid #D1E7D3;
+        border-radius: 30px;
+        font-size: 14px;
+        color: #4A7C59;
+        font-weight: 600;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+    ">
+        🏷️ Category: <span id="category-label" style="color: #2D5233; font-size: 15px;">—</span>
+    </div>
+
+    <div class="word-container">
+        <div id="wordDisplay" class="word">_ _ _ _ _</div>
+    </div>
+
+    <div class="letters" id="letters">
+        </div>
+
+    <div class="footer-action">
+        <button class="turn-btn">
+            👤 <span id="footer-text">Your turn !</span>
+        </button>
+    </div>
+</div>
+
+<div class="modal" id="result-modal">
+    <div class="modal-content" style="max-width: 320px; width: 85%; padding: 30px; border-radius: 20px;">
+        <h1 id="res-emoji" style="font-size: 50px; margin-bottom: 10px;">🎉</h1>
+        <h2 id="res-title" style="font-weight: bold; margin-bottom: 5px;">You Win !</h2>
+        <p id="res-streak" style="color: #666; font-size:15px; margin-bottom:16px; line-height:1.6;"></p>
+        
+        <!-- ✅ ADDED: View Opponent's Profile button -->
+        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+            <button class="exit-btn" id="view-opponent-btn" onclick="viewOpponentProfile()" 
+                    style="margin-top: 0; padding: 10px 30px; border-radius: 12px; font-weight: bold; background: #2D5233;">
+                👤 View Opponent's Profile
+            </button>
+            <button class="exit-btn" onclick="exitToEvents()" 
+                    style="margin-top: 0; padding: 10px 40px; border-radius: 12px; font-weight: bold;">
+                Exit
+            </button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="policy-modal" id="policy-modal">
+    <div class="policy-content">
+        <div class="policy-header">❖ Policy</div>
+        <div class="policy-text">
+            Leaving the match before it's finished will reduce your daily game streak by 1 and reset your winning streak.<br><br>
+            Do you still want to quit?
+        </div>
+        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
+            <button class="btn-confirm-yes" onclick="confirmExit()">Yes</button>
+            <button class="btn-confirm-no" onclick="closePolicyModal()">No</button>
+        </div>
+    </div>
+</div>
+
+  <!-- ⏱️ AFK WARNING TOAST -->
+  <div id="afk-toast" style="
+    display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+    background:#7B3F3F; color:white; padding:14px 28px; border-radius:12px;
+    font-weight:bold; font-size:15px; z-index:99999; align-items:center; gap:12px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.3);">
+    ⚠️ You have been inactive! 10 seconds left before auto-quit!
+    <button onclick="resetAfkTimer()" style="
+      background:white; color:#7B3F3F; border:none; padding:6px 14px;
+      border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">
+      I'm here!
+    </button>
+  </div>
+
+  <!-- ⏱️ AFK AUTO-QUIT MODAL -->
+  <div id="afk-modal" style="
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
+    align-items:center; justify-content:center; z-index:99999;">
+    <div style="background:white; padding:40px; border-radius:20px; text-align:center;
+                box-shadow:0 10px 30px rgba(0,0,0,0.25); max-width:340px; width:90%;">
+      <h1 style="font-size:50px; margin-bottom:10px;">⏱️</h1>
+      <h2 style="font-weight:bold; margin-bottom:8px;">Auto-Quit</h2>
+      <p style="color:#666; font-size:14px; margin-bottom:20px; line-height:1.6;">
+        You were inactive for 1 minute.<br>
+        Your daily game streak has been reduced by 1 and your winning streak has been reset.
+      </p>
+      <button onclick="exitToEvents()" style="
+        background:#4CAF50; color:white; border:none; padding:12px 40px;
+        border-radius:8px; font-size:16px; cursor:pointer; font-weight:bold;">
+        Return to Events
+      </button>
+    </div>
+  </div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+
+
+<script>
+  // added 
+  // 🔧 FIX: Persist opponent username using sessionStorage
+  function setOpponentUsername(username) {
+    console.log("🔧 Setting opponent username:", username);
+    window.opponentUsername = username;
+    if (username && username !== "Waiting for opponent...") {
+      sessionStorage.setItem('currentOpponentUsername', username);
+      console.log("💾 Saved to sessionStorage:", username);
+    }
+  }
+
+  function getOpponentUsername() {
+    // Try window variable first, then fall back to sessionStorage
+    let username = window.opponentUsername || sessionStorage.getItem('currentOpponentUsername');
+    console.log("🔍 Retrieved opponent username:", username);
+    return username;
+  }
+
+  // Initialize from sessionStorage on page load
+  window.opponentUsername = sessionStorage.getItem('currentOpponentUsername') || null;
+  console.log("🔄 Initialized opponent username from storage:", window.opponentUsername);
+
+  let forcedResult = null; // "win" | "lose" | null
+  window.gameStarted = true;
+  window.gameOverShown = false;
+  let allowLeave = false;
+
+  let awaitingServer = false;
+
+  // ===== ⏱️ AFK TIMEOUT (4 minutes of inactivity = auto-quit) =====
+  const AFK_TIMEOUT_MS = 1 * 60 * 1000; // yq added: 1 minute
+  const AFK_WARN_MS    = 50 * 1000; // yq added: warn at 10 seconds remaining
+  let afkTimer     = null;
+  let afkWarnTimer = null;
+
+  function resetAfkTimer() {
+    clearTimeout(afkTimer);
+    clearTimeout(afkWarnTimer);
+
+    // Hide warning toast if visible
+    const toast = document.getElementById("afk-toast");
+    if (toast) toast.style.display = "none";
+
+    // Only run timer when it's our turn and game is live
+    if (gameOver || !window.gameStarted) return;
+    // currentTurn / role may not be set yet at init — guard against that
+    if (typeof currentTurn === "undefined" || typeof role === "undefined") return;
+    if (currentTurn !== role) return;
+
+    // yq added: If the visual turn timer already hit 0, kick immediately — don't allow reset
+    const timerEl = document.getElementById("turn-timer");
+    if (timerEl && timerEl.textContent === "0:00") {
+      triggerAfkQuit();
+      return;
+    }
+
+    // yq added: Warn at 50 seconds
+    afkWarnTimer = setTimeout(() => {
+      if (gameOver || currentTurn !== role) return;
+      const t = document.getElementById("afk-toast");
+      if (t) t.style.display = "flex";
+    }, AFK_WARN_MS);
+
+    // yq added: Auto-quit at 1 minute
+    afkTimer = setTimeout(() => {
+      if (gameOver || currentTurn !== role) return;
+      console.warn("⏱️ AFK timeout — applying quit penalty");
+      triggerAfkQuit();
+    }, AFK_TIMEOUT_MS);
+  }
+
+  function triggerAfkQuit() {
+    if (window.__afkQuitSent) return;
+    window.__afkQuitSent = true;
+    window.__normalExit = true;  // prevent beforeunload beacon from also firing
+    window.__beaconSent = true;
+
+    clearTimeout(afkTimer);
+    clearTimeout(afkWarnTimer);
+
+    // Freeze game
+    gameOver = true;
+    window.gameStarted = false;
+
+    // Notify opponent they win
+    if (roomId && role) {
+      socket.emit("forfeit_game", {
+        room: roomId,
+        game_type: "hangman",
+        role: role
+      });
+    }
+
+    // Disable all buttons
+    document.querySelectorAll("#letters button").forEach(btn => btn.disabled = true);
+
+    // Apply penalty
+    fetch("/api/streaks/quit_game", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    })
+    .then(res => res.json())
+    .then(() => showAfkModal())
+    .catch(() => showAfkModal());
+  }
+
+  function showAfkModal() {
+    const modal = document.getElementById("afk-modal");
+    if (modal) modal.style.display = "flex";
+  }
+
+// ── Memory unlock ────────────────────────────────────────────
+// memory_key is sent by the server in sync_state (if the word maps to a memory)
+let _hangmanMemoryKey = null;
+
+// #Yq fix: guard flag so unlockMemory can only fire once per page load (prevents double-call on reload)
+let _memoryUnlockCalled = false;
+
+function unlockMemory(memoryKey) {
+  // #Yq fix: prevent double-call from sync_state + game_update both triggering on a page reload
+  if (!memoryKey || _memoryUnlockCalled) return;
+  _memoryUnlockCalled = true;
+  fetch("/unlock_memory", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ memory_key: memoryKey })
+  })
+  .then(res => res.json())
+  .then(data => {
+    // #Yq fix: server returns "success"; only show toast if newly_unlocked (not a duplicate)
+    if ((data.status === "success" || data.status === "ok") && data.newly_unlocked !== false) {
+      console.log("🏮 Memory unlocked:", memoryKey);
+      // #ya added: set localStorage flag so events page shows red dot instantly without a reload
+      localStorage.setItem('pendingMemoryDot', '1');
+      // Show a small toast notification
+      const toast = document.createElement("div");
+      toast.textContent = "🏮 New memory unlocked! Check your Memory Album.";
+      toast.style.cssText = `
+        position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+        background:#3e6b47; color:white; padding:14px 24px; border-radius:12px;
+        font-weight:bold; font-size:16px; z-index:99999;
+        box-shadow:0 4px 16px rgba(0,0,0,0.3); white-space:nowrap;
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+  })
+  .catch(() => {});
+}
+// ── End memory unlock ─────────────────────────────────────────
+
+// === Move variables and socket to global scope ===
+const socket = io(window.location.origin, { transports: ["polling"] });
+
+// ✅ FIXED: Listen for match_found and update opponent name immediately
+socket.on("match_found", (data) => {
+  console.log("📥 Received match_found:", data);
+  if (data?.opponent_username) {
+    setOpponentUsername(data.opponent_username);  // 🔧 FIX: Use setter
+    console.log("✅ Stored from match_found:", window.opponentUsername);
+    
+    const nameEl = document.getElementById("opponent-name");
+    if (nameEl) {
+      nameEl.textContent = data.opponent_username;
+    }
+  }
+});
+
+// 🔍 DEBUG: Monitor socket connection
+socket.on("connect", () => {
+  console.log("✅ Socket connected! SID:", socket.id);
+  // #yq added: Re-emit join_game on every connect (initial + reconnect after reload)
+  // This registers the new SID in sid_to_game and cancels any pending forfeit timer
+  if (typeof roomId !== "undefined" && roomId && typeof role !== "undefined" && role) {
+    socket.emit("join_game", { room: roomId, role: role, game_type: "hangman" });
+  }
+});
+
+socket.on("disconnect", () => {
+  console.log("❌ Socket disconnected!");
+});
+
+socket.on("connect_error", (error) => {
+  console.error("🔴 Socket connection error:", error);
+});
+
+// Changed
+// 🔥 Consistent opponent forfeit handler (matches Memory Match)
+socket.on("opponent_forfeit", (data) => {
+  console.log("🎯 RECEIVED opponent_forfeit event:", data);
+  
+  if (!data || data.game_type !== "hangman") {
+    console.log("❌ Rejected: wrong game type or no data");
+    return;
+  }
+
+  console.log("✅ Opponent forfeited — YOU WIN!");
+
+  forcedResult = "win";
+  gameOver = true;
+  window.gameStarted = false;
+  window.gameOverShown = true;
+  streakUpdated = true; // ✅ Mark that we already updated streaks
+
+  // Disable keyboard immediately
+  document.querySelectorAll("#letters button").forEach(btn => {
+    btn.disabled = true;
+  });
+
+  // Freeze UI
+  document.getElementById("turn-label").textContent = "Game Over";
+  document.getElementById("status-text").textContent = "Opponent left the game";
+  document.getElementById("footer-text").textContent = "You Win";
+
+  console.log("🎉 Showing forfeit win popup (no streak update)...");
+
+  // #yq added: No streak reward for forfeit win — only leaver is penalized
+  const modal = document.getElementById("result-modal");
+  document.getElementById("res-emoji").textContent = "🎉";
+  document.getElementById("res-title").textContent = "You Win!";
+  document.getElementById("res-streak").textContent = "Opponent left the game. You win by forfeit.";
+  modal.style.display = "flex";
+});
+
+
+let params, roomId, roleRaw, role, opponentRole;
+let guessedLetters = [], currentTurn = "Elderly";
+let gameOver = false, didWin = null, streakSaved = false, endPosted = false;
+let wordDisplay, lettersDiv, turnLabel, statusText, footerText;
+
+// ✅ REMOVED: No more client-side word list or selection logic
+// The server now handles ALL word selection
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize DOM elements
+  wordDisplay = document.getElementById("wordDisplay");
+  lettersDiv = document.getElementById("letters");
+  turnLabel = document.getElementById("turn-label");
+  statusText = document.getElementById("status-text");
+  footerText = document.getElementById("footer-text");
+
+  params = new URLSearchParams(window.location.search);
+  roomId = params.get("room");
+  roleRaw = "{{ session['role'] }}";
+  roleRaw = (roleRaw || "").trim().toLowerCase();
+
+  // ✅ normalize to EXACT values used everywhere
+  role = (roleRaw === "senior" || roleRaw === "elderly" || roleRaw === "elder")
+    ? "Elderly"
+    : "Youth";
+
+  opponentRole = (role === "Elderly") ? "Youth" : "Elderly";
+
+  // Join socket room if present (matched game)
+  if (roomId) {
+    console.log("🎮 Joining game room:", roomId, "as role:", role);
+    socket.emit("join_game", { room: roomId, role: role, game_type: "hangman" });
+  } else {
+    console.warn("⚠️ No room ID found - not joining any room");
+  }
+
+  createLetterButtons();
+  updateTurnUI();
+
+  // #yq added: Reload-safe beforeunload — no popup, no beacon on reload.
+  // The server handles forfeit via socket disconnect with a 6s grace period.
+  // If the player reconnects (reload) within 6s, the forfeit is cancelled server-side.
+  //
+  // Simple rule:
+  //   DOMContentLoaded  → set   __hm_alive = "1"  (page fully loaded)
+  //   beforeunload      → if __hm_alive == "1": RELOAD — skip beacon (server grace handles it)
+  //                        if __hm_alive missing: true cold-close — send beacon as fallback
+
+  window.addEventListener("DOMContentLoaded", () => {
+    // #yq added: Mark page as fully loaded
+    sessionStorage.setItem("__hm_alive", "1");
+  });
+
+  window.addEventListener("beforeunload", () => {
+    if (gameOver || allowLeave || window.__normalExit) return;
+
+    if (sessionStorage.getItem("__hm_alive") === "1") {
+      // #yq added: Page was alive = RELOAD — remove flag, skip beacon
+      // Server's 6s grace period will cancel the forfeit when socket reconnects
+      sessionStorage.removeItem("__hm_alive");
+      return;
+    }
+
+    // #yq added: Flag missing = page never fully loaded = send beacon as safety fallback
+    _sendForfeitBeacon("hangman");
+  });
+
+  // #yq added: popstate handled centrally by armBackButtonGuard (called at end of DOMContentLoaded)
+
+  // changed
+ // Receive guesses from BOTH players
+socket.on("game_update", (data) => {
+  if (forcedResult) return; // Don't process updates if game already ended by forfeit
+  awaitingServer = false;
+
+  console.log("Received game_update:", data);
+  
+  if (!data || !data.letter) return;
+  
+  // ✅ CRITICAL: Update guessed letters from server
+  if (data.guessed && Array.isArray(data.guessed)) {
+    guessedLetters = data.guessed;
+    console.log("Updated guessedLetters:", guessedLetters);
+  }
+  
+  // ✅ CRITICAL: Update current turn from server
+  if (data.current_turn) {
+    console.log("Turn changing from", currentTurn, "to", data.current_turn);
+    currentTurn = data.current_turn;
+  }
+
+  // 🔥 UPDATE WORD DISPLAY IMMEDIATELY here 
+if (data.guessed && Array.isArray(data.guessed)) {
+  guessedLetters = data.guessed;
+}
+
+if (data.word_display) {
+  wordDisplay.textContent = data.word_display;
+}
+
+  
+  startTurnTimer(60); // yq added: reset to 1:00 after every move
+
+  // ✅ Check for game over from server
+  if (data.game_over) {
+    gameOver = true;
+    endGame(data.guesser_role === role);
+    return;
+  }
+  
+  // Disable the clicked letter button
+  const btn = document.getElementById("btn-" + data.letter);
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add("used");
+  }
+  
+  // Update status message
+  const correct = data.correct;  // ✅ Trust server, don't check locally
+  const msg = correct
+    ? `${data.guesser_role} guessed correctly!`
+    : `${data.guesser_role} missed. Turn switched!`;
+  statusText.textContent = msg;
+  
+  console.log("About to call updateTurnUI. currentTurn is now:", currentTurn, "My role:", role);
+  
+  // ✅ CRITICAL: Update UI with new turn
+  updateTurnUI();
+});
+
+  armBackButtonGuard();
+});
+
+function notifyForfeitOnce() {
+  if (window.__forfeitSent) return;
+  window.__forfeitSent = true;
+  if (roomId) {
+    socket.emit("forfeit_game", { room: roomId, game_type: "hangman", role: role });
+  }
+}
+
+function createLetterButtons() {
+  lettersDiv.innerHTML = "";
+  for (let i = 65; i <= 90; i++) {
+    const char = String.fromCharCode(i);
+    const btn = document.createElement("button");
+    btn.textContent = char;
+    btn.id = "btn-" + char;
+    btn.onclick = () => sendGuess(char);
+    lettersDiv.appendChild(btn);
+  }
+}
+
+function sendGuess(letter) {
+  if (gameOver) return;
+  if (!roomId) return;
+  if (currentTurn !== role) return;
+  if (awaitingServer) return;
+
+  const button = document.getElementById("btn-" + letter);
+  if (!button || button.disabled) return;
+
+  awaitingServer = true;
+
+  // ⏱️ Player made a move — reset AFK timer
+  resetAfkTimer();
+
+  // emit to server (server broadcasts to both clients)
+  socket.emit("submit_guess", { room: roomId, letter: letter, role: role });
+}
+
+// changed
+function endGame(isWinner) {
+  window.gameOverShown = true;
+  
+  // ⏱️ Stop AFK timer — game is over
+  clearTimeout(afkTimer);
+  clearTimeout(afkWarnTimer);
+  window.gameStarted = false;
+
+  // Disable all letter buttons
+  document.querySelectorAll("#letters button").forEach(btn => btn.disabled = true);
+
+  // Update UI text
+  turnLabel.textContent = "Game Over";
+  footerText.textContent = "Game Over";
+  statusText.textContent = isWinner ? "You Win!" : "You Lose!";
+  
+  // ✅ Only call API if we haven't already updated streaks
+  if (!endPosted) {
+    endPosted = true;
+
+    // 🏮 Unlock memory if this word has one (winner only)
+    if (isWinner && _hangmanMemoryKey) {
+      unlockMemory(_hangmanMemoryKey);
+    }
+    
+    fetch("/api/streaks/hangman_end", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ did_win: isWinner })
+    })
+    .then(res => res.json())
+    .then(updated => {
+      // ✅ Use actual streak values from API
+      document.getElementById("res-emoji").textContent = isWinner ? "🎉" : "😢";
+      document.getElementById("res-title").textContent = isWinner ? "You Win!" : "You Lose!";
+      document.getElementById("res-streak").textContent = 
+        `🔥 Daily Game Streak: ${updated.daily_game_streak ?? "—"} • 🏆 Winning Streak: ${updated.winning_streak ?? "—"}`;
+      
+      // Show the popup
+      document.getElementById("result-modal").style.display = "flex";
+    })
+    .catch(() => {
+      // Fallback if API fails
+      document.getElementById("res-emoji").textContent = isWinner ? "🎉" : "😢";
+      document.getElementById("res-title").textContent = isWinner ? "You Win!" : "You Lose!";
+      document.getElementById("res-streak").textContent = "Streak update failed (server error).";
+      
+      // Show the popup
+      document.getElementById("result-modal").style.display = "flex";
+    });
+  } else {
+    // Streak already updated, just show the modal with existing content
+    document.getElementById("result-modal").style.display = "flex";
+  }
+}
+
+function updateTurnUI() {
+  const isMyTurn = currentTurn === role;
+  
+  console.log("updateTurnUI - currentTurn:", currentTurn, "role:", role, "isMyTurn:", isMyTurn);
+
+  turnLabel.textContent = isMyTurn ? "Your Move" : "Opponent's Move";
+  footerText.textContent = isMyTurn ? "Your turn!" : "Opponent's turn";
+  statusText.textContent = isMyTurn ? "Your turn!" : "Waiting for opponent...";
+
+  document.querySelectorAll("#letters button").forEach(btn => {
+    const letter = (btn.textContent || "").trim();
+    const alreadyGuessed = guessedLetters.includes(letter);
+    btn.disabled = (!isMyTurn) || alreadyGuessed || gameOver;
+    if (alreadyGuessed) btn.classList.add("used");
+  });
+  
+  console.log("Buttons enabled for my turn?", isMyTurn);
+
+  // ⏱️ Restart AFK timer on every turn update
+  resetAfkTimer();
+}
+
+function showPolicyModal() {
+  if (gameOver || window.gameOverShown) return; // #yq added: don't show if game already over
+  document.getElementById("policy-modal").style.display = "flex";
+  // #yq added: pause the turn timer while policy modal is open
+  clearInterval(turnTimerInterval);
+}
+
+function closePolicyModal() {
+  document.getElementById("policy-modal").style.display = "none";
+  // #yq added: resume the turn timer from where it left off
+  const timerEl = document.getElementById("turn-timer");
+  if (timerEl && window.gameStarted && !gameOver) {
+    const parts = timerEl.textContent.split(":");
+    const remaining = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    if (remaining > 0) startTurnTimer(remaining);
+  }
+}
+
+// Changed
+function confirmExit() {
+  console.log("🚪 User confirmed exit - sending forfeit...");
+
+  // Mark as intentional so beforeunload beacon doesn't also fire
+  window.__normalExit = true;
+  window.__beaconSent = true;
+  allowLeave = true;
+  
+  // Notify opponent you're leaving
+  if (roomId && role) {
+    console.log("📤 Sending forfeit_game:", { room: roomId, game_type: "hangman", role: role });
+    socket.emit("forfeit_game", { 
+      room: roomId, 
+      game_type: "hangman", 
+      role: role 
+    });
+  }
+  
+  // ✅ Apply penalty via API (this already calls both decrement and reset)
+  fetch("/api/streaks/quit_game", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(res => res.json())
+  .then(updated => {
+    console.log("✅ Penalty applied:", updated);
+    console.log(`Daily: ${updated.daily_game_streak}, Winning: ${updated.winning_streak}`);
+    exitToEvents();
+  })
+  .catch((err) => {
+    console.log("⚠️ Penalty API failed:", err);
+    exitToEvents();
+  });
+}
+
+function exitToEvents() {
+  allowLeave = true;
+  window.location.href = "{{ url_for('events_home') }}";
+}
+
+
+function armBackButtonGuard() {
+  history.pushState({ guard: true }, "", location.href);
+
+  window.addEventListener("popstate", () => {
+    // #yq added: re-push state to keep player on page
+    history.pushState({ guard: true }, "", location.href);
+    // #yq added: only show policy if game is still in progress
+    if (!gameOver && !window.gameOverShown) {
+      showPolicyModal();
+    }
+  });
+}
+
+// Sends forfeit + streak penalty as a beacon (survives page close)
+function _sendForfeitBeacon(gameType) {
+  if (window.__beaconSent) return;
+  window.__beaconSent = true;
+
+  const payload = JSON.stringify({
+    room:      (typeof roomId !== "undefined") ? roomId : null,
+    role:      (typeof role !== "undefined") ? role : null,
+    game_type: gameType,
+    user_id:   window.__currentUserId   // ✅ set by server below, no session cookie needed
+  });
+
+  // sendBeacon completes even after the page has started unloading
+  navigator.sendBeacon("/api/forfeit_beacon", new Blob([payload], { type: "application/json" }));
+}
+
+// Add this socket listener
+let firstSyncReceived = false; // yq added
+
+socket.on("sync_state", (state) => {
+  if (!state || state.game_type !== "hangman") return;
+  
+  console.log("Received sync_state:", state);
+  
+  if (state.word_display) {
+    wordDisplay.textContent = state.word_display;
+  }
+  
+  if (state.guessed) {
+    guessedLetters = state.guessed;
+  }
+  
+  if (state.current_turn) {
+    currentTurn = state.current_turn;
+  }
+  
+  if (state.game_over) {
+    gameOver = true;
+  }
+
+  // Update category banner
+  if (state.category) {
+    const catLabel = document.getElementById("category-label");
+    if (catLabel) catLabel.textContent = state.category;
+  }
+
+  // Store memory_key from server so we can unlock it when the word is guessed
+  if (state.memory_key) {
+    _hangmanMemoryKey = state.memory_key;
+  }
+
+  // yq added: start timer on first turn when game begins
+  if (!firstSyncReceived && !state.game_over) {
+    firstSyncReceived = true;
+    // #fix: use server's actual remaining time so reload syncs the timer
+    const remaining = (typeof state.time_remaining === "number" && state.time_remaining > 0)
+      ? state.time_remaining
+      : 60;
+    startTurnTimer(remaining);
+  }
+
+  updateTurnUI();
+});
+
+// ✅ Consistent showEnd function (matches Memory Match)
+function showEnd() {
+  const modal = document.getElementById("result-modal");
+  let win;
+
+  // Check for forced result (opponent forfeit)
+  if (forcedResult === "win") {
+    win = true;
+  } else if (forcedResult === "lose") {
+    win = false;
+  } else {
+    // Normal game end - shouldn't happen in hangman (it's win/lose)
+    win = didWin;
+  }
+
+  // If opponent forfeited, just show message without streak update
+  if (forcedResult === "win") {
+    document.getElementById("res-title").textContent = "You Win!";
+    document.getElementById("res-emoji").textContent = "🎉";
+    document.getElementById("res-streak").textContent = "Opponent left the game. You win by forfeit.";
+    modal.style.display = "flex";
+    return;
+  }
+
+  // Normal game end - update streaks
+  fetch("/api/streaks/hangman_end", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ did_win: win })
+  })
+  .then(res => res.json())
+  .then(updated => {
+    document.getElementById("res-title").textContent = win ? "You Win!" : "You Lose!";
+    document.getElementById("res-emoji").textContent = win ? "🎉" : "😔";
+    document.getElementById("res-streak").textContent =
+      `🔥 Daily Game Streak: ${updated.daily_game_streak ?? "—"} • 🏆 Winning Streak: ${updated.winning_streak ?? "—"}`;
+    modal.style.display = "flex";
+  })
+  .catch(() => {
+    document.getElementById("res-title").textContent = win ? "You Win!" : "You Lose!";
+    document.getElementById("res-emoji").textContent = win ? "🎉" : "😔";
+    document.getElementById("res-streak").textContent = "Streak update failed (server error).";
+    modal.style.display = "flex";
+  });
+}
+
+socket.on("opponent_info", (data) => {
+  console.log("📥 Received opponent_info:", data);
+  if (data?.opponent_username) {
+    setOpponentUsername(data.opponent_username);  // 🔧 FIX: Use setter
+    console.log("✅ Stored opponent username:", window.opponentUsername);
+    
+    const nameEl = document.getElementById("opponent-name");
+    if (nameEl) {
+      nameEl.textContent = data.opponent_username;
+    }
+  }
+});
+
+// ✅ ADDED: Function to view opponent's profile
+function viewOpponentProfile() {
+  const opponentUsername = getOpponentUsername();  // 🔧 FIX: Use getter
+  console.log("🔍 View profile clicked. Opponent:", opponentUsername);
+  
+  if (opponentUsername && opponentUsername !== "Waiting for opponent...") {
+    console.log("✅ Navigating to:", `/view_profile/${opponentUsername}`);
+    window.location.href = `/view_profile/${opponentUsername}`;
+  } else {
+    console.error("❌ No opponent username! Value:", opponentUsername);
+    alert("Opponent information not available. Please try refreshing the page.");
+  }
+}
+
+// ✅ Poll for beacon forfeit (catches opponent closing browser tab/window)
+(function startForfeitPoll() {
+  const POLL_INTERVAL = 3000; // every 3 seconds
+
+  function poll() {
+    if (gameOver || allowLeave || window.__normalExit) return;
+    if (!roomId || !role) return;
+
+    fetch(`/api/check_forfeit?room=${encodeURIComponent(roomId)}&role=${encodeURIComponent(role)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.forfeit) return;
+
+        console.log("📡 Beacon forfeit detected via poll — opponent closed browser");
+
+        // Treat exactly like opponent_forfeit socket event
+        forcedResult = "win";
+        gameOver = true;
+        window.gameStarted = false;
+        window.gameOverShown = true;
+        streakUpdated = true;
+        clearTimeout(afkTimer);
+        clearTimeout(afkWarnTimer);
+
+        document.querySelectorAll("#letters button").forEach(btn => btn.disabled = true);
+        document.getElementById("turn-label").textContent = "Game Over";
+        document.getElementById("status-text").textContent = "Opponent closed the browser";
+        document.getElementById("footer-text").textContent = "You Win";
+
+        // #yq added: No streak for forfeit win
+        const modal = document.getElementById("result-modal");
+        document.getElementById("res-emoji").textContent = "🎉";
+        document.getElementById("res-title").textContent = "You Win!";
+        document.getElementById("res-streak").textContent = "Opponent closed the browser. You win by forfeit.";
+        modal.style.display = "flex";
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!gameOver && !allowLeave && !window.__normalExit) {
+          setTimeout(poll, POLL_INTERVAL);
+        }
+      });
+  }
+
+  // Wait until roomId is known before starting
+  const waitForRoom = setInterval(() => {
+    if (typeof roomId !== "undefined" && roomId) {
+      clearInterval(waitForRoom);
+      setTimeout(poll, POLL_INTERVAL);
+    }
+  }, 500);
+})();
+
+// Yq added
+let turnTimerInterval = null;
+
+function startTurnTimer(seconds) {
+  clearInterval(turnTimerInterval);
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m + ":" + (s < 10 ? "0" + s : s);
+  }
+
+  const timerEl = document.getElementById("turn-timer");
+  if (!timerEl) return;
+
+  timerEl.textContent = formatTime(seconds);
+
+  turnTimerInterval = setInterval(() => {
+    seconds--;
+    timerEl.textContent = formatTime(seconds);
+
+    if (seconds <= 0) {
+      clearInterval(turnTimerInterval);
+      // yq added: Enforce kick when the visual timer expires
+      const isMyTurn = (typeof currentTurn !== "undefined") && (currentTurn === role);
+      if (isMyTurn && window.gameStarted && !gameOver) {
+        triggerAfkQuit();
+      }
+    }
+  }, 1000);
+}
+</script>
+<script>
+  // ✅ Server-injected user ID for sendBeacon (avoids session cookie dependency)
+  window.__currentUserId = "{{ session['user_id'] }}";
+</script>
+</body>
+</html>

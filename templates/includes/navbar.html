@@ -1,0 +1,727 @@
+<style>
+/* ===== NAVBAR STYLES ===== */
+.legacy-navbar {
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  padding: 0.4rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100000;
+}
+
+.legacy-logo {
+  height: 70px;
+  width: auto;
+}
+
+.navbar-brand{
+  flex: 0 0 auto;
+}
+
+/* ===== NAV LINKS ===== */
+.legacy-nav .nav-link {
+  color: var(--text-dark);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  padding: .5rem .75rem;
+  transition: color 0.3s ease;
+  white-space: nowrap;
+}
+
+.legacy-nav .nav-link.active,
+.legacy-nav .nav-item.active .nav-link {
+  color: #457F5B;
+  font-weight: 700;
+}
+
+.legacy-nav .nav-link:hover { 
+  color: var(--legacy-green); 
+}
+
+/* ===== TOGGLER ===== */
+.navbar-toggler { border: none; }
+.navbar-toggler:focus { outline: none; box-shadow: none; }
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(69,127,91,0.9)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+/* ===== PROFILE BUTTON ===== */
+.profile-btn{
+  white-space: nowrap;
+  min-width: max-content;
+  background-color: #AC7F5E;
+  color: #ffffff !important;
+  padding: 0.5rem 1.2rem;
+  border-radius: 7px;
+  font-weight: 600;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.profile-btn.active { background-color: #457F5B; }
+
+.profile-btn:hover {
+  filter: brightness(0.9);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.profile-icon{
+  width: 18px;
+  height: 18px;
+}
+
+/* ===== SIGNUP BUTTON ===== */
+.signup-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 41px;
+  padding: 0 18px;
+  border-radius: 7px;
+  border: 2px solid #2e7d32;
+  background: #2e7d32;
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  transition: all .2s ease;
+}
+
+.signup-btn:hover{
+  transform: translateY(-1px);
+  text-decoration: none;
+  color: white;
+  filter: brightness(0.9);
+}
+
+/* ===== LANGUAGE PILL ===== */
+.lang-wrap{
+  margin-right: 8px;
+}
+
+.aa-pill{
+  border: 2px solid #3FAE63;
+  background: #ffffff;
+  color: #2D5233;
+  border-radius: 7px;
+  height: 44px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.globe-icon{
+  font-size: 16px;
+}
+
+.lang-text{
+  font-weight: 700;
+  color: #2D5233;
+}
+
+.lang-caret{
+  font-size: 14px;
+  color: #2D5233;
+}
+
+.aa-pill:hover{
+  background: #e8f0eb;
+}
+
+/* ===== ACCESSIBILITY PANEL ===== */
+.acc-wrap{ position: relative; }
+
+.acc-panel{
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 360px;
+  max-width: 92vw;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+  padding: 16px;
+  display: none;
+  z-index: 999999;
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+.acc-panel.open{ display:block; }
+
+.acc-panel::before{
+  content:"";
+  position:absolute;
+  top:-8px;
+  right: 28px;
+  width: 16px;
+  height: 16px;
+  background:#fff;
+  transform: rotate(45deg);
+}
+
+.acc-title{
+  font-size: 12px;
+  letter-spacing: .12em;
+  color: #7b7b7b;
+  font-weight: 800;
+  margin: 8px 0;
+}
+
+.acc-row{ display:flex; gap:10px; }
+
+.acc-pill{
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 12px;
+  border: 1px solid #e6e6e6;
+  background: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.acc-hr{
+  border: none;
+  height: 1px;
+  background: #eeeeee;
+  margin: 12px 0;
+}
+
+.acc-select{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e6e6e6;
+  background: #fff;
+  font-weight: 600;
+}
+
+.acc-translate{
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: #2D5233;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.acc-translate:hover{
+  background: #4F8A55;
+  transform: translateY(-1px);
+}
+
+.acc-translate.ghost{
+  background: #e8f0eb;
+  color: #2D5233;
+  border: 1px solid #cfe0d6;
+}
+
+/* ===== MOBILE LAYOUT ===== */
+@media (max-width: 991.98px){
+
+  .legacy-logo { height: 55px; }
+
+  .legacy-navbar .container-fluid{
+    flex-wrap: wrap;
+  }
+
+  .legacy-navbar .navbar-collapse{
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .legacy-nav{
+    width: 100%;
+    text-align: center;
+  }
+
+  .legacy-nav .nav-link{
+    padding: 0.75rem 0;
+    text-align: center;
+  }
+
+  .nav-actions{
+    width: 100%;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .nav-actions .profile-btn,
+  .nav-actions .signup-btn,
+  .nav-actions .btn-outline-danger,
+  .nav-actions .aa-pill{
+    width: 100%;
+    justify-content: center;
+  }
+
+  .profile-icon{
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Smooth collapse animation */
+  .navbar-collapse{
+    transition: opacity .16s ease, transform .16s ease, height .16s ease !important;
+    will-change: opacity, transform, height;
+  }
+
+  .navbar-collapse.collapse{
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+  }
+
+  .navbar-collapse.collapsing,
+  .navbar-collapse.collapse.show{
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
+
+/* ✅ Mobile: prevent panel from being clipped by navbar/collapse */
+@media (max-width: 991.98px){
+  .acc-panel{
+    position: fixed !important;      /* 🔥 key */
+    left: 12px !important;
+    right: 12px !important;
+    top: 78px !important;            /* adjust if your navbar is taller */
+    width: auto !important;
+
+    transform: none !important;      /* avoid select bugs */
+    max-height: calc(100vh - 110px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* arrow: optional (you can hide it on mobile) */
+  .acc-panel::before{
+    display: none !important;
+  }
+
+  /* make select readable */
+  .acc-select{
+    font-size: 16px;                 /* prevents iOS zoom + helps rendering */
+  }
+}
+
+.acc-cancel{
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #d9d9d9;
+  background: #ffffff;
+  color: #666;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.acc-cancel:hover{
+  background: #f3f3f3;
+}
+
+/* ===== ADMIN PILL (solid clean version) ===== */
+.admin-pill{
+  border: 2px solid #3FAE63;
+  background: #ffffff;
+  color: #1F5B3A !important;
+  border-radius: 7px;
+  height: 44px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;          /* ✅ not always bold */
+  letter-spacing: .2px;      /* optional: still looks premium */
+  box-shadow: none;
+}
+
+.admin-pill i{
+  font-size: 16px;
+  color: #1F5B3A;
+}
+
+.admin-pill:hover{
+  background: #EAF4EE;   /* light hover */
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.admin-pill:focus{
+  outline: none;
+  box-shadow: none;
+}
+
+.admin-pill i{
+  font-size: 16px;
+  color: #1F5B3A;
+}
+
+.admin-pill .caret{
+  margin-left: 4px;
+  font-size: 12px;
+  opacity: .8;
+}
+
+
+
+/* ===== ADMIN DROPDOWN MENU (card style) ===== */
+.admin-menu{
+  margin-top: 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 16px;
+  padding: 10px;
+  min-width: 260px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.14);
+}
+
+.admin-menu::before{
+  content:"";
+  position:absolute;
+  top:-7px;
+  right: 20px;
+  width: 14px;
+  height: 14px;
+  background:#fff;
+  border-left: 1px solid rgba(0,0,0,0.08);
+  border-top: 1px solid rgba(0,0,0,0.08);
+  transform: rotate(45deg);
+}
+
+/* dropdown items as "rows" */
+.admin-menu .dropdown-item{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  border-radius: 12px;
+  padding: 12px 12px;
+  font-weight: 800;
+  color: #20352B;
+}
+
+.admin-menu .dropdown-item i{
+  width: 18px;
+  text-align:center;
+  color: #457F5B;
+  font-size: 16px;
+}
+
+.admin-menu .dropdown-item:hover,
+.admin-menu .dropdown-item:focus{
+  background: #EAF4EE;
+  color: #1F5B3A;
+  outline: none;
+}
+
+.admin-menu .dropdown-item:active{
+  background: #DDF0E6;
+}
+
+/* optional small helper text under item */
+.admin-menu .small-hint{
+  display:block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6B7B72;
+  margin-left: 28px; /* aligns under text (after icon) */
+  margin-top: -6px;
+}
+
+/* mobile: full width like your AA pill */
+@media (max-width: 991.98px){
+  .admin-pill{ width: 100%; justify-content: center; }
+  .admin-menu{ width: 92vw; right: 0; left: 0; margin: 10px auto 0; }
+  .admin-menu::before{ display:none; }
+}
+
+.admin-pill{
+  font-weight: 600;   /* normal */
+}
+
+.admin-pill.admin-active{
+  font-weight: 800;   /* bold only when active */
+}
+
+</style>
+
+<!-- ── Global unread message dot (works on ALL pages) ─────────────── -->
+{% if session.get('user_id') %}
+<script>
+(function() {
+  // Poll for unread count via lightweight API every 30s
+  // Also connects via Socket.IO if available on page
+  const myUid = {{ session.get('user_id') | tojson }};
+
+  function setDot(show) {
+    const dot = document.getElementById("navMsgDot");
+    if (dot) dot.style.display = show ? "inline-block" : "none";
+  }
+
+  async function pollUnread() {
+    try {
+      const res = await fetch("/messages/api/unread_count", { credentials: "same-origin" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setDot((data.total || 0) > 0);
+    } catch (e) {}
+  }
+
+  // Run immediately + every 30 seconds
+  pollUnread();
+  setInterval(pollUnread, 30000);
+
+  // Also hook into Socket.IO if it's loaded on this page (messaging pages)
+  document.addEventListener("DOMContentLoaded", () => {
+    // If socket is defined on this page (chat/inbox pages), hook badge_update
+    function hookSocket() {
+      if (typeof io === "undefined") return;
+      try {
+        // We use a separate dedicated socket for the navbar dot
+        // only if one isn't already connected
+        if (!window._navSocket) {
+          window._navSocket = io({ transports: ["websocket", "polling"] });
+          window._navSocket.on("badge_update", (data) => {
+            pollUnread(); // re-poll when any badge changes
+          });
+        }
+      } catch(e) {}
+    }
+
+    // Try immediately, then retry after scripts load
+    hookSocket();
+    setTimeout(hookSocket, 1000);
+    setTimeout(hookSocket, 3000);
+  });
+})();
+</script>
+{% endif %}
+
+<nav class="navbar navbar-expand-lg legacy-navbar">
+  <div class="container-fluid">
+
+    <!-- Logo -->
+    <a class="navbar-brand d-flex align-items-center"
+       href="{% if session.get('user_id') %}{{ url_for('story.index') }}{% else %}{{ url_for('landing') }}{% endif %}">
+      <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}"
+           alt="Legacy Garden"
+           class="legacy-logo mr-2">
+    </a>
+
+    <button class="navbar-toggler" type="button"
+      data-toggle="collapse"
+      data-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+
+      {% if session.get('user_id') %}
+
+        {% set is_admin = session.get('role','')|lower == 'admin' %}
+
+        <!-- ================= CENTER NAV ================= -->
+        <ul class="navbar-nav legacy-nav mx-auto">
+
+          {% if is_admin %}
+            <!-- ADMIN SIMPLIFIED NAV -->
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if request.endpoint in
+                ['story.index','story.create','story.manage','story.view_story','view_profile','story.edit_story'] else '' }}"
+                href="{{ url_for('story.index') }}">
+                 <span id="navHomeText">HOME</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if request.endpoint == 'events_home' else '' }}"
+                href="{{ url_for('events_home') }}">
+              <span id="navEventsText">EVENTS</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if request.endpoint in ['messaging.inbox','messaging.chat'] else '' }}"
+                href="{{ url_for('messaging.inbox') }}"
+                style="position:relative;display:inline-flex;align-items:center;gap:4px;">
+                <span id="navMessagesText">MESSAGES</span>
+                <span id="navMsgDot" style="display:none;width:9px;height:9px;background:#e53e3e;border-radius:50%;margin-left:3px;flex-shrink:0;"></span>
+              </a>
+            </li>
+
+          {% else %}
+            <!-- NORMAL USER NAV -->
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if request.endpoint in
+                ['story.index','story.create','story.manage','story.view_story','view_profile','story.edit_story'] else '' }}"
+                href="{{ url_for('story.index') }}">
+                <span id="navHomeText">HOME</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('garden.') else '' }}"
+                href="{{ url_for('garden.index') }}">
+                MY GARDEN
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if request.endpoint == 'community' else '' }}"
+                href="{{ url_for('community') }}">
+                COMMUNITY
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if request.endpoint in ['events_home', 'memory_album'] else '' }}"
+                href="{{ url_for('events_home') }}">
+                <span id="navEventsText">EVENTS</span>
+              </a>
+            </li>
+
+            <li class="nav-item" style="position:relative;">
+              <a class="nav-link {{ 'active' if request.endpoint in ['messaging.inbox','messaging.chat'] else '' }}"
+                 href="{{ url_for('messaging.inbox') }}"
+                 id="navMsgLink"
+                 style="position:relative;display:inline-flex;align-items:center;gap:4px;">
+                <span id="navMessagesText">MESSAGES</span>
+                <span id="navMsgDot" style="display:none;width:9px;height:9px;background:#e53e3e;border-radius:50%;margin-left:3px;flex-shrink:0;"></span>
+              </a>
+            </li>
+
+          {% endif %}
+
+        </ul>
+
+      {% endif %}
+
+      <!-- ================= RIGHT SIDE ACTIONS ================= -->
+      <div class="nav-actions d-flex align-items-center ml-md-auto">
+
+        <!-- ADMIN DROPDOWN (RIGHT SIDE) -->
+{% if session.get('role','')|lower == 'admin' %}
+
+{% set is_admin_page = request.endpoint in ['admin_dashboard','admin_events'] %}
+
+<div class="mr-2">
+  <div class="dropdown">
+    <a class="admin-pill dropdown-toggle {{ 'admin-active' if is_admin_page else '' }}"
+       href="#"
+       id="adminDropdown"
+       role="button"
+       data-toggle="dropdown"
+       aria-haspopup="true"
+       aria-expanded="false">
+      <i class="fas fa-shield-alt"></i>
+       <span id="navAdminText">ADMIN</span>
+    </a>
+
+    <div class="dropdown-menu dropdown-menu-right admin-menu" aria-labelledby="adminDropdown">
+      <a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">
+        <i class="fa-solid fa-book-open"></i>
+        Stories Management
+      </a>
+
+      <a class="dropdown-item" href="{{ url_for('admin_events') }}">
+        <i class="fa-solid fa-calendar-days"></i>
+        Events Management
+      </a>
+<a class="dropdown-item" href="{{ url_for('admin_user') }}">
+  <i class="fa-solid fa-users-gear"></i>
+  User Management
+</a>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+        <!-- LANGUAGE -->
+        <div class="lang-wrap acc-wrap">
+          <button id="accBtn" class="lang-btn aa-pill" type="button">
+            <span class="globe-icon">🌍</span>
+            <span id="accLabel" class="lang-text">English</span>
+            <span class="lang-caret">▾</span>
+          </button>
+
+          <div id="accPanel" class="acc-panel notranslate" translate="no">
+            <div class="acc-title">FONT SIZE</div>
+            <div class="acc-row">
+              <button class="acc-pill" data-font="down">A-</button>
+              <button class="acc-pill" data-font="reset">A</button>
+              <button class="acc-pill" data-font="up">A+</button>
+              <button class="acc-pill" data-font="up2">A++</button>
+            </div>
+
+            <hr class="acc-hr">
+
+            <div class="acc-title">LANGUAGE</div>
+            <select id="langSelect" class="acc-select">
+  <option value="en">English</option>
+  <option value="zh-CN">简体中文</option>
+  <option value="zh-TW">繁體中文</option>
+  <option value="ms">Bahasa Melayu</option>
+  <option value="ta">தமிழ்</option>
+  <option value="ja">日本語</option>
+  <option value="ko">한국어</option>
+  <option value="th">ไทย</option>
+  <option value="vi">Tiếng Việt</option>
+  <option value="id">Bahasa Indonesia</option>
+  <option value="fr">Français</option>
+  <option value="de">Deutsch</option>
+  <option value="es">Español</option>
+  <option value="ru">Русский</option>
+  <option value="ar">العربية</option>
+  <option value="hi">हिन्दी</option>
+</select>
+
+            <button id="applyLang" class="acc-translate" type="button">Translate</button>
+            <button id="backOriginal" class="acc-translate ghost" type="button">Original</button>
+            <button id="closeAcc" class="acc-cancel" type="button">Cancel</button>
+          </div>
+        </div>
+
+        {% if session.get('user_id') %}
+          <!-- PROFILE -->
+          <a href="{{ url_for('profile') }}"
+             class="btn profile-btn mr-md-2 {{ 'active' if request.endpoint == 'profile' }}">
+            <span id="navProfileText">PROFILE</span>
+          </a>
+
+          <!-- LOGOUT -->
+          <a class="btn btn-outline-danger btn-sm"
+             href="{{ url_for('logout') }}">
+            <span id="navLogoutText">Logout</span>
+          </a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="btn profile-btn mr-2">
+            LOGIN
+          </a>
+
+          <a href="{{ url_for('signup') }}" class="signup-btn">
+            SIGN UP
+          </a>
+        {% endif %}
+
+      </div>
+
+    </div>
+  </div>
+</nav>
+

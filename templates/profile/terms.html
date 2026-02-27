@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Terms & Privacy Policy") }} | The Legacy Garden{% endblock %}
+
+{% block content %}
+<style>
+/* ===== TERMS (MATCH COMMUNITY STYLE, UNIQUE CLASSES) ===== */
+.terms-page-wrap{
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* responsive like Bootstrap container */
+@media (max-width: 1200px){ .terms-page-wrap{ max-width: 960px; } }
+@media (max-width: 992px){  .terms-page-wrap{ max-width: 720px; } }
+@media (max-width: 768px){  .terms-page-wrap{ max-width: 540px; } }
+@media (max-width: 576px){  .terms-page-wrap{ max-width: 100%; } }
+
+/* back pill wrapper */
+.terms-back-row{
+  margin: 0 0 18px;
+}
+
+/* pill back button (unique) */
+.terms-back-pill{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 26px;
+  border-radius: 999px;
+  background-color: #DFF3E6;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+  color: #1b5e20;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.terms-back-pill:hover{
+  transform: translateX(-3px);
+  background-color: #c8e6c9;
+  text-decoration: none;
+  color: #1b5e20;
+}
+
+/* header card */
+.terms-header-card{
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 26px 32px;
+  margin: 0 auto 32px;
+  width: 100%;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+}
+
+/* title (same look as community) */
+.terms-page-title{
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #2F7D4E;
+  text-align: center;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+/* content card (soft mint like community) */
+.terms-content-card{
+  background-color: #F3FBF6;
+  border-radius: 20px;
+  padding: 35px 40px;
+  border: 1px solid #D6ECDD;
+  margin-top: 28px;   /* 👈 ADD THIS */
+}
+
+/* sections like guideline items */
+.terms-section{
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.terms-icon{
+  font-size: 1.8rem;
+  margin-top: 2px;
+}
+
+.terms-text h4{
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #2F2F2F;
+}
+
+.terms-text p{
+  margin: 0 0 10px;
+  color: #5F6F65;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.terms-text ul{
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.terms-text li{
+  margin-bottom: 8px;
+  color: #5F6F65;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+</style>
+
+<div class="terms-page-wrap">
+
+  <!-- BACK -->
+  <div class="terms-back-row">
+    <a href="{{ url_for('settings') }}" class="terms-back-pill">
+      <i class="fa-solid fa-arrow-left"></i> {{ _("Back to Settings") }}
+    </a>
+  </div>
+
+  <!-- HEADER CARD -->
+  <div class="terms-header-card">
+
+  <h1 class="terms-page-title">{{ _("Terms & Privacy Policy") }}</h1>
+
+  <!-- CONTENT CARD NOW INSIDE WHITE CARD -->
+  <div class="terms-content-card">
+
+    <div class="terms-section">
+      <div class="terms-icon">🌱</div>
+      <div class="terms-text">
+        <h4>{{ _("Terms of Service") }}</h4>
+        <p>{{ _("By using The Legacy Garden, you agree to follow these rules:") }}</p>
+        <ul>
+          <li>• {{ _("Be respectful to all users, including youth and seniors.") }}</li>
+          <li>• {{ _("Do not post harmful, offensive, or false information.") }}</li>
+          <li>• {{ _("Keep your account details accurate and secure.") }}</li>
+          <li>• {{ _("We may remove content or suspend accounts that break the rules.") }}</li>
+          <li>• {{ _("Do not use the platform for illegal or inappropriate activities.") }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="terms-section" style="margin-bottom:0;">
+      <div class="terms-icon">🌱</div>
+      <div class="terms-text">
+        <h4>{{ _("Privacy Policy") }}</h4>
+        <ul>
+          <li>• {{ _("We collect basic profile information such as name, email, and region.") }}</li>
+          <li>• {{ _("Your information is used to display your profile and improve your experience.") }}</li>
+          <li>• {{ _("You can control what information is visible in your privacy settings.") }}</li>
+          <li>• {{ _("We do not sell or misuse your personal data.") }}</li>
+          <li>• {{ _("We take reasonable steps to protect your information.") }}</li>
+          <li>• {{ _("You may update or delete your account at any time.") }}</li>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

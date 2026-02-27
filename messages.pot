@@ -1,0 +1,1679 @@
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-02-23 20:12+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: __init__.py:143
+#, python-format
+msgid "New Member: <b>%(user)s</b> just joined the %(region)s community today!"
+msgstr ""
+
+#: __init__.py:275 __init__.py:394
+#, python-format
+msgid "<b>%(user)s</b> has left the %(region)s community."
+msgstr ""
+
+#: __init__.py:284
+#, python-format
+msgid "<b>%(user)s</b> just joined the %(region)s community today!"
+msgstr ""
+
+#: __init__.py:1237 __init__.py:1244
+msgid "No recent activity"
+msgstr ""
+
+#: __init__.py:1253
+msgid "Just now"
+msgstr ""
+
+#: __init__.py:1258
+msgid "1 minute ago"
+msgstr ""
+
+#: __init__.py:1260
+#, python-format
+msgid "%(mins)d minutes ago"
+msgstr ""
+
+#: __init__.py:1265
+msgid "1 hour ago"
+msgstr ""
+
+#: __init__.py:1267
+#, python-format
+msgid "%(hrs)d hours ago"
+msgstr ""
+
+#: __init__.py:1271
+msgid "1 day ago"
+msgstr ""
+
+#: __init__.py:1273
+#, python-format
+msgid "%(days)d days ago"
+msgstr ""
+
+#: __init__.py:2612
+#, python-format
+msgid "%(winner)s won Memory Match against %(loser)s!"
+msgstr ""
+
+#: __init__.py:2621
+#, python-format
+msgid "%(loser)s lost Memory Match to %(winner)s."
+msgstr ""
+
+#: __init__.py:2640
+#, python-format
+msgid "%(p1)s drew Memory Match with %(p2)s."
+msgstr ""
+
+#: __init__.py:2648
+#, python-format
+msgid "%(p2)s drew Memory Match with %(p1)s."
+msgstr ""
+
+#: __init__.py:2823
+#, python-format
+msgid "%(loser)s lost Hangman to %(winner)s."
+msgstr ""
+
+#: features/garden.py:50 features/garden.py:129
+msgid "tree"
+msgstr ""
+
+#: features/garden.py:50 features/garden.py:129
+msgid "flower"
+msgstr ""
+
+#: features/garden.py:56 features/garden.py:135
+#, python-format
+msgid "Planted a %(plant)s (-1 seed)"
+msgstr ""
+
+#: features/garden.py:65 features/garden.py:153
+#, python-format
+msgid ""
+"<b>%(username)s</b> planted a <b>%(plant)s</b> in their garden! "
+"<b>(+1)</b>"
+msgstr ""
+
+#: features/garden.py:85
+msgid "Watered plant (-5 water)"
+msgstr ""
+
+#: features/garden.py:93
+#, python-format
+msgid "<b>%(username)s</b> watered their plant. (-5)"
+msgstr ""
+
+#: templates/community/community.html:3
+msgid "Community"
+msgstr ""
+
+#: templates/community/community.html:349
+msgid "Be respectful and kind to all members"
+msgstr ""
+
+#: templates/community/community.html:350
+#: templates/profile/community_guidelines.html:176
+msgid "Treat youth and seniors with patience, empathy, and understanding."
+msgstr ""
+
+#: templates/community/community.html:357
+msgid "Share positive and meaningful stories"
+msgstr ""
+
+#: templates/community/community.html:358
+#: templates/profile/community_guidelines.html:184
+msgid "Avoid harmful or sensitive topics."
+msgstr ""
+
+#: templates/community/community.html:365
+msgid "Support one another whenever possible"
+msgstr ""
+
+#: templates/community/community.html:366
+#: templates/profile/community_guidelines.html:192
+msgid "Small actions help build a warm, caring community."
+msgstr ""
+
+#: templates/community/community.html:373
+msgid "Keep the community safe and respectful"
+msgstr ""
+
+#: templates/community/community.html:374
+#: templates/profile/community_guidelines.html:200
+msgid "Do not share personal details; report unsafe content."
+msgstr ""
+
+#: templates/community/community.html:381
+msgid "Celebrate differences and learn from each other"
+msgstr ""
+
+#: templates/community/community.html:382
+#: templates/profile/community_guidelines.html:208
+msgid "Stay open-minded and enjoy discovering new perspectives."
+msgstr ""
+
+#: templates/community/community.html:390
+msgid ""
+"I agree to follow the Community Guidelines and treat all youth and "
+"seniors with kindness, respect, and support."
+msgstr ""
+
+#: templates/community/community.html:393
+msgid "Enter Community"
+msgstr ""
+
+#: templates/community/community.html:396
+msgid ""
+"Please agree to the Community Guidelines before entering the Community "
+"Page."
+msgstr ""
+
+#: templates/community/community.html:419
+msgid "Your Region:"
+msgstr ""
+
+#: templates/community/community.html:427
+msgid "This is your assigned community region based on your profile."
+msgstr ""
+
+#: templates/community/community.html:434
+msgid "Region Summary"
+msgstr ""
+
+#: templates/community/community.html:437
+msgid "Region Group:"
+msgstr ""
+
+#: templates/community/community.html:442
+msgid "Youth Members:"
+msgstr ""
+
+#: templates/community/community.html:445
+msgid "Senior Members:"
+msgstr ""
+
+#: templates/community/community.html:448
+msgid "Total Members:"
+msgstr ""
+
+#: templates/community/community.html:453
+msgid "Open Community Chat"
+msgstr ""
+
+#: templates/community/community.html:464
+#, python-format
+msgid "Noticeboard in %(region)s Region"
+msgstr ""
+
+#: templates/community/community.html:468
+msgid "Last updated:"
+msgstr ""
+
+#: templates/community/community.html:493
+msgid "No notices yet for this region."
+msgstr ""
+
+#: templates/community/community.html:504
+msgid "Singapore Achievement Board"
+msgstr ""
+
+#: templates/community/community.html:508
+msgid "Last updated: Weekly refresh —"
+msgstr ""
+
+#: templates/community/community.html:513
+msgid "Most Active Region of the Week:"
+msgstr ""
+
+#: templates/community/community.html:515
+msgid ""
+"Most activity this week (stories posted, games played, and community "
+"actions)."
+msgstr ""
+
+#: templates/community/community.html:521
+msgid "Best Plant Harvest Region:"
+msgstr ""
+
+#: templates/community/community.html:523
+msgid "Most harvested plants (trees + flowers) this week"
+msgstr ""
+
+#: templates/community/community.html:530
+msgid "Community Participation Award:"
+msgstr ""
+
+#: templates/community/community.html:531
+msgid "Most members participated this week"
+msgstr ""
+
+#: templates/community/community.html:542
+#, python-format
+msgid "%(region)s Community Tree"
+msgstr ""
+
+#: templates/community/community.html:545
+#, python-format
+msgid ""
+"This is the shared tree for %(region)s region. All harvested plants from "
+"members contribute to its growth."
+msgstr ""
+
+#: templates/community/community.html:550
+msgid "Flourishing Stage"
+msgstr ""
+
+#: templates/community/community.html:551
+msgid "Growing Stage"
+msgstr ""
+
+#: templates/community/community.html:552
+msgid "Budding Stage"
+msgstr ""
+
+#: templates/community/community.html:553
+msgid "Seedling Stage"
+msgstr ""
+
+#: templates/community/community.html:557
+msgid "Level:"
+msgstr ""
+
+#: templates/community/community.html:574
+msgid "Region Harvest Contribution"
+msgstr ""
+
+#: templates/community/community.html:578
+msgid "Trees harvested:"
+msgstr ""
+
+#: templates/community/community.html:583
+msgid "Flowers harvested:"
+msgstr ""
+
+#: templates/community/community.html:588
+msgid "Community Tree Points:"
+msgstr ""
+
+#: templates/community/community.html:601
+msgid "New Notice"
+msgstr ""
+
+#: templates/community/community.html:602
+msgid "now"
+msgstr ""
+
+#: templates/community/community.html:689
+#: templates/profile/edit_profile.html:138 templates/profile/signup.html:243
+msgid "North"
+msgstr ""
+
+#: templates/community/community.html:690
+#: templates/profile/edit_profile.html:139 templates/profile/signup.html:244
+msgid "South"
+msgstr ""
+
+#: templates/community/community.html:691
+#: templates/profile/edit_profile.html:140 templates/profile/signup.html:245
+msgid "East"
+msgstr ""
+
+#: templates/community/community.html:692
+#: templates/profile/edit_profile.html:141 templates/profile/signup.html:246
+msgid "West"
+msgstr ""
+
+#: templates/community/community.html:693
+#: templates/profile/edit_profile.html:142 templates/profile/signup.html:247
+msgid "Central"
+msgstr ""
+
+#: templates/community/community.html:694
+msgid "North-East"
+msgstr ""
+
+#: templates/events/memorymatch.html:6 templates/events/memorymatch.html:373
+msgid "Memory Match Duel"
+msgstr ""
+
+#: templates/events/memorymatch.html:358
+msgid "Memorize the card locations!"
+msgstr ""
+
+#: templates/events/memorymatch.html:375
+msgid "Match Information"
+msgstr ""
+
+#: templates/events/memorymatch.html:375
+msgid "You"
+msgstr ""
+
+#: templates/events/memorymatch.html:375
+msgid "Waiting for opponent..."
+msgstr ""
+
+#: templates/events/memorymatch.html:376
+msgid "Game Instruction"
+msgstr ""
+
+#: templates/events/memorymatch.html:376
+msgid ""
+"Flip two cards at a time. If they match, you get another turn. \n"
+"        The player with the most pairs wins. If both players have the "
+"same score, the match is a draw."
+msgstr ""
+
+#: templates/events/memorymatch.html:382
+msgid "Current Move"
+msgstr ""
+
+#: templates/events/memorymatch.html:382 templates/events/memorymatch.html:662
+msgid "Your Move"
+msgstr ""
+
+#: templates/events/memorymatch.html:383
+msgid "Score"
+msgstr ""
+
+#: templates/events/memorymatch.html:384
+msgid "Opponent Score"
+msgstr ""
+
+#: templates/events/memorymatch.html:385
+msgid "Pairs Remaining"
+msgstr ""
+
+#: templates/events/memorymatch.html:386
+msgid "Time Left"
+msgstr ""
+
+#: templates/events/memorymatch.html:393 templates/events/memorymatch.html:660
+msgid "Your turn !"
+msgstr ""
+
+#: templates/events/memorymatch.html:402
+msgid "You Win !"
+msgstr ""
+
+#: templates/events/memorymatch.html:409
+msgid "View Opponent's Profile"
+msgstr ""
+
+#: templates/events/memorymatch.html:413
+msgid "Exit"
+msgstr ""
+
+#: templates/events/memorymatch.html:424
+msgid "Policy"
+msgstr ""
+
+#: templates/events/memorymatch.html:427
+msgid ""
+"Leaving the match before it's finished will reduce your daily game streak"
+" by 1 and winning streak will be reset to 0."
+msgstr ""
+
+#: templates/events/memorymatch.html:428
+msgid "Do you still want to quit?"
+msgstr ""
+
+#: templates/events/memorymatch.html:431
+msgid "Yes"
+msgstr ""
+
+#: templates/events/memorymatch.html:432
+msgid "No"
+msgstr ""
+
+#: templates/events/memorymatch.html:443
+msgid "You have been inactive! 10 seconds left before auto-quit!"
+msgstr ""
+
+#: templates/events/memorymatch.html:447
+msgid "I'm here!"
+msgstr ""
+
+#: templates/events/memorymatch.html:458
+msgid "Auto-Quit"
+msgstr ""
+
+#: templates/events/memorymatch.html:460
+msgid "You were inactive for 1 minute."
+msgstr ""
+
+#: templates/events/memorymatch.html:461
+msgid ""
+"Your daily game streak has been reduced by 1 and your winning streak has "
+"been reset."
+msgstr ""
+
+#: templates/events/memorymatch.html:466
+msgid "Return to Events"
+msgstr ""
+
+#: templates/events/memorymatch.html:661
+msgid "Opponent turns..."
+msgstr ""
+
+#: templates/events/memorymatch.html:663
+msgid "Opponent's Move"
+msgstr ""
+
+#: templates/events/memorymatch.html:664
+msgid "Game Over"
+msgstr ""
+
+#: templates/events/memorymatch.html:848
+msgid "Opponent left the game. You win by forfeit."
+msgstr ""
+
+#: templates/events/memorymatch.html:1122
+msgid "It's a draw. Winning streak is not affected."
+msgstr ""
+
+#: templates/events/memorymatch.html:1155
+msgid "Streak update failed (server error)."
+msgstr ""
+
+#: templates/events/waitingroom.html:7
+msgid "Finding your garden partner..."
+msgstr ""
+
+#: templates/events/waitingroom.html:8
+msgid "Matching an"
+msgstr ""
+
+#: templates/events/waitingroom.html:8
+msgid "Elderly"
+msgstr ""
+
+#: templates/events/waitingroom.html:8
+msgid "player with a"
+msgstr ""
+
+#: templates/events/waitingroom.html:8 templates/profile/edit_profile.html:128
+#: templates/profile/signup.html:236
+msgid "Youth"
+msgstr ""
+
+#: templates/events/waitingroom.html:8
+msgid "player."
+msgstr ""
+
+#: templates/events/waitingroom.html:13
+msgid "Searching..."
+msgstr ""
+
+#: templates/events/waitingroom.html:17
+msgid "Leave Queue"
+msgstr ""
+
+#: templates/events/waitingroom.html:75
+msgid "✅ Script loaded. Connecting..."
+msgstr ""
+
+#: templates/events/waitingroom.html:90
+msgid "✅ Connected. Joining queue..."
+msgstr ""
+
+#: templates/events/waitingroom.html:97
+msgid "❌ Socket connection failed"
+msgstr ""
+
+#: templates/events/waitingroom.html:102
+msgid "⏳ Waiting for opponent..."
+msgstr ""
+
+#: templates/events/waitingroom.html:108
+msgid "🎉 Match found! Redirecting..."
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:2
+#: templates/garden/garden_dashboard.html:544
+msgid "My Garden"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:514
+msgid "Tree Seeds"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:521
+msgid "Flower Seeds"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:528
+msgid "Water"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:535
+msgid "Points"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:545
+msgid "Grow plants, earn rewards, and track your progress!"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:554
+msgid "Plot"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:557
+msgid "Choose a seed:"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:559
+msgid "Plant Tree (Need 10💧)"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:560
+msgid "Plant Flower (Need 15💧)"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:564
+msgid "Stage"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:574
+msgid "Water (-5💧)"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:578
+msgid "Fully Grown!"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:581
+msgid "Harvest"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:591
+msgid "Rewards Center"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:592
+msgid "Redeem your points for rewards and track your vouchers."
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:597
+msgid "Your Points"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:610 templates/garden/redeem.html:6
+#: templates/profile/profile.html:259
+msgid "My Rewards"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:622
+#: templates/garden/garden_dashboard.html:672
+msgid "Available Rewards"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:632
+msgid "Your Earned Rewards"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:646
+msgid "USED"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:648
+msgid "on"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:648
+msgid "at"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:658
+msgid "Use Now"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:667
+msgid "You haven't earned any rewards yet."
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:682
+msgid "Cost:"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:684
+msgid "Redeem Now"
+msgstr ""
+
+#: templates/garden/garden_dashboard.html:686 templates/garden/redeem.html:28
+#: templates/garden/redeem.html:44 templates/garden/redeem.html:60
+msgid "Insufficient Points"
+msgstr ""
+
+#: templates/garden/garden_history.html:118
+msgid "Back to Garden"
+msgstr ""
+
+#: templates/garden/garden_history.html:124
+msgid "Tree History"
+msgstr ""
+
+#: templates/garden/garden_history.html:128
+msgid "Flower History"
+msgstr ""
+
+#: templates/garden/garden_history.html:132
+msgid "Water History"
+msgstr ""
+
+#: templates/garden/garden_history.html:136
+msgid "Points History"
+msgstr ""
+
+#: templates/garden/garden_history.html:151
+msgid "Used"
+msgstr ""
+
+#: templates/garden/garden_history.html:153
+msgid "Earned"
+msgstr ""
+
+#: templates/garden/garden_history.html:165
+msgid "No history yet 🌱"
+msgstr ""
+
+#: templates/garden/redeem.html:3
+msgid "Redeem Rewards"
+msgstr ""
+
+#: templates/garden/redeem.html:7
+msgid "Earn points by staying active and redeem rewards."
+msgstr ""
+
+#: templates/garden/redeem.html:11
+msgid "Your Current Points"
+msgstr ""
+
+#: templates/garden/redeem.html:20
+msgid "FairPrice Voucher"
+msgstr ""
+
+#: templates/garden/redeem.html:21
+msgid "Redeem $5 FairPrice voucher"
+msgstr ""
+
+#: templates/garden/redeem.html:22
+msgid "20 points"
+msgstr ""
+
+#: templates/garden/redeem.html:25 templates/garden/redeem.html:41
+#: templates/garden/redeem.html:57
+msgid "Redeem"
+msgstr ""
+
+#: templates/garden/redeem.html:36
+msgid "Shopee Voucher"
+msgstr ""
+
+#: templates/garden/redeem.html:37
+msgid "$5 Shopee Discount"
+msgstr ""
+
+#: templates/garden/redeem.html:38
+msgid "25 points"
+msgstr ""
+
+#: templates/garden/redeem.html:52
+msgid "POPMART Voucher"
+msgstr ""
+
+#: templates/garden/redeem.html:53
+msgid "$5 POPMART voucher"
+msgstr ""
+
+#: templates/garden/redeem.html:54
+msgid "30 points"
+msgstr ""
+
+#: templates/includes/footer.html:32
+msgid "About Us"
+msgstr ""
+
+#: templates/includes/footer.html:34
+msgid "FAQ"
+msgstr ""
+
+#: templates/includes/footer.html:40
+msgid "Contact us:"
+msgstr ""
+
+#: templates/includes/footer.html:44
+msgid "Growing Connections Together"
+msgstr ""
+
+#: templates/includes/navbar.html:455
+msgid "PROFILE"
+msgstr ""
+
+#: templates/includes/navbar.html:464
+msgid "Logout"
+msgstr ""
+
+#: templates/profile/change_email.html:3 templates/profile/change_email.html:98
+#: templates/profile/settings.html:255
+msgid "Change Email"
+msgstr ""
+
+#: templates/profile/change_email.html:112
+msgid "Current Password:"
+msgstr ""
+
+#: templates/profile/change_email.html:113
+msgid "Verify it’s you"
+msgstr ""
+
+#: templates/profile/change_email.html:117
+msgid "New Email Address:"
+msgstr ""
+
+#: templates/profile/change_email.html:118
+msgid "Enter new email"
+msgstr ""
+
+#: templates/profile/change_email.html:121
+msgid "Update Email"
+msgstr ""
+
+#: templates/profile/change_email.html:124
+#: templates/profile/community_guidelines.html:164
+#: templates/profile/terms.html:122
+msgid "Back to Settings"
+msgstr ""
+
+#: templates/profile/community_guidelines.html:3
+#: templates/profile/community_guidelines.html:167
+#: templates/profile/settings.html:297
+msgid "Community Guidelines"
+msgstr ""
+
+#: templates/profile/community_guidelines.html:175
+msgid "1. Be respectful and kind to all members"
+msgstr ""
+
+#: templates/profile/community_guidelines.html:183
+msgid "2. Share positive and meaningful stories"
+msgstr ""
+
+#: templates/profile/community_guidelines.html:191
+msgid "3. Support one another whenever possible"
+msgstr ""
+
+#: templates/profile/community_guidelines.html:199
+msgid "4. Keep the community safe and respectful"
+msgstr ""
+
+#: templates/profile/community_guidelines.html:207
+msgid "5. Celebrate differences and learn from each other"
+msgstr ""
+
+#: templates/profile/edit_profile.html:3 templates/profile/edit_profile.html:87
+msgid "Edit Profile"
+msgstr ""
+
+#: templates/profile/edit_profile.html:104
+msgid "Change Photo"
+msgstr ""
+
+#: templates/profile/edit_profile.html:108
+msgid "Remove"
+msgstr ""
+
+#: templates/profile/edit_profile.html:118 templates/profile/signup.html:209
+msgid "Name:"
+msgstr ""
+
+#: templates/profile/edit_profile.html:125 templates/profile/signup.html:233
+msgid "Profile Type:"
+msgstr ""
+
+#: templates/profile/edit_profile.html:129 templates/profile/signup.html:237
+msgid "Senior"
+msgstr ""
+
+#: templates/profile/edit_profile.html:135 templates/profile/profile.html:237
+#: templates/profile/signup.html:240 templates/profile/view_profile.html:213
+msgid "Region:"
+msgstr ""
+
+#: templates/profile/edit_profile.html:148 templates/profile/profile.html:248
+#: templates/profile/view_profile.html:224
+msgid "Bio:"
+msgstr ""
+
+#: templates/profile/edit_profile.html:155
+#: templates/profile/reset_password.html:254
+#: templates/profile/reset_password_settings.html:217
+#: templates/story/manage.html:377 templates/story/manage.html:460
+msgid "Cancel"
+msgstr ""
+
+#: templates/profile/edit_profile.html:156
+msgid "Save changes"
+msgstr ""
+
+#: templates/profile/edit_profile.html:167
+msgid "Are you sure you want to remove your profile photo?"
+msgstr ""
+
+#: templates/profile/login.html:197 templates/profile/login.html:248
+#: templates/profile/signup.html:258
+msgid "Log In"
+msgstr ""
+
+#: templates/profile/login.html:220
+msgid "Username / Email:"
+msgstr ""
+
+#: templates/profile/login.html:224 templates/profile/signup.html:215
+msgid "Password:"
+msgstr ""
+
+#: templates/profile/login.html:226
+msgid "Forgot password?"
+msgstr ""
+
+#: templates/profile/login.html:244
+msgid "Don't have an account?"
+msgstr ""
+
+#: templates/profile/login.html:245 templates/profile/signup.html:4
+#: templates/profile/signup.html:195 templates/profile/signup.html:261
+msgid "Sign Up"
+msgstr ""
+
+#: templates/profile/profile.html:3 templates/profile/view_profile.html:2
+msgid "Profile"
+msgstr ""
+
+#: templates/profile/profile.html:235 templates/profile/view_profile.html:211
+msgid "Profile type:"
+msgstr ""
+
+#: templates/profile/profile.html:249
+msgid "Tell us about your love for gardening!"
+msgstr ""
+
+#: templates/profile/profile.html:253
+msgid "Edit profile"
+msgstr ""
+
+#: templates/profile/profile.html:254 templates/profile/settings.html:3
+#: templates/profile/settings.html:229
+msgid "Settings"
+msgstr ""
+
+#: templates/profile/profile.html:275 templates/story/manage.html:2
+#: templates/story/manage.html:203
+msgid "My Stories"
+msgstr ""
+
+#: templates/profile/profile.html:303
+msgid "Read more"
+msgstr ""
+
+#: templates/profile/profile.html:310
+msgid "You haven’t shared any stories yet 🌱"
+msgstr ""
+
+#: templates/profile/profile.html:318
+msgid "Create Story"
+msgstr ""
+
+#: templates/profile/reset_password.html:3
+#: templates/profile/reset_password.html:155
+#: templates/profile/reset_password.html:250
+#: templates/profile/reset_password_settings.html:4
+#: templates/profile/reset_password_settings.html:133
+#: templates/profile/reset_password_settings.html:213
+msgid "Reset Password"
+msgstr ""
+
+#: templates/profile/reset_password.html:179
+#: templates/profile/reset_password_settings.html:154
+msgid "Email"
+msgstr ""
+
+#: templates/profile/reset_password.html:184
+#: templates/profile/reset_password_settings.html:159
+msgid "Enter your email"
+msgstr ""
+
+#: templates/profile/reset_password.html:189
+#: templates/profile/reset_password_settings.html:164
+msgid "We will send a 6-digit verification code to your registered email."
+msgstr ""
+
+#: templates/profile/reset_password.html:199
+#: templates/profile/reset_password_settings.html:174
+msgid "Send Verification Code"
+msgstr ""
+
+#: templates/profile/reset_password.html:205
+#: templates/profile/reset_password_settings.html:180
+msgid "Verification Code"
+msgstr ""
+
+#: templates/profile/reset_password.html:210
+#: templates/profile/reset_password_settings.html:185
+msgid "Enter the 6-digit code"
+msgstr ""
+
+#: templates/profile/reset_password.html:214
+#: templates/profile/reset_password_settings.html:189
+msgid "New Password"
+msgstr ""
+
+#: templates/profile/reset_password.html:221
+#: templates/profile/reset_password_settings.html:194
+msgid "Enter new password"
+msgstr ""
+
+#: templates/profile/reset_password.html:228
+#: templates/profile/reset_password_settings.html:198
+msgid "Confirm New Password"
+msgstr ""
+
+#: templates/profile/reset_password.html:235
+#: templates/profile/reset_password_settings.html:203
+msgid "Confirm new password"
+msgstr ""
+
+#: templates/profile/settings.html:231
+msgid "Back to Profile"
+msgstr ""
+
+#: templates/profile/settings.html:241
+msgid "View / Manage stories"
+msgstr ""
+
+#: templates/profile/settings.html:248
+msgid "Change Password"
+msgstr ""
+
+#: templates/profile/settings.html:262
+msgid "Delete Account"
+msgstr ""
+
+#: templates/profile/settings.html:269
+msgid "Privacy Settings"
+msgstr ""
+
+#: templates/profile/settings.html:272
+msgid "Show/Hide Email"
+msgstr ""
+
+#: templates/profile/settings.html:282
+msgid "Show/Hide Region"
+msgstr ""
+
+#: templates/profile/settings.html:295
+msgid "Support"
+msgstr ""
+
+#: templates/profile/settings.html:298 templates/profile/terms.html:3
+#: templates/profile/terms.html:129
+msgid "Terms & Privacy Policy"
+msgstr ""
+
+#: templates/profile/settings.html:304
+msgid "Log Out"
+msgstr ""
+
+#: templates/profile/settings.html:310
+msgid "Are you sure you want to delete your account?"
+msgstr ""
+
+#: templates/profile/signup.html:212
+msgid "Username:"
+msgstr ""
+
+#: templates/profile/signup.html:230
+msgid ""
+"Password must be at least 8 characters, include uppercase, lowercase, and"
+" a number."
+msgstr ""
+
+#: templates/profile/signup.html:235
+msgid "Youth / Senior"
+msgstr ""
+
+#: templates/profile/signup.html:242
+msgid "Select region"
+msgstr ""
+
+#: templates/profile/signup.html:250
+msgid "Email:"
+msgstr ""
+
+#: templates/profile/signup.html:253
+msgid "Add Bio:"
+msgstr ""
+
+#: templates/profile/signup.html:257
+msgid "Have an account?"
+msgstr ""
+
+#: templates/profile/terms.html:137
+msgid "Terms of Service"
+msgstr ""
+
+#: templates/profile/terms.html:138
+msgid "By using The Legacy Garden, you agree to follow these rules:"
+msgstr ""
+
+#: templates/profile/terms.html:140
+msgid "Be respectful to all users, including youth and seniors."
+msgstr ""
+
+#: templates/profile/terms.html:141
+msgid "Do not post harmful, offensive, or false information."
+msgstr ""
+
+#: templates/profile/terms.html:142
+msgid "Keep your account details accurate and secure."
+msgstr ""
+
+#: templates/profile/terms.html:143
+msgid "We may remove content or suspend accounts that break the rules."
+msgstr ""
+
+#: templates/profile/terms.html:144
+msgid "Do not use the platform for illegal or inappropriate activities."
+msgstr ""
+
+#: templates/profile/terms.html:152
+msgid "Privacy Policy"
+msgstr ""
+
+#: templates/profile/terms.html:154
+msgid "We collect basic profile information such as name, email, and region."
+msgstr ""
+
+#: templates/profile/terms.html:155
+msgid ""
+"Your information is used to display your profile and improve your "
+"experience."
+msgstr ""
+
+#: templates/profile/terms.html:156
+msgid "You can control what information is visible in your privacy settings."
+msgstr ""
+
+#: templates/profile/terms.html:157
+msgid "We do not sell or misuse your personal data."
+msgstr ""
+
+#: templates/profile/terms.html:158
+msgid "We take reasonable steps to protect your information."
+msgstr ""
+
+#: templates/profile/terms.html:159
+msgid "You may update or delete your account at any time."
+msgstr ""
+
+#: templates/profile/view_profile.html:225
+msgid "No bio shared."
+msgstr ""
+
+#: templates/profile/view_profile.html:235
+msgid "Stories by"
+msgstr ""
+
+#: templates/profile/view_profile.html:258
+msgid "General"
+msgstr ""
+
+#: templates/profile/view_profile.html:259
+msgid "Posted By"
+msgstr ""
+
+#: templates/profile/view_profile.html:268
+msgid "Read More"
+msgstr ""
+
+#: templates/profile/view_profile.html:300
+msgid "No stories shared yet 🌱"
+msgstr ""
+
+#: templates/story/manage.html:199
+msgid "Back to Home"
+msgstr ""
+
+#: templates/story/manage.html:204
+msgid "View your posted stories and drafts."
+msgstr ""
+
+#: templates/story/manage.html:208
+msgid "Posted Stories"
+msgstr ""
+
+#: templates/story/manage.html:211
+msgid "Drafts"
+msgstr ""
+
+#: templates/story/manage.html:222
+msgid "Story Image"
+msgstr ""
+
+#: templates/story/manage.html:229
+msgid "Posted on"
+msgstr ""
+
+#: templates/story/manage.html:239
+msgid "View"
+msgstr ""
+
+#: templates/story/manage.html:240
+msgid "Edit coming soon"
+msgstr ""
+
+#: templates/story/manage.html:240
+msgid "Edit"
+msgstr ""
+
+#: templates/story/manage.html:241
+msgid "Delete"
+msgstr ""
+
+#: templates/story/manage.html:249
+msgid "No posted stories yet."
+msgstr ""
+
+#: templates/story/manage.html:250
+msgid "Go to \"Create Story\" to share your first memory!"
+msgstr ""
+
+#: templates/story/manage.html:259
+msgid "Draft Image"
+msgstr ""
+
+#: templates/story/manage.html:263
+msgid "Draft:"
+msgstr ""
+
+#: templates/story/manage.html:263
+msgid "Untitled Draft"
+msgstr ""
+
+#: templates/story/manage.html:264
+msgid "Last edited just now"
+msgstr ""
+
+#: templates/story/manage.html:265
+msgid "No content yet..."
+msgstr ""
+
+#: templates/story/manage.html:278
+msgid "No drafts saved."
+msgstr ""
+
+#: templates/story/manage.html:279
+msgid "Start writing a story and save it for later!"
+msgstr ""
+
+#: templates/story/manage.html:293
+msgid "Story Deletion Policy"
+msgstr ""
+
+#: templates/story/manage.html:301 templates/story/manage.html:402
+msgid "Reason"
+msgstr ""
+
+#: templates/story/manage.html:305 templates/story/manage.html:406
+msgid "Choose a reason..."
+msgstr ""
+
+#: templates/story/manage.html:308 templates/story/manage.html:408
+msgid "I don’t like it"
+msgstr ""
+
+#: templates/story/manage.html:309 templates/story/manage.html:409
+msgid "Nudity / sexual content"
+msgstr ""
+
+#: templates/story/manage.html:310 templates/story/manage.html:410
+msgid "Hate speech / harassment"
+msgstr ""
+
+#: templates/story/manage.html:311 templates/story/manage.html:411
+msgid "Spam / scam"
+msgstr ""
+
+#: templates/story/manage.html:312 templates/story/manage.html:412
+msgid "Violence / self-harm"
+msgstr ""
+
+#: templates/story/manage.html:313 templates/story/manage.html:413
+msgid "Other"
+msgstr ""
+
+#: templates/story/manage.html:321 templates/story/manage.html:420
+msgid "If Other, please specify..."
+msgstr ""
+
+#: templates/story/manage.html:330
+msgid "1. Deleted stories cannot be recovered"
+msgstr ""
+
+#: templates/story/manage.html:331
+msgid "Once removed, this story is permanently gone."
+msgstr ""
+
+#: templates/story/manage.html:338
+msgid "2. Your water droplet earnings may decrease"
+msgstr ""
+
+#: templates/story/manage.html:339
+msgid "Deleting a story can reduce your accumulated water."
+msgstr ""
+
+#: templates/story/manage.html:346
+msgid "3. Future rewards may be affected"
+msgstr ""
+
+#: templates/story/manage.html:347
+msgid "Some achievements depend on story history."
+msgstr ""
+
+#: templates/story/manage.html:354
+msgid "4. Your garden growth may change"
+msgstr ""
+
+#: templates/story/manage.html:355
+msgid "Plants grown from this story may be removed."
+msgstr ""
+
+#: templates/story/manage.html:362
+msgid "5. Irreversible action"
+msgstr ""
+
+#: templates/story/manage.html:363
+msgid "This action cannot be undone."
+msgstr ""
+
+#: templates/story/manage.html:371
+msgid "I understand that deleting this story is permanent."
+msgstr ""
+
+#: templates/story/manage.html:380
+msgid "Delete Story"
+msgstr ""
+
+#: templates/story/manage.html:395
+msgid "Draft Deletion Policy"
+msgstr ""
+
+#: templates/story/manage.html:429
+msgid "1. Deleted drafts cannot be recovered"
+msgstr ""
+
+#: templates/story/manage.html:430
+msgid "Once deleted, this draft is gone."
+msgstr ""
+
+#: templates/story/manage.html:437
+msgid "2. All unsaved content will be lost"
+msgstr ""
+
+#: templates/story/manage.html:438
+msgid "Any text or photos will be erased."
+msgstr ""
+
+#: templates/story/manage.html:445
+msgid "3. This action is irreversible"
+msgstr ""
+
+#: templates/story/manage.html:446
+msgid "We cannot retrieve deleted drafts."
+msgstr ""
+
+#: templates/story/manage.html:454
+msgid "I understand that deleting this draft is permanent."
+msgstr ""
+
+#: templates/story/manage.html:463
+msgid "Delete Draft"
+msgstr ""
+
+#: venv/Lib/site-packages/click/_termui_impl.py:613
+#, python-brace-format
+msgid "{editor}: Editing failed"
+msgstr ""
+
+#: venv/Lib/site-packages/click/_termui_impl.py:617
+#, python-brace-format
+msgid "{editor}: Editing failed: {e}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:1114
+#: venv/Lib/site-packages/click/core.py:1151
+#, python-brace-format
+msgid "{text} {deprecated_message}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:1170
+msgid "Options"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:1245
+#, python-brace-format
+msgid "Got unexpected extra argument ({args})"
+msgid_plural "Got unexpected extra arguments ({args})"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/Lib/site-packages/click/core.py:1264
+#, python-brace-format
+msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:1448
+msgid "Aborted!"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:1822
+msgid "Commands"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:1853
+msgid "Missing command."
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:1931
+#, python-brace-format
+msgid "No such command {name!r}."
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:2355
+msgid "Value must be an iterable."
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:2378
+#, python-brace-format
+msgid "Takes {nargs} values but 1 was given."
+msgid_plural "Takes {nargs} values but {len} were given."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/Lib/site-packages/click/core.py:2567
+#, python-brace-format
+msgid ""
+"DeprecationWarning: The {param_type} {name!r} is "
+"deprecated.{extra_message}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:3015
+#, python-brace-format
+msgid "env var: {var}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:3018
+#, python-brace-format
+msgid "default: {default}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:3022
+msgid "required"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:3082
+msgid "(dynamic)"
+msgstr ""
+
+#: venv/Lib/site-packages/click/decorators.py:465
+#, python-format
+msgid "%(prog)s, version %(version)s"
+msgstr ""
+
+#: venv/Lib/site-packages/click/decorators.py:522
+msgid "Show the version and exit."
+msgstr ""
+
+#: venv/Lib/site-packages/click/decorators.py:548
+msgid "Show this message and exit."
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:50
+#: venv/Lib/site-packages/click/exceptions.py:89
+#, python-brace-format
+msgid "Error: {message}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:81
+#, python-brace-format
+msgid "Try '{command} {option}' for help."
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:130
+#, python-brace-format
+msgid "Invalid value: {message}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:132
+#, python-brace-format
+msgid "Invalid value for {param_hint}: {message}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:190
+msgid "Missing argument"
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:192
+msgid "Missing option"
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:194
+msgid "Missing parameter"
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:196
+#, python-brace-format
+msgid "Missing {param_type}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:203
+#, python-brace-format
+msgid "Missing parameter: {param_name}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:223
+#, python-brace-format
+msgid "No such option: {name}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:235
+#, python-brace-format
+msgid "Did you mean {possibility}?"
+msgid_plural "(Possible options: {possibilities})"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/Lib/site-packages/click/exceptions.py:282
+msgid "unknown error"
+msgstr ""
+
+#: venv/Lib/site-packages/click/exceptions.py:289
+#, python-brace-format
+msgid "Could not open file {filename!r}: {message}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/formatting.py:156
+msgid "Usage:"
+msgstr ""
+
+#: venv/Lib/site-packages/click/parser.py:199
+#, python-brace-format
+msgid "Argument {name!r} takes {nargs} values."
+msgstr ""
+
+#: venv/Lib/site-packages/click/parser.py:381
+#, python-brace-format
+msgid "Option {name!r} does not take a value."
+msgstr ""
+
+#: venv/Lib/site-packages/click/parser.py:444
+#, python-brace-format
+msgid "Option {name!r} requires an argument."
+msgid_plural "Option {name!r} requires {nargs} arguments."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/Lib/site-packages/click/shell_completion.py:332
+msgid "Shell completion is not supported for Bash versions older than 4.4."
+msgstr ""
+
+#: venv/Lib/site-packages/click/shell_completion.py:339
+msgid "Couldn't detect Bash version, shell completion is not supported."
+msgstr ""
+
+#: venv/Lib/site-packages/click/termui.py:165
+msgid "Repeat for confirmation"
+msgstr ""
+
+#: venv/Lib/site-packages/click/termui.py:181
+msgid "Error: The value you entered was invalid."
+msgstr ""
+
+#: venv/Lib/site-packages/click/termui.py:183
+#, python-brace-format
+msgid "Error: {e.message}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/termui.py:194
+msgid "Error: The two entered values do not match."
+msgstr ""
+
+#: venv/Lib/site-packages/click/termui.py:253
+msgid "Error: invalid input"
+msgstr ""
+
+#: venv/Lib/site-packages/click/termui.py:872
+msgid "Press any key to continue..."
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:332
+#, python-brace-format
+msgid ""
+"Choose from:\n"
+"\t{choices}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:369
+#, python-brace-format
+msgid "{value!r} is not {choice}."
+msgid_plural "{value!r} is not one of {choices}."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/Lib/site-packages/click/types.py:460
+#, python-brace-format
+msgid "{value!r} does not match the format {format}."
+msgid_plural "{value!r} does not match the formats {formats}."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/Lib/site-packages/click/types.py:482
+#, python-brace-format
+msgid "{value!r} is not a valid {number_type}."
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:538
+#, python-brace-format
+msgid "{value} is not in the range {range}."
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:719
+#, python-brace-format
+msgid "{value!r} is not a valid boolean. Recognized values: {states}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:747
+#, python-brace-format
+msgid "{value!r} is not a valid UUID."
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:937
+msgid "file"
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:939
+msgid "directory"
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:941
+msgid "path"
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:988
+#, python-brace-format
+msgid "{name} {filename!r} does not exist."
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:997
+#, python-brace-format
+msgid "{name} {filename!r} is a file."
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:1005
+#, python-brace-format
+msgid "{name} {filename!r} is a directory."
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:1014
+#, python-brace-format
+msgid "{name} {filename!r} is not readable."
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:1023
+#, python-brace-format
+msgid "{name} {filename!r} is not writable."
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:1032
+#, python-brace-format
+msgid "{name} {filename!r} is not executable."
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:1099
+#, python-brace-format
+msgid "{len_type} values are required, but {len_value} was given."
+msgid_plural "{len_type} values are required, but {len_value} were given."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/Lib/site-packages/sympy/solvers/simplex.py:563
+msgid "x"
+msgstr ""
+
+#: venv/Lib/site-packages/sympy/solvers/simplex.py:564
+msgid "y"
+msgstr ""
+
+#: venv/Lib/site-packages/test/integ/test_sendgrid.py:333
+#: venv/Lib/site-packages/test/integ/test_sendgrid.py:340
+#: venv/Lib/site-packages/test/integ/test_sendgrid.py:347
+msgid "global"
+msgstr ""
+

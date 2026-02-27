@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="waiting-container">
+  <div class="waiting-card">
+    <div class="spinner"></div>
+    <h2 id="status-text">{{ _('Finding your garden partner...') }}</h2>
+    <p>{{ _('Matching an') }} <strong>{{ _('Elderly') }}</strong> {{ _('player with a') }} <strong>{{ _('Youth') }}</strong> {{ _('player.') }}</p>
+
+    <div class="matching-details">
+      <span class="role-badge">{{ _(role) }}</span>
+      <span class="vs">VS</span>
+      <span class="role-badge target">{{ _('Searching...') }}</span>
+    </div>
+
+    <a href="{{ url_for('events_home') }}" class="cancel-btn" id="leaveQueueBtn">
+       {{ _('Leave Queue') }}
+    </a>
+  </div>
+</div>
+
+<style>
+.waiting-container{display:flex;justify-content:center;align-items:center;height:70vh;background:#f9f7f2;}
+.waiting-card{background:#fff;padding:40px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,0.1);text-align:center;max-width:400px;width:90%;}
+.spinner{width:50px;height:50px;border:5px solid #f3f3f3;border-top:5px solid #3e5e44;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+.role-badge{padding:8px 15px;background:#e8f5e9;border-radius:15px;color:#2e7d32;font-weight:bold;}
+.vs{margin:0 10px;font-weight:bold;color:#888;}
+.cancel-btn{margin-top:28px;padding:10px 28px;border:1.5px solid #ff4d4d;color:#ff4d4d;border-radius:8px;background:none;font-weight:600;text-decoration:none;}
+.cancel-btn:hover{background:#ff4d4d;color:#fff;}
+</style>
+
+<style>
+  .matching-details{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    margin-top:14px;
+    flex-wrap:wrap;            /* avoids overlap on smaller widths */
+  }
+
+  .waiting-card{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* Put leave button on its own line and center it */
+  .queue-actions{
+    margin-top:18px;
+    width:100%;
+    display:flex;
+    justify-content:center;
+  }
+
+  .cancel-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:12px 26px;
+    border-radius:14px;
+    min-width:220px;           /* makes it look centered & consistent */
+  }
+</style>
+
+
+<!-- 🔥 SCRIPT MUST BE HERE (NOT block scripts) -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  console.log("✅ WAITING ROOM SCRIPT LOADED");
+
+  document.getElementById("status-text").textContent =
+    "{{ _('✅ Script loaded. Connecting...') }}";
+
+  const socket = io(window.location.origin, {
+    transports: ["polling"]
+  });
+
+  const payload = {
+    user_id: "{{ user_id }}",
+    role: "{{ role }}",
+    game_type: "{{ game_type }}"
+  };
+
+  socket.on("connect", () => {
+    console.log("✅ SOCKET CONNECTED", socket.id);
+    document.getElementById("status-text").textContent =
+      "{{ _('✅ Connected. Joining queue...') }}";
+    socket.emit("join_waiting_room", payload);
+  });
+
+  socket.on("connect_error", (err) => {
+    console.error("❌ CONNECT ERROR", err);
+    document.getElementById("status-text").textContent =
+      "{{ _('❌ Socket connection failed') }}";
+  });
+
+  socket.on("queued", () => {
+    document.getElementById("status-text").textContent =
+      "{{ _('⏳ Waiting for opponent...') }}";
+  });
+
+  socket.on("match_found", (data) => {
+    console.log("🎉 MATCH FOUND:", data);
+    document.getElementById("status-text").textContent =
+      "{{ _('🎉 Match found! Redirecting...') }}";
+    
+    setTimeout(() => {
+      // ✅ Use the game_type from the template (what user selected)
+      const gameType = "{{ game_type }}";
+      
+      if (gameType === "hangman") {
+        window.location.href = `/events/hangman?room=${data.room}`;
+      } else {
+        window.location.href = `/events/memory-match?room=${data.room}`;
+      }
+    }, 500);
+  });
+
+  document.getElementById("leaveQueueBtn").onclick = (e) => {
+    e.preventDefault();
+    socket.emit("cancel_queue", payload);
+    window.location.href = "{{ url_for('events_home') }}";
+  };
+</script>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Redeem Rewards") }}{% endblock %}
+
+{% block content %}
+<h2 class="text-success mb-3">{{ _("My Rewards") }}</h2>
+<p class="text-muted">{{ _("Earn points by staying active and redeem rewards.") }}</p>
+
+<!-- CURRENT POINTS -->
+<div class="card mb-4 p-4 text-center bg-light">
+  <h5>{{ _("Your Current Points") }}</h5>
+  <h2 class="text-success">{{ garden[4] }}</h2>
+</div>
+
+<!-- REWARD LIST -->
+<div class="row">
+
+  <div class="col-md-4 mb-3">
+    <div class="card p-3">
+      <h5>{{ _("FairPrice Voucher") }}</h5>
+      <p class="text-muted">{{ _("Redeem $5 FairPrice voucher") }}</p>
+      <p><strong>{{ _("20 points") }}</strong></p>
+
+      {% if garden[4] >= 20 %}
+        <a href="#" class="btn btn-success w-100">{{ _("Redeem") }}</a>
+      {% else %}
+        <button class="btn btn-secondary w-100" disabled>
+          {{ _("Insufficient Points") }}
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <div class="card p-3">
+      <h5>{{ _("Shopee Voucher") }}</h5>
+      <p class="text-muted">{{ _("$5 Shopee Discount") }}</p>
+      <p><strong>{{ _("25 points") }}</strong></p>
+
+      {% if garden[4] >= 25 %}
+        <a href="#" class="btn btn-success w-100">{{ _("Redeem") }}</a>
+      {% else %}
+        <button class="btn btn-secondary w-100" disabled>
+          {{ _("Insufficient Points") }}
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <div class="card p-3">
+      <h5>{{ _("POPMART Voucher") }}</h5>
+      <p class="text-muted">{{ _("$5 POPMART voucher") }}</p>
+      <p><strong>{{ _("30 points") }}</strong></p>
+
+      {% if garden[4] >= 30 %}
+        <a href="#" class="btn btn-success w-100">{{ _("Redeem") }}</a>
+      {% else %}
+        <button class="btn btn-secondary w-100" disabled>
+          {{ _("Insufficient Points") }}
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

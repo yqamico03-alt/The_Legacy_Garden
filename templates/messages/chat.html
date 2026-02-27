@@ -1,0 +1,1293 @@
+{# templates/messaging/chat.html #}
+{% extends "base.html" %}
+{% block title %}Chat - Legacy Garden{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/messages.css') }}">
+<style>
+  /* #ya added: messages shell fills viewport height so chat body scrolls inside it;
+     page itself scrolls down to reveal footer (same as other pages) */
+  html, body { height: auto; overflow: auto !important; }
+  footer, .footer, .site-footer { display: block !important; }
+
+  .messages-wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .messages-shell {
+    height: calc(100vh - 80px) !important;
+    overflow: hidden !important;
+    flex: 1 !important;
+  }
+  .msg-main {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+  .chat-body {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
+  }
+  .msg-sidebar {
+    height: 100% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .sidebar-list {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
+  }
+</style>
+
+<div class="messages-wrap">
+  <div class="msg-sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="messages-shell">
+    
+
+    <!-- =======================
+         LEFT SIDEBAR (CHATS)
+    ======================== -->
+    <div class="msg-sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-title">Chats</div>
+        <div class="sidebar-search">
+          <span>🔎</span>
+          <input id="chatSearch" placeholder="Search chats">
+        </div>
+      </div>
+
+      <div class="sidebar-list" id="chatList">
+          <!-- ✅ Community block (so it stays visible on chat.html too) -->
+  <div class="sidebar-section-label">Community</div>
+  <div class="community-region-box">
+    <a class="chat-item {% if active_group == 'north' %}active{% endif %}"
+       href="{{ url_for('messaging.group_chat', region='north') }}"
+       data-name="north region">
+      <div class="chat-avatar">🧭</div>
+      <div class="chat-meta">
+        <div class="chat-name-row">
+          <span class="chat-name">North Region</span>
+        </div>
+        <div class="chat-sub">Community</div>
+      </div>
+    </a>
+  </div>
+
+  <hr class="sidebar-divider">
+
+  <div class="sidebar-section-label">My Chats</div>
+        {% for p in conversations %}
+          <a class="chat-item {% if p.id == active_id %}active{% endif %}"
+             href="{{ url_for('messaging.chat', other_id=p.id) }}"
+             data-name="{{ p.username|lower }}"
+             data-peer-id="{{ p.id }}">
+
+            <div class="chat-avatar">
+              {% if p.pfp and p.pfp != 'profile_pic.png' %}
+                <img src="{{ url_for('static', filename='uploads/' + p.pfp) }}"
+                     alt="{{ p.username }}"
+                     onerror="this.onerror=null;this.src='/static/uploads/profile_pic.png'">
+              {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ p.username | replace(' ', '+') }}&background=random&size=150"
+                     alt="{{ p.username }}">
+              {% endif %}
+            </div>
+
+            <div class="chat-meta">
+              <div class="chat-name-row">
+                <span class="chat-name">{{ p.username }}</span>
+
+                {% set s = (p.streak or 0) %}
+                <span class="sidebar-streak" id="sidebar-streak-{{ p.id }}"
+                      {% if s <= 0 %}style="display:none;"{% endif %}>
+                  🔥 {{ s }}
+                </span>
+              </div>
+
+              <div class="chat-sub" id="preview-{{ p.id }}">
+                {% if p.last_preview %}
+                  {{ p.last_preview[:40] }}{% if p.last_preview|length > 40 %}…{% endif %}
+                {% elif p.last_msg %}
+                  {{ p.last_msg[11:16] if p.last_msg|length >= 16 else p.last_msg[:10] }}
+                {% else %}
+                  {{ p.role|title }}
+                {% endif %}
+              </div>
+            </div>
+
+            {% if p.unread and p.unread > 0 %}
+              <span class="unread-badge" id="badge-{{ p.id }}">{{ p.unread }}</span>
+            {% else %}
+              <span class="unread-badge" id="badge-{{ p.id }}" style="display:none">0</span>
+            {% endif %}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- =======================
+         RIGHT MAIN CHAT
+    ======================== -->
+    <div class="msg-main">
+
+      <div class="chat-topbar">
+<a class="back-btn" href="{{ url_for('messaging.inbox') }}">← Back</a>
+        <div class="chat-topbar-left">
+
+          <!-- COLUMN 1: Avatar -->
+          <div class="chat-avatar avatar-{{ other_user.id % 6 }}" id="topbarPeerAvatar">
+            {% if other_user.pfp and other_user.pfp != 'profile_pic.png' %}
+              <img src="{{ url_for('static', filename='uploads/' + other_user.pfp) }}"
+                   alt="{{ other_user.username }}"
+                   onerror="this.onerror=null;this.src='/static/uploads/profile_pic.png'">
+            {% else %}
+              {# ✅ Added from your 2nd version: use ui-avatars fallback #}
+              <img src="https://ui-avatars.com/api/?name={{ other_user.username | replace(' ', '+') }}&background=random&size=150"
+                   alt="{{ other_user.username }}">
+            {% endif %}
+          </div>
+
+          <!-- COLUMN 2: Username + Status -->
+          <div class="peer-info">
+            <div class="peer-username">{{ other_user.username }}</div>
+            <div id="peerStatus" class="peer-status">offline</div>
+          </div>
+
+        </div>
+
+        <div style="margin-left:auto;display:flex;align-items:center;gap:15px;">
+          {% set topS = (streak or 0) %}
+          <div id="streakBadge" class="streak-badge-top" {% if topS <= 0 %}style="display:none;"{% endif %}>
+            🔥 {{ topS }}
+          </div>
+
+          <div class="topbar-menu-wrap" style="margin-left:10px;">
+            <button class="topbar-dots-btn" id="topbarDotsBtn" title="More options" type="button">
+              <span></span><span></span><span></span>
+            </button>
+
+            <div class="topbar-dropdown" id="topbarDropdown">
+              <a class="topbar-dd-item" href="{{ url_for('view_profile', username=other_user.username) }}">
+                👤 View Profile
+              </a>
+
+              <button class="topbar-dd-item" id="reportProfileBtn" type="button">
+                🚩 Report Profile
+              </button>
+
+              <button class="topbar-dd-item topbar-dd-danger" id="clearChatBtn" type="button">
+                🗑️ Clear Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT BODY -->
+      <div class="chat-body" id="chatBody">
+        {% set ns = namespace(last_date=None) %}
+        {% for m in messages %}
+          {% set mine = (m.sender_id == me.id) %}
+          {% set current_date = (m.timestamp or '')[:10] %}
+
+          {% if current_date != ns.last_date %}
+            <div class="day-divider"><span>{{ current_date }}</span></div>
+            {% set ns.last_date = current_date %}
+          {% endif %}
+
+          <div class="msg-row {{ 'mine' if mine else 'theirs' }}"
+               data-msg-id="{{ m.id }}"
+               data-msg-type="{{ m.message_type or 'text' }}"
+               data-mine="{{ 'true' if mine else 'false' }}">
+            <div class="msg-bubble">
+
+              {% if mine %}
+                {# #ya added: three-dot button positioned absolute top-right of bubble #}
+                <button class="msg-dots-btn" title="Options">⋮</button>
+              {% endif %}
+
+              {% if m.is_deleted %}
+                <div class="msg-text msg-deleted">🚫 Message deleted</div>
+
+              {% elif (m.message_type or 'text') == 'text' %}
+                <div class="msg-text">{{ m.message_text }}</div>
+                {% if m.is_edited %}<div class="msg-edited">edited</div>{% endif %}
+
+              {% elif m.message_type == 'image' %}
+                <img class="msg-img" src="{{ url_for('static', filename=m.media_path) }}" alt="image">
+                {% if m.file_name %}<div class="msg-fn">{{ m.file_name }}</div>{% endif %}
+
+              {% elif m.message_type == 'audio' %}
+                <audio controls class="msg-audio" src="{{ url_for('static', filename=m.audio_path) }}"></audio>
+                {% if m.file_name %}<div class="msg-fn">{{ m.file_name }}</div>{% endif %}
+              {% endif %}
+
+              <div class="msg-meta">
+                <span class="msg-clock">{{ (m.timestamp or '')[11:16] }}</span>
+                {% if mine %}
+                  <span class="msg-ticks {% if m.read_at %}is-read{% endif %}">✓✓</span>
+                {% endif %}
+              </div>
+
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- IMAGE PREVIEW BAR (shows selected image above composer) -->
+      <div class="img-preview-bar" id="imgPreviewBar" style="display:none;">
+        <div class="img-preview-inner">
+          <img id="imgPreviewThumb" src="" alt="preview" style="max-height:80px;border-radius:8px;margin-right:10px;">
+          <span id="imgPreviewName" class="img-preview-name"></span>
+        </div>
+        <button type="button" id="imgCancelBtn" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;color:#999;">✕</button>
+      </div>
+
+      <!-- RECORDING BAR -->
+      <div id="recBar" style="display:none;padding:10px 16px;background:#fff0f0;border-top:1px solid #fcc;align-items:center;gap:10px;">
+        <span class="rec-dot" style="width:10px;height:10px;border-radius:50%;background:#e74c3c;display:inline-block;animation:blink 1s infinite;"></span>
+        <span style="font-size:14px;color:#e74c3c;font-weight:600;">Recording… tap mic again to send</span>
+        <span id="recTimer" style="margin-left:auto;font-size:13px;color:#999;">0:00</span>
+        <button type="button" id="recCancelBtn" style="background:none;border:1px solid #ccc;border-radius:20px;padding:4px 10px;cursor:pointer;font-size:13px;">Cancel</button>
+      </div>
+
+      <!-- COMPOSER -->
+      <form class="chat-composer" onsubmit="return false;">
+        <button type="button" id="btnImg" title="Send image" class="icon-btn-green">
+          <i class="fa-regular fa-image"></i>
+        </button>
+        <input type="file" id="imgInput" accept="image/*" style="display:none">
+
+        <button type="button" id="btnAudio" title="Tap to record, tap again to send" class="icon-btn-green mic-btn">
+          <i class="fa-solid fa-microphone"></i>
+        </button>
+
+        <input id="textInput" placeholder="Type a message…" autocomplete="off">
+        <button type="button" id="sendBtn">Send</button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- =======================
+     REPORT PROFILE MODAL
+======================= -->
+<div class="rp-modal" id="reportModal" style="display:none;">
+  <div class="rp-backdrop" id="reportBackdrop"></div>
+
+  <div class="rp-card" role="dialog" aria-modal="true" aria-labelledby="rpTitle">
+    <div class="rp-header">
+      <div>
+        <div class="rp-title" id="rpTitle">Report Profile</div>
+        <div class="rp-sub">Reporting: <b>{{ other_user.username }}</b></div>
+      </div>
+      <button class="rp-x" id="reportCloseBtn" type="button">✕</button>
+    </div>
+
+    <div class="rp-body">
+      <label class="rp-label" for="reportReason">Reason</label>
+      <select id="reportReason" class="rp-select">
+        <option value="" selected disabled>Select a reason…</option>
+        <option value="harassment">Harassment / bullying</option>
+        <option value="hate">Hate speech</option>
+        <option value="spam">Spam / scam</option>
+        <option value="impersonation">Impersonation</option>
+        <option value="inappropriate">Inappropriate content</option>
+        <option value="other">Other</option>
+      </select>
+
+      <label class="rp-label" for="reportNote" style="margin-top:12px;">Optional details</label>
+      <textarea id="reportNote" class="rp-textarea" rows="3"
+                placeholder="Add more details (optional)…"></textarea>
+    </div>
+
+    <div class="rp-footer">
+      <button class="rp-btn rp-cancel" id="reportCancelBtn" type="button">Cancel</button>
+      <button class="rp-btn rp-submit" id="reportSubmitBtn" type="button">Submit Report</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<!-- ✅ DEFINE IDs FIRST (so report script can use otherId) -->
+<script>
+  const myId    = JSON.parse('{{ me.id | tojson }}');
+  const otherId = JSON.parse('{{ other_user.id | tojson }}');
+</script>
+
+<!-- =======================
+     REPORT MODAL SCRIPT
+======================= -->
+<script>
+  const reportBtn       = document.getElementById("reportProfileBtn");
+  const reportModal     = document.getElementById("reportModal");
+  const reportBackdrop  = document.getElementById("reportBackdrop");
+  const reportCloseBtn  = document.getElementById("reportCloseBtn");
+  const reportCancelBtn = document.getElementById("reportCancelBtn");
+  const reportSubmitBtn = document.getElementById("reportSubmitBtn");
+  const reportReason    = document.getElementById("reportReason");
+  const reportNote      = document.getElementById("reportNote");
+
+  function closeReportModal() {
+    if (reportModal) reportModal.style.display = "none";
+  }
+
+  function updateReportSubmitState() {
+    const okReason = reportReason && reportReason.value;
+    if (reportSubmitBtn) reportSubmitBtn.disabled = !okReason;
+  }
+
+  function positionReportPopover() {
+    const anchor = document.getElementById("topbarPeerAvatar") || document.getElementById("topbarDotsBtn");
+    const card   = document.querySelector(".rp-card");
+    if (!anchor || !card) return;
+
+    const r = anchor.getBoundingClientRect();
+    const gap = 12;
+
+    let top  = r.top + (r.height / 2) - (card.offsetHeight / 2);
+    let left = r.right + gap;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    if (left + card.offsetWidth > vw - 12) left = r.left - gap - card.offsetWidth;
+    if (left < 12) left = vw - 12 - card.offsetWidth;
+
+    if (top < 12) top = 12;
+    if (top + card.offsetHeight > vh - 12) top = vh - 12 - card.offsetHeight;
+
+    card.style.left = left + "px";
+    card.style.top  = top + "px";
+  }
+
+  function openReportModal() {
+    try { topbarDropdown && topbarDropdown.classList.remove("open"); } catch (e) {}
+
+    if (!reportModal) return;
+    reportModal.style.display = "block";
+
+    if (reportReason) reportReason.value = "";
+    if (reportNote) reportNote.value = "";
+
+    updateReportSubmitState();
+    positionReportPopover();
+    setTimeout(() => reportReason && reportReason.focus(), 0);
+  }
+
+  if (reportBtn) reportBtn.addEventListener("click", openReportModal);
+  if (reportBackdrop) reportBackdrop.addEventListener("click", closeReportModal);
+  if (reportCloseBtn) reportCloseBtn.addEventListener("click", closeReportModal);
+  if (reportCancelBtn) reportCancelBtn.addEventListener("click", closeReportModal);
+  if (reportReason) reportReason.addEventListener("change", updateReportSubmitState);
+
+  if (reportSubmitBtn) {
+    reportSubmitBtn.addEventListener("click", async () => {
+      if (!reportReason || !reportReason.value) return;
+
+      const payload = {
+        reported_user_id: Number(otherId),
+        reason: reportReason.value,
+        details: (reportNote?.value || "").trim()
+      };
+
+      reportSubmitBtn.disabled = true;
+      const oldText = reportSubmitBtn.textContent;
+      reportSubmitBtn.textContent = "Submitting…";
+
+      try {
+        const res = await fetch("{{ url_for('messaging.api_report_user') }}", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await res.text();
+        let out = {};
+        try { out = JSON.parse(text); } catch (e) {}
+
+        if (res.ok && out.ok) {
+          alert(out.message || "Report submitted for admin approval.");
+          closeReportModal();
+        } else {
+          alert(out.error || `HTTP ${res.status}: ${text.slice(0, 200)}`);
+        }
+      } catch (e) {
+        alert("Network error: " + e.message);
+      } finally {
+        reportSubmitBtn.textContent = oldText || "Submit Report";
+        reportSubmitBtn.disabled = false;
+        updateReportSubmitState();
+      }
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && reportModal && reportModal.style.display === "block") {
+      closeReportModal();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (reportModal && reportModal.style.display === "block") positionReportPopover();
+  });
+</script>
+
+<!-- =======================
+     MAIN CHAT SCRIPT
+======================= -->
+<script>
+  // Scroll to bottom — wait for images to load first
+  const chatBodyEl = document.getElementById("chatBody");
+  function scrollToBottom() {
+    if (chatBodyEl) chatBodyEl.scrollTop = chatBodyEl.scrollHeight;
+  }
+  // Immediate scroll for text-only chats
+  scrollToBottom();
+  // Delayed scroll after images/media may have loaded
+  setTimeout(scrollToBottom, 300);
+  // Also scroll when any image in chat finishes loading
+  if (chatBodyEl) {
+    chatBodyEl.querySelectorAll("img.msg-img").forEach(img => {
+      if (!img.complete) img.addEventListener("load", scrollToBottom);
+    });
+  }
+
+  // ✅ Improved: Search across any chat lists (still works with current #chatList)
+  const search = document.getElementById("chatSearch");
+  if (search) {
+    search.addEventListener("input", () => {
+      const q = (search.value || "").toLowerCase().trim();
+      document.querySelectorAll(".chat-item").forEach(a => {
+        a.style.display = (a.dataset.name || "").includes(q) ? "" : "none";
+      });
+    });
+  }
+
+  // Socket
+  const socket = io();
+
+  socket.on("connect", () => {
+    socket.emit("presence_join");
+    socket.emit("dm_join", { other_id: otherId });
+    // ✅ Only mark as read when the tab is actually visible AND user has opened the chat
+    if (document.visibilityState === "visible") {
+      socket.emit("dm_mark_read", { sender_id: Number(otherId), receiver_id: Number(myId), mark_all: true });
+    }
+  });
+
+  // ✅ helper: only mark read when user is actually "seeing" the chat
+  function isChatVisible() {
+    if (document.visibilityState !== "visible") return false;
+    const body = document.getElementById("chatBody");
+    if (!body) return false;
+    return true;
+  }
+
+  // ✅ OPTIONAL: stricter rule — must be near bottom to count as "seen"
+  function isNearBottom(el) {
+    return (el.scrollHeight - el.scrollTop - el.clientHeight) < 80;
+  }
+
+  function markReadIfVisible(data) {
+    if (!data || !data.id) return;
+
+    const sid = Number(data.sender_id);
+    const rid = Number(data.receiver_id);
+
+    // only mark read for incoming messages from the other user, to me
+    if (sid !== Number(otherId)) return;
+    if (rid !== Number(myId)) return;
+
+    if (!isChatVisible()) return;
+
+    const body = document.getElementById("chatBody");
+    if (body && !isNearBottom(body)) return;
+
+    // ✅ Actually emit mark_read so sender sees blue tick
+    socket.emit("dm_mark_read", { sender_id: Number(otherId), receiver_id: Number(myId), mark_all: true });
+  }
+
+  // ✅ when user returns to tab, mark as read only if they're viewing this chat
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && isChatVisible()) {
+      socket.emit("dm_mark_read", { sender_id: Number(otherId), receiver_id: Number(myId), mark_all: true });
+    }
+  });
+
+  socket.on("online_list", (onlineIds) => {
+    const el = document.getElementById("peerStatus");
+    if (!el) return;
+    const isOnline = Array.isArray(onlineIds) && onlineIds.includes(Number(otherId));
+    el.textContent = isOnline ? "online" : "offline";
+    el.style.color = isOnline ? "#4a7050" : "#9a9a9a";
+  });
+
+  // Append message UI
+  const msgList = document.getElementById("chatBody");
+
+  function appendMessageUI(data) {
+    const senderId = Number(data.sender_id);
+    const type     = (data.message_type || "text");
+    const isMine   = senderId === Number(myId);
+
+    const row = document.createElement("div");
+    row.className = "msg-row " + (isMine ? "mine" : "theirs");
+    if (data.id) row.dataset.msgId = data.id;
+    row.dataset.msgType = type;
+    row.dataset.mine    = isMine ? "true" : "false";
+
+    // ── 3-dot button for own messages ──────────────────────
+    // (will be placed inside bubble meta row below)
+
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble";
+
+    if (type === "text") {
+      const div = document.createElement("div");
+      div.className   = "msg-text";
+      div.textContent = data.message_text || "";
+      bubble.appendChild(div);
+
+    } else if (type === "image") {
+      const img = document.createElement("img");
+      img.className = "msg-img";
+      // #ya added: use blob URL directly for optimistic bubbles (same pattern as audio)
+      const rawPath = (data.media_path || "");
+      img.src = rawPath.startsWith("blob:") ? rawPath : "/static/" + rawPath.replace(/^\/?static\//, "");
+      img.alt = "image";
+      img.onerror = () => { img.style.opacity = "0.5"; img.alt = "⚠️ Image unavailable"; };
+      img.onload  = () => { msgList.scrollTop = msgList.scrollHeight; };
+      bubble.appendChild(img);
+
+      if (data.file_name) {
+        const fn = document.createElement("div");
+        fn.className   = "msg-fn";
+        fn.textContent = data.file_name;
+        bubble.appendChild(fn);
+      }
+
+    } else if (type === "audio") {
+      const audio  = document.createElement("audio");
+      audio.className = "msg-audio";
+      audio.controls  = true;
+      // Use .src directly (not <source>) so it plays immediately without reload
+      const audioPath = (data.audio_path || "");
+      if (audioPath.startsWith("blob:")) {
+        audio.src = audioPath;
+      } else {
+        const cleaned = audioPath.replace(/^\/?static\//, "");
+        audio.src = "/static/" + cleaned;
+      }
+      bubble.appendChild(audio);
+
+      if (data.file_name) {
+        const fn = document.createElement("div");
+        fn.className   = "msg-fn";
+        fn.textContent = data.file_name;
+        bubble.appendChild(fn);
+      }
+    }
+
+    const meta  = document.createElement("div");
+    meta.className = "msg-meta";
+
+    if (isMine) {
+      const dotsBtn = document.createElement("button");
+      dotsBtn.className = "msg-dots-btn";
+      dotsBtn.textContent = "⋮";
+      dotsBtn.title = "Options";
+      dotsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const rect = dotsBtn.getBoundingClientRect();
+        showCtxMenu({ clientX: rect.left, clientY: rect.bottom }, row);
+      });
+      meta.appendChild(dotsBtn);
+    }
+
+    const clock = document.createElement("span");
+    clock.className = "msg-clock";
+    const ts = (data.timestamp || "");
+    clock.textContent = ts.length >= 16 ? ts.slice(11, 16) : ts;
+    meta.appendChild(clock);
+
+    if (isMine) {
+      const ticks = document.createElement("span");
+      ticks.className   = "msg-ticks";
+      ticks.textContent = "✓✓";
+      meta.appendChild(ticks);
+    }
+
+    bubble.appendChild(meta);
+    row.appendChild(bubble);
+    msgList.appendChild(row);
+    msgList.scrollTop = msgList.scrollHeight;
+    return row;
+  }
+
+  // Send text
+  const input   = document.getElementById("textInput");
+  const sendBtn = document.getElementById("sendBtn");
+
+  const pendingRows = {};
+  let pendingKey = 0;
+
+  function sendText() {
+    const text = (input.value || "").trim();
+    if (!text) return;
+
+    const key = pendingKey++;
+    const row = appendMessageUI({
+      sender_id: myId,
+      receiver_id: otherId,
+      message_type: "text",
+      message_text: text,
+      timestamp: new Date().toISOString().slice(0, 19).replace("T", " ")
+    });
+    if (row) pendingRows[key] = row;
+
+    socket.emit("dm_send_message", {
+      receiver_id: otherId,
+      message_type: "text",
+      message_text: text,
+      _tempKey: key
+    });
+
+    input.value = "";
+  }
+
+  if (sendBtn) sendBtn.addEventListener("click", e => { e.preventDefault(); handleSend(); });
+  if (input) input.addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); handleSend(); }
+  });
+
+  function handleSend() {
+    if (pendingImageFile) {
+      sendPendingImage();
+    } else {
+      sendText();
+    }
+  }
+
+  // Read receipts
+  const pendingReadIds = new Set();
+
+  function applyReadTick(id) {
+    const row = document.querySelector(`.msg-row[data-msg-id="${id}"]`);
+    if (!row) { pendingReadIds.add(id); return; }
+    const ticks = row.querySelector(".msg-ticks");
+    if (ticks) ticks.classList.add("is-read");
+  }
+
+  socket.on("dm_read", (data) => {
+    const ids = (data && data.ids) ? data.ids : [];
+    ids.forEach(id => applyReadTick(id));
+
+    if (ids.length > 1) {
+      document.querySelectorAll(".msg-row.mine .msg-ticks").forEach(el => el.classList.add("is-read"));
+    }
+  });
+
+  socket.on("dm_delivered", (data) => {
+    if (!data || !data.id) return;
+    const row = document.querySelector(`.msg-row[data-msg-id="${data.id}"]`);
+    if (!row) return;
+    const ticks = row.querySelector(".msg-ticks");
+    if (ticks && !ticks.classList.contains("is-read")) ticks.classList.add("is-delivered");
+  });
+
+  socket.on("badge_update", (data) => {
+    const badge = document.getElementById("badge-" + data.from_id);
+    if (!badge) return;
+    if (data.count > 0) {
+      badge.textContent = data.count;
+      badge.style.display = "";
+    } else {
+      badge.style.display = "none";
+    }
+    updateNavDot();
+  });
+
+  function updateNavDot() {
+    let total = 0;
+    document.querySelectorAll(".unread-badge").forEach(el => {
+      if (el.style.display !== "none") total += parseInt(el.textContent || "0", 10);
+    });
+    // Inject nav dot if it doesn't exist yet
+    let dot = document.getElementById("navMsgDot");
+    if (!dot) {
+      // Find "MESSAGES" nav link and add dot to it
+      document.querySelectorAll("a, .nav-link").forEach(el => {
+        if ((el.textContent || "").trim().toUpperCase() === "MESSAGES") {
+          el.style.position = "relative";
+          dot = document.createElement("span");
+          dot.id = "navMsgDot";
+          dot.style.cssText = "position:absolute;top:-4px;right:-8px;width:10px;height:10px;background:#e53e3e;border-radius:50%;display:none;";
+          el.appendChild(dot);
+        }
+      });
+    }
+    if (dot) dot.style.display = total > 0 ? "inline-block" : "none";
+  }
+  updateNavDot();
+
+  socket.on("dm_receive_message", (data) => {
+    if (!data) return;
+
+    const sid = Number(data.sender_id);
+    const rid = Number(data.receiver_id);
+    const me  = Number(myId);
+
+    const isThisChat = (sid === Number(otherId) && rid === me) || (sid === me && rid === Number(otherId));
+    if (!isThisChat) return;
+
+    // if it's my own message echoed back, just reconcile IDs
+    if (sid === me) {
+      const key = data._tempKey;
+      const row = key != null ? pendingRows[key] : null;
+      if (row && data.id) {
+        row.dataset.msgId = data.id;
+        delete pendingRows[key];
+
+        if (pendingReadIds.has(data.id)) {
+          pendingReadIds.delete(data.id);
+          const ticks = row.querySelector(".msg-ticks");
+          if (ticks) ticks.classList.add("is-read");
+        }
+      }
+      return;
+    }
+
+    // incoming message from other user
+    appendMessageUI(data);
+
+    // ✅ FIX: only mark read when user is actually viewing chat
+    markReadIfVisible(data);
+  });
+
+  // Live streak updates (Unified for Topbar & Sidebar)
+  socket.on("streak_update", (data) => {
+    if (!data) return;
+    const s = (data.streak != null) ? Number(data.streak) : 0;
+    const targetId = data.peer_id || otherId;
+
+    if (Number(targetId) === Number(otherId)) {
+      const top = document.getElementById("streakBadge");
+      if (top) {
+        if (s > 0) { top.style.display = ""; top.textContent = "🔥 " + s; }
+        else { top.style.display = "none"; }
+      }
+    }
+
+    const side = document.getElementById("sidebar-streak-" + targetId);
+    if (side) {
+      if (s > 0) { side.style.display = ""; side.textContent = "🔥 " + s; }
+      else { side.style.display = "none"; }
+    }
+  });
+
+  // ── Edit / Delete ──────────────────────────────────────────────
+  const ctxMenu   = document.createElement("div");
+  ctxMenu.id      = "msgContextMenu";
+  ctxMenu.style.cssText = "display:none;position:fixed;z-index:9999;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);overflow:hidden;min-width:140px;";
+  ctxMenu.innerHTML = `
+    <button id="ctxEdit"   style="display:block;width:100%;padding:10px 16px;border:none;background:none;cursor:pointer;text-align:left;font-size:14px;">✏️ Edit</button>
+    <button id="ctxDelete" style="display:block;width:100%;padding:10px 16px;border:none;background:none;cursor:pointer;text-align:left;font-size:14px;color:#e53e3e;">🗑️ Delete</button>
+  `;
+  document.body.appendChild(ctxMenu);
+
+  const editBar = document.createElement("div");
+  editBar.style.cssText = "display:none;padding:8px 12px;background:#f0f4f0;border-top:1px solid #ddd;gap:8px;align-items:center;";
+  editBar.innerHTML = `
+    <input id="editInput" style="flex:1;padding:6px 10px;border:1px solid #ccc;border-radius:6px;font-size:14px;" placeholder="Edit message…">
+    <button id="editSaveBtn"   style="padding:6px 12px;background:#4a7050;color:#fff;border:none;border-radius:6px;cursor:pointer;">Save</button>
+    <button id="editCancelBtn" style="padding:6px 12px;background:#ccc;border:none;border-radius:6px;cursor:pointer;">Cancel</button>
+  `;
+  editBar.style.display = "none";
+  editBar.style.cssText += ";display:none;";
+
+  // Insert edit bar above the composer
+  const composer = document.querySelector(".chat-composer");
+  if (composer) composer.parentNode.insertBefore(editBar, composer);
+
+  const ctxEdit       = document.getElementById("ctxEdit");
+  const ctxDelete     = document.getElementById("ctxDelete");
+  const editInput     = document.getElementById("editInput");
+  const editSaveBtn   = document.getElementById("editSaveBtn");
+  const editCancelBtn = document.getElementById("editCancelBtn");
+  let activeRow       = null;
+
+  function showCtxMenu(e, row) {
+    activeRow = row;
+    const isText = row.dataset.msgType === "text";
+    ctxEdit.style.display = isText ? "block" : "none";
+    ctxMenu.style.display = "block";
+
+    let x = e.clientX, y = e.clientY;
+    ctxMenu.style.left = x + "px";
+    ctxMenu.style.top  = y + "px";
+    requestAnimationFrame(() => {
+      const r = ctxMenu.getBoundingClientRect();
+      if (r.right  > window.innerWidth)  ctxMenu.style.left = (x - r.width)  + "px";
+      if (r.bottom > window.innerHeight) ctxMenu.style.top  = (y - r.height) + "px";
+    });
+  }
+
+  // Right-click on desktop
+  msgList.addEventListener("contextmenu", (e) => {
+    const row = e.target.closest(".msg-row");
+    if (!row || row.dataset.mine !== "true") return;
+    e.preventDefault();
+    showCtxMenu(e, row);
+  });
+
+  // Long-press on mobile
+  let longPressTimer = null;
+  msgList.addEventListener("touchstart", (e) => {
+    const row = e.target.closest(".msg-row");
+    if (!row || row.dataset.mine !== "true") return;
+    longPressTimer = setTimeout(() => {
+      const t = e.touches[0];
+      showCtxMenu({ clientX: t.clientX, clientY: t.clientY }, row);
+    }, 500);
+  }, { passive: true });
+  msgList.addEventListener("touchend",  () => clearTimeout(longPressTimer));
+  msgList.addEventListener("touchmove", () => clearTimeout(longPressTimer));
+
+  // Hide menu on outside click
+  document.addEventListener("click", () => ctxMenu.style.display = "none");
+
+  // DELETE
+  ctxDelete.addEventListener("click", () => {
+    if (!activeRow) return;
+    const msgId = activeRow.dataset.msgId;
+    if (!confirm("Delete this message for everyone?")) return;
+    socket.emit("dm_delete_message", {
+      msg_id: Number(msgId),
+      receiver_id: Number(otherId)
+    });
+  });
+
+  // EDIT — open bar
+  ctxEdit.addEventListener("click", () => {
+    if (!activeRow) return;
+    const bubble = activeRow.querySelector(".msg-text");
+    if (!bubble) return;
+    editInput.value = bubble.textContent;
+    editBar.style.display = "flex";
+    editInput.focus();
+  });
+
+  editCancelBtn.addEventListener("click", () => {
+    editBar.style.display = "none";
+    activeRow = null;
+  });
+
+  editSaveBtn.addEventListener("click", () => {
+    if (!activeRow) return;
+    const msgId   = activeRow.dataset.msgId;
+    const newText = editInput.value.trim();
+    if (!newText) return;
+    socket.emit("dm_edit_message", {
+      msg_id:      Number(msgId),
+      new_text:    newText,
+      receiver_id: Number(otherId)
+    });
+    editBar.style.display = "none";
+    activeRow = null;
+  });
+
+  // Save on Enter key in edit input
+  if (editInput) editInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter")  { e.preventDefault(); editSaveBtn.click(); }
+    if (e.key === "Escape") { editCancelBtn.click(); }
+  });
+
+  socket.on("dm_message_edited", (data) => {
+    const row = document.querySelector(`.msg-row[data-msg-id="${data.msg_id}"]`);
+    if (!row) return;
+    const bubble = row.querySelector(".msg-text");
+    if (bubble) bubble.textContent = data.new_text;
+    if (!row.querySelector(".msg-edited")) {
+      const tag = document.createElement("div");
+      tag.className   = "msg-edited";
+      tag.textContent = "edited";
+      row.querySelector(".msg-bubble").insertBefore(tag, row.querySelector(".msg-meta"));
+    }
+  });
+
+  socket.on("dm_message_deleted", (data) => {
+    const row = document.querySelector(`.msg-row[data-msg-id="${data.msg_id}"]`);
+    if (!row) return;
+    const msgBubble = row.querySelector(".msg-bubble");
+    if (!msgBubble) return;
+    // Remove all content nodes except .msg-meta
+    const meta = msgBubble.querySelector(".msg-meta");
+    // Clear bubble content
+    msgBubble.innerHTML = "";
+    // Add deleted text
+    const del = document.createElement("div");
+    del.className = "msg-text msg-deleted";
+    del.textContent = "🚫 Message deleted";
+    msgBubble.appendChild(del);
+    // Re-append meta
+    if (meta) msgBubble.appendChild(meta);
+    // Update row type
+    row.dataset.msgType = "deleted";
+    // Hide dots button so deleted messages can't be acted on again
+    const dots = row.querySelector(".msg-dots-btn");
+    if (dots) dots.style.display = "none";
+  });
+
+  // ── 3-dot button: delegate click for statically-rendered messages ───
+  msgList.addEventListener("click", (e) => {
+    const dotsBtn = e.target.closest(".msg-dots-btn");
+    if (!dotsBtn) return;
+    e.stopPropagation();
+    const row = dotsBtn.closest(".msg-row");
+    if (!row) return;
+    const rect = dotsBtn.getBoundingClientRect();
+    showCtxMenu({ clientX: rect.left, clientY: rect.bottom }, row);
+  });
+</script>
+
+<!-- ── IMAGE UPLOAD (preview → send) ─────────────────────────── -->
+<script>
+  const btnImg       = document.getElementById("btnImg");
+  const imgInput     = document.getElementById("imgInput");
+  const imgPreviewBar  = document.getElementById("imgPreviewBar");
+  const imgPreviewThumb = document.getElementById("imgPreviewThumb");
+  const imgPreviewName  = document.getElementById("imgPreviewName");
+  const imgCancelBtn   = document.getElementById("imgCancelBtn");
+
+  let pendingImageFile = null;
+
+  if (btnImg) btnImg.addEventListener("click", () => imgInput && imgInput.click());
+
+  if (imgInput) {
+    imgInput.addEventListener("change", () => {
+      const file = imgInput.files[0];
+      if (!file) return;
+      pendingImageFile = file;
+
+      // Show preview above composer
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        imgPreviewThumb.src = ev.target.result;
+        imgPreviewName.textContent = file.name;
+        imgPreviewBar.style.display = "flex";
+        imgPreviewBar.style.alignItems = "center";
+        imgPreviewBar.style.padding = "8px 14px";
+        imgPreviewBar.style.background = "#f9f9f9";
+        imgPreviewBar.style.borderTop = "1px solid #eee";
+        imgPreviewBar.style.gap = "10px";
+      };
+      reader.readAsDataURL(file);
+
+      // Reset input so same file can be re-selected
+      imgInput.value = "";
+    });
+  }
+
+  if (imgCancelBtn) {
+    imgCancelBtn.addEventListener("click", () => {
+      pendingImageFile = null;
+      imgPreviewBar.style.display = "none";
+      imgPreviewThumb.src = "";
+    });
+  }
+
+  // sendPendingImage is called by handleSend() in main script when pendingImageFile is set
+
+  async function sendPendingImage() {
+    if (!pendingImageFile) return;
+    const file = pendingImageFile;
+    pendingImageFile = null;
+    imgPreviewBar.style.display = "none";
+    imgPreviewThumb.src = "";
+
+    // Show optimistic bubble
+    const objectUrl = URL.createObjectURL(file);
+    const row = appendMessageUI({
+      sender_id: myId,
+      receiver_id: otherId,
+      message_type: "image",
+      media_path: objectUrl,
+      file_name: file.name,
+      timestamp: new Date().toISOString().slice(0, 19).replace("T", " ")
+    });
+
+    // Upload to server
+    const fd = new FormData();
+    fd.append("image", file);
+    try {
+      const res  = await fetch("{{ url_for('messaging.upload_image') }}", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!json.ok) { alert("Upload failed: " + json.error); return; }
+
+      const key = pendingKey++;
+      if (row) pendingRows[key] = row;
+
+      // #ya added: swap blob URL → real server path so sender sees the image without reloading
+      if (row) {
+        const imgEl = row.querySelector("img.msg-img");
+        if (imgEl) imgEl.src = "/static/" + json.media_path.replace(/^\/?static\//, "");
+      }
+
+      socket.emit("dm_send_message", {
+        receiver_id: otherId,
+        message_type: "image",
+        media_path: json.media_path,
+        file_name: file.name,
+        _tempKey: key
+      });
+    } catch (err) {
+      console.error("Image upload error:", err);
+      alert("Failed to send image.");
+    }
+  }
+</script>
+
+<!-- ── VOICE RECORDING (tap to start, tap again to send) ────── -->
+<style>
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  /* #ya added: three-dot button pinned to top-right corner of bubble */
+  .msg-bubble {
+    position: relative;
+  }
+  .msg-dots-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #888;
+    padding: 0;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 2;
+  }
+  .msg-bubble:hover .msg-dots-btn { opacity: 1; }
+  .msg-dots-btn:hover { color: #222; }
+  .msg-row.mine { gap: 6px; }
+</style>
+<script>
+  const btnAudio  = document.getElementById("btnAudio");
+  const recBar    = document.getElementById("recBar");
+  const recTimerEl = document.getElementById("recTimer");
+  const recCancelBtn = document.getElementById("recCancelBtn");
+
+  let mediaRecorder = null;
+  let audioChunks   = [];
+  let recInterval   = null;
+  let recSeconds    = 0;
+  let isRecording   = false;
+
+  function updateRecTimer() {
+    recSeconds++;
+    const m = Math.floor(recSeconds / 60);
+    const s = recSeconds % 60;
+    if (recTimerEl) recTimerEl.textContent = `${m}:${s.toString().padStart(2,"0")}`;
+  }
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks  = [];
+      recSeconds   = 0;
+      if (recTimerEl) recTimerEl.textContent = "0:00";
+
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+
+      mediaRecorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || "audio/webm" });
+        if (!isRecording) return; // cancelled
+        uploadAndSendAudio(blob);
+      };
+
+      mediaRecorder.start(250);
+      isRecording = true;
+      recBar.style.display = "flex";
+      recBar.style.alignItems = "center";
+      if (btnAudio) btnAudio.style.color = "#e74c3c";
+      recInterval = setInterval(updateRecTimer, 1000);
+    } catch (err) {
+      alert("Microphone access denied or unavailable.");
+    }
+  }
+
+  function stopRecording(cancel = false) {
+    if (!isRecording || !mediaRecorder) return;
+    isRecording = cancel ? false : true; // onstop checks isRecording
+    if (cancel) isRecording = false;
+    clearInterval(recInterval);
+    recBar.style.display = "none";
+    if (btnAudio) btnAudio.style.color = "";
+    if (mediaRecorder.state !== "inactive") {
+      if (cancel) {
+        // mark cancelled before stopping
+        const _was = isRecording;
+        isRecording = false;
+        mediaRecorder.stop();
+        isRecording = _was; // restore doesn't matter
+      } else {
+        mediaRecorder.stop();
+      }
+    }
+  }
+
+  if (btnAudio) {
+    btnAudio.addEventListener("click", () => {
+      if (!isRecording) {
+        startRecording();
+      } else {
+        isRecording = true; // keep true so onstop sends
+        stopRecording(false);
+      }
+    });
+  }
+
+  if (recCancelBtn) {
+    recCancelBtn.addEventListener("click", () => stopRecording(true));
+  }
+
+  async function uploadAndSendAudio(blob) {
+    const ext      = (blob.type || "").includes("webm") ? "webm" : "ogg";
+    const filename = `voice_${Date.now()}.${ext}`;
+    const file     = new File([blob], filename, { type: blob.type });
+
+    // Optimistic bubble
+    const audioUrl = URL.createObjectURL(blob);
+    const row = appendMessageUI({
+      sender_id: myId,
+      receiver_id: otherId,
+      message_type: "audio",
+      audio_path: audioUrl,
+      file_name: filename,
+      timestamp: new Date().toISOString().slice(0, 19).replace("T", " ")
+    });
+
+    const fd = new FormData();
+    fd.append("audio", file);
+    try {
+      const res  = await fetch("{{ url_for('messaging.upload_audio') }}", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!json.ok) { alert("Audio upload failed: " + json.error); return; }
+
+      const key = pendingKey++;
+      if (row) pendingRows[key] = row;
+
+      socket.emit("dm_send_message", {
+        receiver_id: otherId,
+        message_type: "audio",
+        audio_path: json.audio_path,
+        file_name: filename,
+        _tempKey: key
+      });
+    } catch (err) {
+      console.error("Audio upload error:", err);
+      alert("Failed to send audio.");
+    }
+  }
+</script>
+
+<script>
+  const topbarDotsBtn  = document.getElementById("topbarDotsBtn");
+  const topbarDropdown = document.getElementById("topbarDropdown");
+
+  if (topbarDotsBtn && topbarDropdown) {
+    topbarDotsBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      topbarDropdown.classList.toggle("open");
+    });
+
+    document.addEventListener("click", () => {
+      topbarDropdown.classList.remove("open");
+    });
+  }
+</script>
+
+<script>
+  const clearChatBtn = document.getElementById("clearChatBtn");
+
+  if (clearChatBtn) {
+    clearChatBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!confirm("Clear this whole chat? This cannot be undone.")) return;
+
+      try {
+        // close dropdown
+        try { topbarDropdown && topbarDropdown.classList.remove("open"); } catch (err) {}
+
+        const res = await fetch("{{ url_for('messaging.clear_chat', other_id=other_user.id) }}", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        });
+
+        const text = await res.text();
+        let out = {};
+        try { out = JSON.parse(text); } catch (err) {}
+
+        if (res.ok && out.ok) {
+          const body = document.getElementById("chatBody");
+          if (body) body.innerHTML = "";
+          alert("Chat cleared.");
+        } else {
+          alert(out.error || `HTTP ${res.status}: ${text.slice(0, 200)}`);
+        }
+      } catch (err) {
+        alert("Network error: " + err.message);
+      }
+    });
+  }
+</script>
+
+<script>
+  // Sidebar backdrop close (for mobile swipe/tap)
+  const sidebar = document.querySelector(".msg-sidebar");
+  const back    = document.getElementById("sidebarBackdrop");
+
+  function closeSidebar(){
+    if (!sidebar) return;
+    sidebar.classList.remove("is-open");
+    if (back) back.classList.remove("show");
+  }
+
+  if (back) back.addEventListener("click", closeSidebar);
+
+  // Auto-close drawer when user taps a chat item (mobile)
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest(".chat-item");
+    if (a && window.innerWidth <= 768) closeSidebar();
+  });
+
+  // Close on ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeSidebar();
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,1956 @@
+{% extends "base.html" %}
+{% block title %}{{ story.title }} - Legacy Garden{% endblock %}
+
+{% block content %}
+<style>
+  :root { --lg-green: #2e7d32; --lg-bg: #f9f5f0; }
+  
+  /* Report Modal Styles */
+  .report-header { background-color: #e8f5e9; padding: 20px; border-radius: 15px 15px 0 0; }
+  .report-body { background-color: #e8f5e9; padding: 20px; border-radius: 0 0 15px 15px; }
+  .btn-report-submit { background-color: #dc3545; color: white; font-weight: bold; border-radius: 8px; width: 100px; }
+  .btn-report-submit:disabled { background-color: #e6aeb3; cursor: not-allowed; }
+
+  .story-hero {
+  height: 650px;        
+  object-fit: cover;
+  display: block;
+}
+
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  font-weight: 700;
+  border-radius: 999px;
+  text-decoration: none;
+  margin-bottom: 12px;   
+}
+
+
+.back-btn:hover {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+  transform: translateX(-2px);
+}
+
+.back-btn,
+.back-btn:hover,
+.back-btn:focus,
+.back-btn:active {
+  text-decoration: none !important;
+}
+
+.story-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:18px;
+  flex-wrap:nowrap;
+}
+
+.action-btn,
+.action-link{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.action-btn{
+  border:0;
+  background:transparent;
+  cursor:pointer;
+}
+
+.story-actions i{
+  font-size: 1.35rem;
+  line-height: 1;
+  display:block;
+}
+
+.action-btn i{ color:#dc3545; }
+.action-link i{ color:#198754; }
+
+.count-text{
+  font-size: 0.95rem;
+  font-weight: 800;
+  color:#6c757d;
+}
+
+.action-btn:active,
+.action-link:active{
+  transform: scale(1.08);
+}
+.comment-top{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.comment-report-btn{
+  margin-left: auto;   
+  border:0;
+  background:transparent;
+  color:#dc3545;
+  padding: 2px 6px;
+  border-radius: 8px;
+  cursor:pointer;
+  opacity: 0.6;
+}
+
+.comment-report-btn:hover{
+  background: rgba(220,53,69,0.08);
+  opacity: 1;
+}
+/* =========================
+   REPORT MODAL (Nicer UI)
+   ========================= */
+
+/* modal container rounding */
+.report-modal .modal-content{
+  border-radius: 22px !important;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+}
+
+/* header */
+.report-header{
+  background: #eaf7ee;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(46,125,50,0.10);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 10px;
+  position: relative;
+}
+
+.report-header h5{
+  margin: 0;
+  font-weight: 800;
+  color: #2e7d32;
+  letter-spacing: 0.2px;
+}
+
+/* back icon */
+.report-back{
+  position:absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  color: #1b5e20;
+  opacity: 0.85;
+}
+
+.report-back:hover{
+  background: rgba(46,125,50,0.10);
+  opacity: 1;
+}
+
+/* body */
+.report-body{
+  background: #eaf7ee;
+  padding: 18px 20px 22px;
+}
+
+/* “card” inside modal */
+.report-box{
+  background: #ffffff;
+  border: 1px solid rgba(46,125,50,0.10);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.05);
+}
+
+
+.report-label{
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #1f1f1f;
+  margin-bottom: 8px;
+}
+
+/* textarea */
+/* input/select base */
+.report-input{
+  width: 100%;
+  border: 1px solid #e9ecef;
+  background: #f8faf9;
+  border-radius: 16px;
+  padding: 12px 14px;
+  outline: none;
+  transition: box-shadow .15s ease, border-color .15s ease, background .15s ease;
+}
+
+/* select should NOT be huge */
+.report-select{
+  height: 54px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #2b2b2b;
+}
+
+/* textarea */
+.report-text{
+  min-height: 110px;
+  resize: none;
+}
+
+/* focus */
+.report-input:focus{
+  border-color: rgba(46,125,50,0.35);
+  box-shadow: 0 0 0 5px rgba(46,125,50,0.12);
+  background: #ffffff;
+}
+
+
+
+
+/* checkbox row */
+.report-check{
+  display:flex;
+  gap: 10px;
+  align-items:flex-start;
+  margin: 14px 2px 18px;
+  color:#5f6b63;
+  font-size: 0.88rem;
+}
+
+.report-check input{
+  margin-top: 3px;
+}
+
+/* submit button */
+.btn-report-submit{
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  font-weight: 800;
+  padding: 10px 18px;
+  border-radius: 12px;
+  min-width: 120px;
+  transition: transform .12s ease, opacity .12s ease;
+}
+
+.btn-report-submit:hover{
+  transform: translateY(-1px);
+}
+
+.btn-report-submit:disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* small animation on open */
+.report-modal .modal-dialog{
+  animation: popIn .18s ease;
+}
+@keyframes popIn{
+  from { transform: translateY(10px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.report-check{
+  max-width: 380px;        /* keep it compact */
+  margin: 12px auto 18px; /* ⬅️ centers the whole row */
+  padding-left: 10px;    /* small nudge so it doesn’t feel too tight */
+  line-height: 1.45;
+}
+
+/* Move select dropdown arrow to the LEFT */
+.report-textarea.form-select{
+  background-position: left 14px center;   /* move arrow left */
+  padding-left: 42px;                      /* make space for arrow */
+  padding-right: 12px;                     /* normal right padding */
+}
+
+/* Optional: flip the arrow direction (if you want it pointing left) */
+.report-textarea.form-select{
+  background-image: var(--bs-form-select-bg-img);
+  background-repeat: no-repeat;
+}
+/* Remove blue focus ring from comment input */
+#commentInput:focus {
+  outline: none !important;
+  box-shadow: none !important;      /* Bootstrap focus ring */
+  border-color: #ced4da;            /* keep normal border */
+}
+.success-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;           /* spacing between buttons */
+  flex-wrap: wrap;
+}
+
+.success-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  transition: all 0.18s ease;
+}
+
+/* Variants */
+.btn-garden {
+  background: #2f3a3f;
+  color: #ffffff !important;
+}
+
+.btn-home {
+  background: linear-gradient(135deg, #4CAF50, #2E7D32);  /* nice green gradient */
+  color: #ffffff !important;
+}
+
+.btn-rewards {
+  background: linear-gradient(135deg, #ffe29a, #ffd166);
+  color: #ffffff !important;
+}
+
+/* Hover */
+.success-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+  text-decoration: none;
+  color: #ffffff !important;
+}
+
+/* Disabled */
+.success-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  box-shadow: none;
+}
+/* 🔊 Senior-Friendly Audio Card */
+.audio-player-card {
+    background: #f4fbf6;
+    border: 3px solid #2e7d32;
+    padding: 22px 26px;
+    border-radius: 28px;
+    box-shadow: 0 10px 30px rgba(46, 125, 50, 0.15);
+    display: inline-block;
+}
+
+/* Layout spacing */
+.audio-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+/* Main Listen Button */
+.senior-btn-main {
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 18px 40px;
+    border-radius: 999px;
+    font-size: 1.35rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.2s ease;
+}
+
+.senior-btn-main:hover {
+    background: #1b5e20;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+}
+
+/* Stop Button */
+.senior-btn-main.stop-btn {
+    background: #dc3545;
+}
+
+/* Speed Section */
+.speed-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.speed-label {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #2e7d32;
+    letter-spacing: 0.3px;
+}
+
+/* Custom Dropdown Style */
+.speed-dropdown-lg{
+  height: 46px;                 /* smaller */
+  border-radius: 14px;
+  border: 2px solid #d7e9db;
+  background: #fff;
+  font-weight: 800;
+  padding: 0 42px 0 16px;       /* space for arrow */
+  min-width: 210px;
+
+  font-size: 1rem;              /* smaller text */
+  line-height: 1.2;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* green focus instead of big blue */
+.speed-dropdown-lg:focus{
+  border-color: #2e7d32;
+  outline: none !important;
+  box-shadow: 0 0 0 4px rgba(46,125,50,0.12);
+}
+
+.senior-btn-main {
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 15px 35px;
+    border-radius: 100px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+}
+
+.senior-btn-main:hover {
+    background: #1b5e20;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.senior-btn-main.stop-btn {
+    background: #dc3545; /* Red for Stop */
+}
+
+.speed-box {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.speed-label {
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #2e7d32;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.speed-dropdown-lg {
+    height: 50px;
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+    font-weight: 700;
+    padding: 0 15px;
+    cursor: pointer;
+    min-width: 180px;
+}
+
+.speed-dropdown-lg option{
+  font-size: 0.95rem;   /* smaller menu text */
+  padding: 8px 10px;
+}
+
+/* ===== Nicer Speed Dropdown (works with normal <select>) ===== */
+
+.speed-box{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-width: 240px;
+}
+
+.speed-label{
+  font-weight: 900;
+  font-size: 0.95rem;
+  color: #2e7d32;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  letter-spacing: 0.2px;
+  margin: 0;
+}
+
+/* Wrapper makes it look like a “pill input” */
+.speed-select-wrap{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+
+  background: #ffffff;
+  border: 2px solid #d7e9db;
+  border-radius: 16px;
+
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+/* The real select (still functional) */
+.speed-select{
+  appearance: none;           /* hide default arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  border: 0;
+  background: transparent;
+  outline: none;
+
+  font-weight: 900;
+  color: #1f2a1f;
+  font-size: 1rem;
+
+  padding: 16px 90px 16px 20px;  /* 🔥 increase right padding */
+  min-width: 230px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+/* divider before arrow area */
+.speed-select-divider{
+  position: absolute;
+  right: 42px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: rgba(46,125,50,0.12);
+  pointer-events: none;
+}
+
+/* custom arrow icon */
+.speed-select-arrow{
+  position: absolute;
+  right: 14px;
+  pointer-events: none;
+  color: #2e7d32;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+/* Focus state: green ring (not blue) */
+.speed-select-wrap:focus-within{
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 5px rgba(46,125,50,0.14), 0 8px 18px rgba(0,0,0,0.08);
+}
+
+/* Hover */
+.speed-select-wrap:hover{
+  border-color: rgba(46,125,50,0.45);
+}
+
+/* Optional: make dropdown list text not too huge */
+.speed-select option{
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.topic-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 12px;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,0.18);
+  font-weight:800;
+  font-size:0.85rem;
+  color:#111;
+  line-height:1;
+}
+
+.topic-emoji{
+  font-size:1rem;
+  line-height:1;
+}
+
+.audio-controls-row{
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.play-trigger-wrap{
+  flex: 0 0 auto;  /* button keeps its size */
+}
+
+.speed-box{
+  flex: 1;         /* takes remaining space */
+  min-width: 0;    /* prevents overflow */
+}
+
+.speed-select-wrap{
+  width: 100%;     /* fill remaining space */
+}
+
+#speedSelect{
+  width: 100%;
+}
+
+/* ✅ Desktop: keep side-by-side */
+.audio-controls-row{
+  display:flex;
+  align-items:center;
+  gap: 24px;
+  flex-wrap: nowrap;
+}
+
+/* ✅ Narrow screens: stack + full width */
+@media (max-width: 768px){
+  .audio-controls-row{
+    flex-wrap: wrap;          /* allow stacking */
+    gap: 16px;
+  }
+
+  .play-trigger-wrap,
+  .speed-box{
+    width: 100%;
+  }
+
+  .speed-label{
+    text-align: left;
+  }
+
+  .speed-select-wrap{
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #speedSelect{
+    width: 100%;
+  }
+}
+
+/* ✅ Rounder Story Card */
+.story-card-full{
+  border-radius: 28px !important;   /* increase more if you want (e.g. 34px) */
+  overflow: hidden;                 /* ensures image corners follow the card */
+}
+
+/* ✅ Make image follow the rounded corners too */
+.story-card-full .story-hero{
+  border-radius: 0 !important;      /* card already clips it */
+}
+
+.story-actions{
+  gap: 12px;
+}
+
+.action-btn, .action-link{
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #f8f9fa;
+  border: 1px solid rgba(0,0,0,0.06);
+  transition: transform .12s ease, background .12s ease;
+}
+
+.action-btn:hover, .action-link:hover{
+  background:#ffffff;
+  transform: translateY(-1px);
+}
+
+.action-btn i{ color:#dc3545; }
+.action-link i{ color:#198754; }
+
+/* ===== Bigger, Cleaner Posted By ===== */
+
+.story-author-line{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.author-label{
+  font-size: 1rem;     /* bigger */
+  font-weight: 700;
+  color:#4b5a51;
+}
+
+.author-link{
+  display:inline-flex;
+  align-items:center;
+  gap: 6px;
+
+  font-size: 1rem;      /* bigger username */
+  font-weight: 900;
+  color:#2e7d32;
+  text-decoration:none;
+
+  transition: transform .12s ease;
+}
+
+.author-link:hover{
+  transform: translateY(-1px);
+  text-decoration:none;
+  color:#1b5e20;
+}
+
+/* Circular icon */
+.author-icon{
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background: rgba(46,125,50,0.12);
+  border: 2px solid rgba(46,125,50,0.25);
+
+  font-size: 0.7rem;
+  color:#2e7d32;
+}
+
+/* ===== Comments Panel (Senior Friendly) ===== */
+.comment-panel{
+  margin-top: 16px;
+  padding: 18px 18px 16px;
+  border-radius: 22px;
+  background: #ffffff;
+  border: 2px solid rgba(46,125,50,0.14);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.06);
+}
+
+.comment-panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom: 14px;
+}
+
+.comment-title{
+  margin: 0;
+  font-weight: 900;
+  font-size: 1.35rem; /* bigger */
+  color:#1f2a1f;
+}
+
+/* Empty state */
+.comment-empty{
+  display:flex;
+  align-items:center;
+  gap: 14px;
+  padding: 14px 14px;
+  border-radius: 18px;
+  background: #f7fbf8;
+  border: 1px solid rgba(46,125,50,0.12);
+  margin-bottom: 14px;
+}
+
+.comment-empty-icon{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(46,125,50,0.12);
+  color:#2e7d32;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.comment-empty-title{
+  font-weight: 900;
+  font-size: 1.05rem;
+  color:#1f2a1f;
+}
+
+.comment-empty-sub{
+  color:#5b6b62;
+  font-weight: 700;
+  font-size: 0.98rem;
+}
+
+/* Compose row */
+.comment-compose{
+  margin-top: 10px;
+}
+
+.comment-compose-row{
+  display:flex;
+  align-items:stretch;
+  gap: 12px;
+}
+
+/* Input wrapper with icon */
+.comment-input-wrap{
+  position: relative;
+  flex: 1;
+  display:flex;
+  align-items:center;
+}
+
+.comment-input-icon{
+  position:absolute;
+  left: 16px;
+  color:#2e7d32;
+  opacity: 0.85;
+  font-size: 1.05rem;
+}
+
+.comment-input{
+  width:100%;
+  border-radius: 16px;
+  border: 2px solid rgba(0,0,0,0.12);
+  background: #ffffff;
+  padding: 14px 16px 14px 46px;  /* space for icon */
+  font-size: 1.08rem;            /* bigger */
+  font-weight: 700;
+  outline: none;
+  transition: box-shadow .12s ease, border-color .12s ease;
+}
+
+.comment-input:focus{
+  border-color: rgba(46,125,50,0.45);
+  box-shadow: 0 0 0 5px rgba(46,125,50,0.16);
+}
+
+/* Post button */
+.comment-post-btn{
+  border: none;
+  border-radius: 16px;
+  padding: 0 18px;
+  min-width: 120px;
+
+  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.08rem;
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap: 10px;
+
+  box-shadow: 0 10px 24px rgba(46,125,50,0.18);
+  transition: transform .12s ease, opacity .12s ease;
+}
+
+.comment-post-btn:hover{
+  transform: translateY(-1px);
+}
+
+.comment-post-btn:disabled{
+  opacity: 0.55;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Mobile: stack */
+@media (max-width: 768px){
+  .comment-compose-row{
+    flex-wrap: wrap;
+  }
+  .comment-post-btn{
+    width: 100%;
+    min-height: 52px;
+  }
+}
+
+/* Make comment list always visible */
+.comment-panel .comment-list,
+.comment-panel .comment-item,
+.comment-panel .comment-card,
+.comment-panel .bg-light{
+  overflow: visible !important;
+}
+
+/* Ensure comment text isn't blending */
+.comment-panel .text-dark,
+.comment-panel span.text-dark{
+  color: #1f2a1f !important;
+}
+
+/* Make comment bubble look like a real card */
+.comment-panel .comment-card,
+.comment-panel .bg-light.px-3.py-2{
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.06) !important;
+}
+.comment-card{
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+}
+
+.comment-text{
+  color:#1f2a1f;
+  font-size: 1.05rem;   /* senior-friendly */
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.comment-date{
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color:#6c757d;
+  font-weight: 700;
+  padding-left: 2px;
+}
+
+/* ===== Senior-friendly Title + Body ===== */
+
+/* Make the title readable, not thin */
+.story-title{
+  font-weight: 950;              /* strong */
+  color:#1f2a1f;                 /* high contrast */
+  letter-spacing: 0.2px;
+  line-height: 1.12;
+
+  /* responsive size without becoming crazy huge */
+  font-size: clamp(2rem, 3.2vw, 3.2rem);
+
+  margin: 0 0 10px 0;
+}
+
+/* Reading-friendly body text */
+.story-body{
+  color:#1f2a1f;
+  font-size: 1.25rem;            /* bigger */
+  line-height: 1.95;             /* airy */
+  font-weight: 600;
+
+  /* Limit width for readability (important!) */
+  max-width: 72ch;
+}
+
+/* Make paragraph spacing nicer (works even if content has line breaks) */
+.story-body p{
+  margin-bottom: 14px;
+}
+
+/* If story.content has plain text with newlines, keep formatting */
+.story-body{
+  white-space: pre-line;
+}
+
+/* Slightly larger on mobile too */
+@media (max-width: 768px){
+  .story-body{
+    font-size: 1.18rem;
+    line-height: 1.9;
+    max-width: 100%;
+  }
+}
+
+/* ===== Senior Description Section ===== */
+
+.story-description-block{
+  padding: 18px 22px;
+  border-radius: 20px;
+}
+
+/* Big clear label */
+.story-description-label{
+  font-size: 1.2rem;
+  font-weight: 900;
+  color:#2e7d32;
+  letter-spacing: 0.3px;
+}
+
+/* Reading-friendly body */
+.story-body{
+  font-size: 1.25rem;
+  line-height: 1.95;
+  font-weight: 600;
+  color:#1f2a1f;
+  max-width: 72ch;
+  white-space: pre-line;
+}
+/* Simple full-width thin divider */
+.clean-divider{
+  height: 1px;
+  width: 100%;
+  margin: 28px 0;
+
+  background-color: #e5e7eb;   /* soft light grey */
+}
+
+/* Bigger senior-friendly Report button */
+.report-btn-lg{
+  padding: 12px 26px;        /* bigger click area */
+  font-size: 1.05rem;        /* larger text */
+  font-weight: 800;
+  border-width: 2px;         /* thicker border */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Make icon slightly larger */
+.report-btn-lg i{
+  font-size: 1.1rem;
+}
+
+/* Slight hover lift */
+.report-btn-lg:hover{
+  transform: translateY(-1px);
+}
+
+/* tighten gap between "Story Description:" and the text */
+.story-description-label{
+  margin-bottom: 6px;      /* add this */
+}
+
+/* remove extra top gap from the story text */
+.story-body{
+  margin-top: 0 !important;  /* add this */
+}
+
+/* Responsive Story Header */
+.story-header-wrap{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;              /* 🔥 allows wrapping */
+}
+
+/* Prevent button from shrinking weirdly */
+.report-btn-lg{
+  flex-shrink: 0;
+}
+
+/* On smaller screens: move report below title */
+@media (max-width: 768px){
+  .story-header-wrap{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .report-btn-lg{
+    align-self: flex-start;
+    margin-top: 8px;
+  }
+}
+/* ✅ Mobile: make Report button wider (full width) */
+@media (max-width: 768px){
+  .report-btn-lg{
+    width: 100% !important;
+    justify-content: center;
+    padding: 16px 22px;     /* a bit taller for seniors */
+    font-size: 1.15rem;
+  }
+}
+
+/* ✅ Tablet + mobile: make Report button wide */
+@media (max-width: 992px){
+  .report-btn-lg{
+    width: 100% !important;
+    display: flex !important;        /* not inline-flex */
+    justify-content: center;
+    padding: 16px 22px;
+    font-size: 1.15rem;
+  }
+}
+</style>
+
+<div class="container mt-2 mb-5">
+  <div class="container story-page-wrap">
+    <a href="{{ url_for('story.index') }}" class="back-btn">
+      <i class="fa-solid fa-arrow-left"></i> Back to Home
+    </a>
+  <div class="row">
+    <div class="col-12">
+      <div class="card story-card-full border-0 overflow-hidden">
+        
+        <img 
+            src="{% if story.image_path %}{{ url_for('static', filename='uploads/' + story.image_path) }}{% else %}{{ url_for('static', filename='uploads/logo.jpeg') }}{% endif %}" 
+            class="w-100 story-hero"
+            alt="{{ story.title }}">
+
+
+        <div class="card-body p-4">
+          <div class="story-header-wrap mb-3">
+            <div>
+              <h1 class="story-title">{{ story.title }}</h1>
+            <p class="story-author-line">
+  <span class="author-label">Posted by</span>
+
+  <a href="/view_profile/{{ story.username }}" class="author-link">
+    <span class="author-icon">
+      <i class="fa-solid fa-user"></i>
+    </span>
+    <span class="author-name">{{ story.username }}</span>
+  </a>
+  {# topic -> emoji mapping #}
+{% set TOPIC_ICON = {
+  "Travel & Trips": "✈️",
+  "Childhood Memories": "🧸",
+  "Career & Work": "💼",
+  "Life Lessons": "💡",
+  "Family History": "🌳",
+  "School": "🎓"
+} %}
+
+<span class="topic-pill ms-2">
+  <span class="topic-emoji">{{ TOPIC_ICON.get(story.topic, "🏷️") }}</span>
+  <span class="topic-text">{{ story.topic }}</span>
+</span>
+</p>
+
+<div class="audio-player-card mt-3 mb-4">
+    <div class="audio-controls-row">
+        
+        <div class="play-trigger-wrap">
+            <button id="speakBtn" class="senior-btn-main">
+                <i class="fa-solid fa-circle-play"></i> Listen to Story
+            </button>
+            <button id="stopBtn" class="senior-btn-main stop-btn" style="display:none;">
+                <i class="fa-solid fa-circle-stop"></i> Stop Reading
+            </button>
+        </div>
+
+        <div class="speed-box">
+  <div class="speed-label">
+    <i class="fa-solid fa-gauge-high"></i> Reading Speed
+  </div>
+
+  <div class="speed-select-wrap">
+    <select id="speedSelect" class="speed-select">
+      <option value="0.5">0.5x (Very Slow)</option>
+      <option value="0.85" selected>0.85x (Recommended)</option>
+      <option value="1.0">1.0x (Normal)</option>
+      <option value="1.5">1.5x (Fast)</option>
+      <option value="2.0">2.0x (Very Fast)</option>
+    </select>
+
+    <!-- pretty arrow + divider (pure CSS, no JS needed) -->
+    <span class="speed-select-divider"></span>
+    <i class="fa-solid fa-chevron-down speed-select-arrow"></i>
+  </div>
+</div>
+
+    </div>
+</div>
+
+
+            </div>
+            {% if session.get("user_id") != story.user_id %}
+            <button class="btn btn-outline-danger rounded-pill report-btn-lg" data-bs-toggle="modal" data-bs-target="#reportModal">
+              <i class="fa-regular fa-flag"></i> Report
+            </button>
+            {% endif %}
+
+          </div>
+
+          <div class="clean-divider"></div>
+
+<div class="story-description-block">
+  <div class="story-description-label">
+    Story Description:
+  </div>
+
+  <div id="storyContent" class="story-body">
+    {{ story.content }}
+  </div>
+</div>
+
+<div class="story-actions mt-3">
+  <button
+    type="button"
+    class="action-btn js-like-btn"
+    data-story-id="{{ story.id }}"
+    data-liked="{{ 1 if story.user_liked else 0 }}"
+    aria-label="Like story"
+  >
+    <i class="{% if story.user_liked %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+    <span class="count-text js-like-count">{{ story.like_count or 0 }}</span>
+  </button>
+
+  <a href="#comments" class="action-link" aria-label="Jump to comments">
+    <i class="fa-regular fa-comment"></i>
+    <span class="count-text">{{ comments|length }}</span>
+  </a>
+</div>
+
+<hr class="my-4">
+
+
+<div class="comment-panel" id="comments">
+  <div class="comment-panel-head">
+    <h4 class="comment-title">Comments ({{ comments|length }})</h4>
+  </div>
+
+  {% if comments|length == 0 %}
+    <div class="comment-empty">
+      <div class="comment-empty-icon">
+        <i class="fa-regular fa-comment-dots"></i>
+      </div>
+      <div class="comment-empty-text">
+        <div class="comment-empty-title">No comments yet</div>
+        <div class="comment-empty-sub">Be the first to share your thoughts 💚</div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% for c in comments %}
+  <div class="d-flex align-items-start mb-3" id="commentRow-{{ c.id }}">
+
+    <a href="/view_profile/{{ c.username }}"
+       class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3 text-decoration-none"
+       style="width:40px; height:40px; flex-shrink:0;">
+      <i class="fa-solid fa-user text-muted"></i>
+    </a>
+
+    <div class="w-100">
+      <div class="comment-card">
+        <div class="d-flex align-items-center justify-content-between mb-1">
+          <a href="/view_profile/{{ c.username }}"
+             class="small text-success fw-bold text-decoration-none">
+            {{ c.username }}
+          </a>
+
+          {% if session.get("user_id") == c.user_id or session.get("user_id") == story.user_id %}
+            <button type="button"
+                    class="btn btn-sm p-0 border-0 bg-transparent text-danger js-delete-comment"
+                    data-comment-id="{{ c.id }}"
+                    aria-label="Delete comment">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          {% else %}
+            <button type="button"
+                    class="btn btn-sm p-0 border-0 bg-transparent text-danger js-open-comment-report"
+                    data-comment-id="{{ c.id }}"
+                    aria-label="Report comment">
+              <i class="fa-regular fa-flag"></i>
+            </button>
+          {% endif %}
+        </div>
+
+        <div class="comment-text">{{ c.content }}</div>
+      </div>
+
+      <div class="comment-date">{{ c.created_at[:10] }}</div>
+    </div>
+
+  </div>
+{% endfor %}
+
+  <form id="commentForm"
+        action="{{ url_for('story.add_comment', story_id=story.id) }}"
+        method="POST"
+        class="comment-compose">
+
+    <div class="comment-compose-row">
+      <div class="comment-input-wrap">
+        <i class="fa-regular fa-pen-to-square comment-input-icon"></i>
+        <input id="commentInput"
+               type="text"
+               name="content"
+               class="comment-input"
+               placeholder="Write a heartwarming comment…"
+               required maxlength="280" autocomplete="off">
+      </div>
+
+      <button id="commentSubmitBtn" class="comment-post-btn" type="submit">
+        <i class="fa-solid fa-paper-plane"></i>
+        <span>Post</span>
+      </button>
+    </div>
+
+    <div id="commentErr" class="mt-2" style="display:none; color:#dc3545; font-weight:800;"></div>
+    <div id="commentValid" class="mt-1" style="display:none; font-weight:800;"></div>
+  </form>
+</div>
+
+<div class="modal fade report-modal" id="reportModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0">
+
+      <div class="report-header">
+        <div class="report-back" data-bs-dismiss="modal" aria-label="Close">
+          <i class="fa-solid fa-arrow-left"></i>
+        </div>
+        <h5>Report Form</h5>
+      </div>
+
+      <div class="report-body">
+        <form id="reportForm">
+          <div class="report-box mb-3">
+            <div class="report-label">Report Reason</div>
+            <select id="reportReason" class="form-select report-input report-select mb-2">
+
+  <option value="">Select a reason</option>
+  <option value="explicit_content">Explicit / inappropriate content</option>
+  <option value="harassment">Harassment / hate speech</option>
+  <option value="spam">Spam / scam</option>
+  <option value="misinformation">False or misleading information</option>
+  <option value="violence">Violence or harmful acts</option>
+  <option value="other">Other (please specify)</option>
+</select>
+
+<textarea id="reportReasonOther"
+  class="report-input report-text d-none"
+  rows="3"
+  placeholder="Please describe the issue..."></textarea>
+
+          </div>
+
+          <label class="report-check">
+            <input class="form-check-input" type="checkbox" id="reportCheck">
+            <span>I understand that making false reports may terminate my account or rewards.</span>
+          </label>
+
+          <div class="d-flex justify-content-end">
+            <button type="submit" id="btnSubmitReport" class="btn-report-submit" disabled>
+              Report
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="reportSuccessModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4 border-0" style="border-radius: 20px;">
+      <h3 class="fw-bold text-success mb-2">Thank you for reporting!</h3>
+      <p class="text-muted small mb-4">We have temporarily removed the story and will check on our end before making actions!</p>
+      
+      <div class="success-actions">
+  <a href="{{ url_for('story.manage') }}" class="success-btn btn-garden">
+    🌱 My Garden
+  </a>
+
+  <a href="{{ url_for('story.index') }}" class="success-btn btn-home">
+    🏡 Back to Home
+  </a>
+
+</div>
+
+    </div>
+  </div>
+</div>
+<div class="modal fade report-modal" id="commentReportModal" tabindex="-1">
+
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0" style="border-radius: 15px; overflow: hidden;">
+      
+      <div class="report-header">
+  <div class="report-back" data-bs-dismiss="modal" aria-label="Close">
+    <i class="fa-solid fa-arrow-left"></i>
+  </div>
+  <h5>Report Comment</h5>
+</div>
+
+
+      <div class="report-body pt-0">
+        <form id="commentReportForm">
+          <input type="hidden" id="reportCommentId">
+
+          <div class="mb-3 bg-white p-3 rounded-3 shadow-sm">
+            <label class="fw-bold small mb-2 text-dark">Report Reason</label>
+            <select id="commentReportReasonSelect" class="form-select report-input report-select mb-2">
+  <option value="">Select a reason</option>
+  <option value="explicit_content">Explicit / inappropriate content</option>
+  <option value="harassment">Harassment / hate speech</option>
+  <option value="spam">Spam / scam</option>
+  <option value="misinformation">False or misleading information</option>
+  <option value="violence">Violence or harmful acts</option>
+  <option value="other">Other (please specify)</option>
+</select>
+
+<textarea
+  id="commentReportReasonOther"
+  class="report-input report-text d-none"
+
+  rows="3"
+  placeholder="Please describe the issue..."></textarea>
+
+          </div>
+
+          <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="commentReportCheck">
+            <label class="form-check-label small text-muted" for="commentReportCheck">
+              I understand that making false reports may terminate my account or rewards.
+            </label>
+          </div>
+
+          <div id="commentReportErr" class="mb-2" style="display:none; color:#dc3545; font-weight:700;"></div>
+
+          <div class="text-end">
+            <button type="submit" id="btnSubmitCommentReport" class="btn btn-report-submit" disabled>
+              Report
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // 1. Validation Logic (Reason + Checkbox = Button Enabled)
+const reasonSelect = document.getElementById('reportReason');
+const reasonOther  = document.getElementById('reportReasonOther');
+const checkInput   = document.getElementById('reportCheck');
+const submitBtn    = document.getElementById('btnSubmitReport');
+
+const reportBox = document.querySelector("#reportForm .report-box");
+
+const errorMsg = document.createElement('div');
+errorMsg.style.color = "#dc3545";
+errorMsg.style.fontSize = "0.85rem";
+errorMsg.style.marginTop = "10px";
+errorMsg.style.fontWeight = "bold";
+errorMsg.style.display = "none";
+
+reportBox.appendChild(errorMsg);
+
+
+  function validateReport() {
+  let hasReason = reasonSelect.value && reasonSelect.value !== "";
+
+  // if "other", must fill textbox
+  if (reasonSelect.value === "other") {
+    hasReason = reasonOther.value.trim().length >= 5;
+  }
+
+  const isChecked = checkInput.checked;
+  submitBtn.disabled = !(hasReason && isChecked);
+}
+
+
+  reasonSelect.addEventListener('change', () => {
+  if (reasonSelect.value === "other") {
+    reasonOther.classList.remove("d-none");
+  } else {
+    reasonOther.classList.add("d-none");
+    reasonOther.value = "";
+  }
+  validateReport();
+});
+
+reasonOther.addEventListener('input', validateReport);
+checkInput.addEventListener('change', validateReport);
+
+
+  // 2. Handle Submission via AJAX
+  document.getElementById('reportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Disable button to prevent double click
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
+    submitBtn.disabled = true;
+    errorMsg.style.display = "none";
+
+    const formData = new FormData();
+
+let finalReason = reasonSelect.value;
+if (reasonSelect.value === "other") {
+  finalReason = "other: " + reasonOther.value.trim();
+}
+
+formData.append('reason', finalReason);
+
+
+    fetch("{{ url_for('story.report_story', story_id=story.id) }}", {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if(data.ok) {
+        // Success: Hide Report Modal & Show Success Modal
+        const reportModal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+        reportModal.hide();
+        const successModal = new bootstrap.Modal(document.getElementById('reportSuccessModal'));
+        successModal.show();
+      } else {
+        // Validation Error (Gibberish / Bad Words)
+        errorMsg.innerText = "❌ " + (data.msg || "Error reporting story.");
+        errorMsg.style.display = "block";
+        submitBtn.innerHTML = "Report";
+        submitBtn.disabled = false; 
+      }
+    })
+    .catch(err => {
+       console.error(err);
+       errorMsg.innerText = "❌ Connection error. Please try again.";
+       errorMsg.style.display = "block";
+       submitBtn.innerHTML = "Report";
+       submitBtn.disabled = false;
+    });
+  });
+
+async function toggleLike(btn) {
+  const storyId = btn.dataset.storyId;
+  const icon = btn.querySelector("i");
+  const countEl = btn.querySelector(".js-like-count");
+
+  btn.style.transform = "scale(1.15)";
+  setTimeout(() => (btn.style.transform = ""), 120);
+
+  const res = await fetch(`/story/${storyId}/like-toggle`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({})
+  });
+
+  const data = await res.json();
+  if (!data.ok) return;
+
+  countEl.textContent = data.like_count;
+
+  if (data.liked) {
+    icon.classList.remove("fa-regular");
+    icon.classList.add("fa-solid");
+    btn.dataset.liked = "1";
+  } else {
+    icon.classList.remove("fa-solid");
+    icon.classList.add("fa-regular");
+    btn.dataset.liked = "0";
+  }
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".js-like-btn");
+  if (!btn) return;
+  toggleLike(btn);
+});
+
+let commentReportModal;
+
+document.addEventListener("DOMContentLoaded", () => {
+  commentReportModal = new bootstrap.Modal(document.getElementById("commentReportModal"));
+});
+
+const crSelect = document.getElementById("commentReportReasonSelect");
+const crOther  = document.getElementById("commentReportReasonOther");
+const crCheck  = document.getElementById("commentReportCheck");
+const crBtn    = document.getElementById("btnSubmitCommentReport");
+const crErr    = document.getElementById("commentReportErr");
+const crIdEl   = document.getElementById("reportCommentId");
+
+
+function validateCommentReport(){
+  let hasReason = crSelect.value && crSelect.value !== "";
+
+  if (crSelect.value === "other") {
+    hasReason = crOther.value.trim().length >= 5;
+  }
+
+  crBtn.disabled = !(hasReason && crCheck.checked);
+  if (hasReason) crErr.style.display = "none";
+}
+
+crSelect.addEventListener("change", () => {
+  if (crSelect.value === "other") {
+    crOther.classList.remove("d-none");
+  } else {
+    crOther.classList.add("d-none");
+    crOther.value = "";
+  }
+  validateCommentReport();
+});
+
+crOther.addEventListener("input", validateCommentReport);
+crCheck.addEventListener("change", validateCommentReport);
+
+
+// open modal when clicking a comment flag
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".js-open-comment-report");
+  if (!btn) return;
+
+  crIdEl.value = btn.dataset.commentId;
+  crSelect.value = "";
+crOther.value = "";
+crOther.classList.add("d-none");
+crCheck.checked = false;
+crErr.style.display = "none";
+crBtn.disabled = true;
+
+
+  commentReportModal.show();
+});
+
+// submit report
+document.getElementById("commentReportForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  crBtn.disabled = true;
+  crBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
+
+  const formData = new FormData();
+
+let finalReason = crSelect.value;
+if (crSelect.value === "other") {
+  finalReason = "other: " + crOther.value.trim();
+}
+
+formData.append("reason", finalReason);
+
+
+  const commentId = crIdEl.value;
+
+  try {
+    const urlTpl = "{{ url_for('story.report_comment', comment_id=0) }}";
+const url = urlTpl.replace("0", commentId);
+
+const res = await fetch(url, {
+  method: "POST",
+  body: formData
+});
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      crErr.textContent = "❌ " + (data.msg || "Error reporting comment.");
+      crErr.style.display = "block";
+      crBtn.innerHTML = "Report";
+      validateCommentReport();
+      return;
+    }
+
+    commentReportModal.hide();
+
+  } catch (err) {
+    console.error(err);
+    crErr.textContent = "❌ Connection error. Please try again.";
+    crErr.style.display = "block";
+    crBtn.innerHTML = "Report";
+    validateCommentReport();
+  }
+});
+
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest(".js-delete-comment");
+  if (!btn) return;
+
+  const commentId = btn.dataset.commentId;
+  if (!commentId) return;
+
+  if (!confirm("Delete this comment? This cannot be undone.")) return;
+
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`/story/comment/delete/${commentId}`, {
+      method: "POST",
+      headers: { "X-Requested-With": "XMLHttpRequest" }
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      btn.disabled = false;
+      alert(data.msg || "Cannot delete this comment.");
+      return;
+    }
+
+    const row = document.getElementById(`commentRow-${commentId}`);
+    if (row) row.remove();
+
+  } catch (err) {
+    console.error(err);
+    btn.disabled = false;
+    alert("Connection error.");
+  }
+});
+
+//comment input
+const commentForm = document.getElementById("commentForm");
+const commentInput = document.getElementById("commentInput");
+const commentErr = document.getElementById("commentErr");
+const commentValid = document.getElementById("commentValid");
+const commentBtn = document.getElementById("commentSubmitBtn");
+
+function showCommentErr(msg){
+  commentErr.textContent = "❌ " + (msg || "Invalid comment.");
+  commentErr.style.display = "block";
+}
+function clearCommentErr(){
+  commentErr.textContent = "";
+  commentErr.style.display = "none";
+}
+
+function setCommentValid(msg, type){
+  if (!msg){
+    commentValid.style.display = "none";
+    commentValid.textContent = "";
+    commentValid.style.color = "";
+    return;
+  }
+  commentValid.style.display = "block";
+  commentValid.textContent = msg;
+
+  if (type === "danger") commentValid.style.color = "#dc3545";
+  else if (type === "warning") commentValid.style.color = "#b26a00";
+  else if (type === "success") commentValid.style.color = "#198754";
+  else commentValid.style.color = "#0d6efd";
+}
+
+
+let moderateTimer = null;
+let lastModerateText = "";
+let isApproved = false;
+
+async function moderateCommentTextLive(text){
+  const t = (text || "").trim();
+  if (!t){
+    isApproved = false;
+    setCommentValid("", "");
+    commentBtn.disabled = true;
+    return;
+  }
+
+  
+  if (t.length < 2){
+    isApproved = false;
+    setCommentValid("Comment is too short (min 2 characters).", "danger");
+    commentBtn.disabled = true;
+    return;
+  }
+
+ 
+  if (t === lastModerateText) return;
+  lastModerateText = t;
+
+  setCommentValid("Checking for explicit content…", "info");
+  commentBtn.disabled = true;
+
+  try{
+    const res = await fetch("{{ url_for('story.api_moderate_text') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+      body: JSON.stringify({ text: t, min_len: 2 })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok){
+      isApproved = false;
+    
+      if ((data.status || "") === "warning"){
+        setCommentValid(data.msg || "Warning: random words or gibberish/keyboard detected.", "warning");
+      } else {
+        setCommentValid(data.msg || "Explicit content detected, please change.", "danger");
+      }
+      commentBtn.disabled = true;
+      return;
+    }
+
+    // approved
+    isApproved = true;
+    setCommentValid("✅ Looks good.", "success");
+    commentBtn.disabled = false;
+
+  } catch(err){
+    console.error(err);
+    isApproved = false;
+    setCommentValid("❌ Validation service unavailable. Try again.", "danger");
+    commentBtn.disabled = true;
+  }
+}
+
+if (commentForm){
+  // start disabled until approved
+  commentBtn.disabled = true;
+
+  commentInput.addEventListener("input", () => {
+    clearCommentErr();
+
+    // debounce backend moderation
+    clearTimeout(moderateTimer);
+    moderateTimer = setTimeout(() => {
+      moderateCommentTextLive(commentInput.value);
+    }, 600);
+  });
+
+  commentForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const txt = (commentInput.value || "").trim();
+    if (!txt){
+      showCommentErr("Comment is required.");
+      return;
+    }
+
+    // strict: must be approved before submit
+    if (!isApproved){
+      showCommentErr("❌ Please fix your comment before posting.");
+      return;
+    }
+
+    commentBtn.disabled = true;
+    const oldLabel = commentBtn.innerHTML;
+    commentBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    try{
+      const fd = new FormData(commentForm);
+
+      const res = await fetch(commentForm.action, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        body: fd
+      });
+
+      const data = await res.json();
+
+      if (!data.ok){
+        showCommentErr(data.msg || "Please change your comment.");
+        commentBtn.disabled = false;
+        commentBtn.innerHTML = oldLabel;
+        // sync UI with backend msg
+        setCommentValid(data.msg || "Please change your comment.", "danger");
+        isApproved = false;
+        return;
+      }
+
+      window.location.reload();
+
+    } catch(err){
+      console.error(err);
+      showCommentErr("Connection error. Please try again.");
+      commentBtn.disabled = false;
+      commentBtn.innerHTML = oldLabel;
+    }
+  });
+}
+// 🔊 Text-to-Speech Logic
+const speakBtn = document.getElementById('speakBtn');
+const stopBtn = document.getElementById('stopBtn');
+
+// This safely grabs the story text from the template
+const storyText = `{{ story.content|striptags|safe }}`; 
+
+const synth = window.speechSynthesis;
+
+if (speakBtn) {
+    speakBtn.onclick = () => {
+        if (synth.speaking) return;
+
+        const utterance = new SpeechSynthesisUtterance(storyText);
+        
+        // 🌍 Language Detection: 
+        // Automatically picks English or Chinese based on your site's <html lang="...">
+        utterance.lang = document.documentElement.lang || 'en-US';
+
+        // Clarity for Seniors: Slightly slower speed (0.85)
+        utterance.rate = 0.85; 
+
+        utterance.onstart = () => {
+            speakBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+        };
+
+        utterance.onend = () => {
+            speakBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'none';
+        };
+
+        synth.speak(utterance);
+    };
+}
+
+if (stopBtn) {
+    stopBtn.onclick = () => {
+        synth.cancel();
+        speakBtn.style.display = 'inline-block';
+        stopBtn.style.display = 'none';
+    };
+}
+
+// Stop audio if user leaves the page
+window.addEventListener('beforeunload', () => {
+    synth.cancel();
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const synth = window.speechSynthesis;
+    const speakBtn = document.getElementById('speakBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const speedSelect = document.getElementById('speedSelect');
+    const langSelect = document.getElementById('langSelect'); // From your navbar
+
+    function getBestVoice(langCode) {
+        const voices = synth.getVoices();
+        // Priority: Match exact language (ta, zh, th, etc.) + Female/Google clarity
+        return voices.find(v => v.lang.startsWith(langCode) && 
+               (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Samantha'))) 
+               || voices.find(v => v.lang.startsWith(langCode)) 
+               || voices[0];
+    }
+
+    if (speakBtn) {
+        speakBtn.onclick = () => {
+            if (synth.speaking) return;
+
+            const contentDiv = document.getElementById('storyContent');
+            if (!contentDiv) return;
+            
+            const utterance = new SpeechSynthesisUtterance(contentDiv.innerText);
+            
+            // 🌍 THE FIX: Sync with your multi-language dropdown
+            const selectedLang = langSelect ? langSelect.value : (document.documentElement.lang || 'en');
+            utterance.lang = selectedLang;
+            utterance.voice = getBestVoice(selectedLang);
+
+            // ⚡ THE FIX: Sync with your new speed options
+            utterance.rate = parseFloat(speedSelect.value) || 0.85;
+
+            utterance.onstart = () => {
+                speakBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-flex';
+            };
+            utterance.onend = () => {
+                speakBtn.style.display = 'inline-flex';
+                stopBtn.style.display = 'none';
+            };
+
+            synth.speak(utterance);
+        };
+    }
+
+    if (stopBtn) {
+        stopBtn.onclick = () => {
+            synth.cancel();
+            speakBtn.style.display = 'inline-flex';
+            stopBtn.style.display = 'none';
+        };
+    }
+
+    // Chrome Voice Fix
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = synth.getVoices;
+    }
+});
+</script>
+{% endblock %}

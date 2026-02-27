@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Messages - Legacy Garden{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/messages.css') }}">
+<style>
+  /* #ya added: allow natural page scroll so footer is visible like other pages */
+  html, body { height: auto; overflow: auto !important; }
+  footer, .footer, .site-footer { display: block !important; }
+  .messages-wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .messages-shell { flex: 1 !important; }
+  .msg-sidebar { display: flex !important; flex-direction: column !important; }
+  .sidebar-list { flex: 1 !important; overflow-y: auto !important; min-height: 0 !important; }
+  .msg-main { }
+</style>
+
+<div class="messages-wrap">
+  <div class="messages-shell">
+
+    <!-- LEFT: Sidebar -->
+    <div class="msg-sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-title">Chats</div>
+        <div class="sidebar-search">
+          <span>🔎</span>
+          <input id="chatSearch" placeholder="Search or start a new chat">
+        </div>
+      </div>
+
+      <div class="sidebar-list" id="chatList">
+
+        <div class="sidebar-section-label">Community</div>
+        <div class="community-region-box">
+          <a class="chat-item {% if active_group == 'north' %}active{% endif %}"
+             href="{{ url_for('messaging.group_chat', region='north') }}"
+             data-name="north region">
+            <div class="chat-avatar" style="background:linear-gradient(135deg,#3ecfb2,#1a9e84);color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;">
+              NO
+            </div>
+            <div class="chat-meta">
+              <div class="chat-name">North Region</div>
+              <div class="chat-sub">Community</div>
+            </div>
+          </a>
+        </div>
+
+        <hr class="sidebar-divider">
+
+        <!-- 🌱 Streak Reward Banner -->
+        <div style="background:linear-gradient(135deg,#f0fff4,#e8f5e9);border:1px solid #a5d6a7;border-radius:12px;padding:10px 12px;margin:8px 10px 12px;font-size:12px;color:#2e7d32;line-height:1.6;">
+          🔥 <strong>Streak Reward:</strong> Keep an active streak with <strong>3 different friends for 10 days each</strong>,
+          and 1 🌸 <strong>Flower Seed</strong> will be automatically added to your Garden!
+        </div>
+
+        <div class="sidebar-section-label">My Chats</div>
+
+        {% for p in people %}
+          <a class="chat-item {% if p.id == active_id %}active{% endif %}"
+             href="{{ url_for('messaging.chat', other_id=p.id) }}"
+             data-name="{{ p.username|lower }}"
+             data-peer-id="{{ p.id }}">
+
+            <div class="chat-avatar avatar-{{ p.id % 6 }}">
+              {% if p.pfp %}
+                <img src="{{ url_for('static', filename='uploads/' + p.pfp) }}"
+                     alt="{{ p.username }}"
+                     onerror="this.onerror=null; this.remove(); this.parentElement.classList.add('no-img');">
+              {% endif %}
+              <span class="avatar-initials">
+                {{ (p.username[:2] if p.username else 'U')|upper }}
+              </span>
+            </div>
+
+            <div class="chat-meta">
+              <div class="chat-name">{{ p.username }}</div>
+              <div class="chat-sub" id="preview-{{ p.id }}">
+                {% if p.last_preview %}
+                  {{ p.last_preview[:40] }}{% if p.last_preview|length > 40 %}…{% endif %}
+                {% elif p.last_msg %}
+                  {{ p.last_msg[11:16] if p.last_msg|length >= 16 else p.last_msg[:10] }}
+                {% else %}
+                  {{ p.role|title }}
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="chat-right">
+              {% if p.streak and p.streak > 0 %}
+                <span class="streak-badge" id="streak-{{ p.id }}">🔥 {{ p.streak }}</span>
+              {% else %}
+                <span class="streak-badge" id="streak-{{ p.id }}" style="display:none">🔥 0</span>
+              {% endif %}
+
+              {% if p.unread and p.unread > 0 %}
+                <span class="unread-badge" id="badge-{{ p.id }}">{{ p.unread }}</span>
+              {% else %}
+                <span class="unread-badge" id="badge-{{ p.id }}" style="display:none">0</span>
+              {% endif %}
+            </div>
+
+          </a>
+        {% endfor %}
+
+      </div>
+    </div>
+
+    <!-- RIGHT: Placeholder -->
+    <div class="msg-main">
+      <div class="chat-empty">
+        <div>
+          <div class="big">💬</div>
+          <div class="title">Your Messages</div>
+          <div class="sub">Select a conversation to start chatting.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const search = document.getElementById("chatSearch");
+  const list   = document.getElementById("chatList");
+  if (search && list) {
+    search.addEventListener("input", () => {
+      const q = search.value.trim().toLowerCase();
+      [...list.querySelectorAll(".chat-item")].forEach(a => {
+        a.style.display = (a.dataset.name || "").includes(q) ? "" : "none";
+      });
+    });
+  }
+
+  function updateNavDot() {
+    let total = 0;
+    document.querySelectorAll(".unread-badge").forEach(el => {
+      if (el.style.display !== "none") total += parseInt(el.textContent || "0", 10);
+    });
+    let dot = document.getElementById("navMsgDot");
+    if (!dot) {
+      document.querySelectorAll("a, .nav-link").forEach(el => {
+        if ((el.textContent || "").trim().toUpperCase() === "MESSAGES") {
+          el.style.position = "relative";
+          dot = document.createElement("span");
+          dot.id = "navMsgDot";
+          dot.style.cssText = "position:absolute;top:-4px;right:-8px;width:10px;height:10px;background:#e53e3e;border-radius:50%;display:none;";
+          el.appendChild(dot);
+        }
+      });
+    }
+    if (dot) dot.style.display = total > 0 ? "inline-block" : "none";
+  }
+  updateNavDot();
+</script>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+  const socket = io();
+
+  socket.on("connect", () => {
+    socket.emit("presence_join");
+  });
+
+  socket.on("badge_update", (data) => {
+    const badge = document.getElementById("badge-" + data.from_id);
+    if (badge) {
+      const n = Number(data.count || 0);
+      if (n > 0) { badge.textContent = n; badge.style.display = ""; }
+      else { badge.style.display = "none"; }
+    }
+    updateNavDot();
+  });
+
+  socket.on("streak_update", (data) => {
+    if (!data) return;
+    const peerId = data.peer_id;
+    const s = Number(data.streak || 0);
+    const el = document.getElementById("streak-" + peerId);
+    if (!el) return;
+    if (s > 0) { el.style.display = ""; el.textContent = "🔥 " + s; }
+    else { el.style.display = "none"; }
+  });
+
+  // Live preview update when new messages arrive on other pages
+  socket.on("inbox_preview_update", (data) => {
+    if (!data || !data.peer_id) return;
+    const preview = document.getElementById("preview-" + data.peer_id);
+    if (preview && data.preview) preview.textContent = data.preview;
+  });
+</script>
+
+{% endblock %}

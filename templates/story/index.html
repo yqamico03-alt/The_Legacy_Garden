@@ -1,0 +1,633 @@
+{% extends "base.html" %}
+{% block title %}Stories - Legacy Garden{% endblock %}
+
+{% block content %}
+
+<style>
+  :root {
+    --lg-primary: #2e7d32;     
+    --lg-action: #457F5B;      
+    --lg-bg-mint: #e8f5e9;     
+  }
+
+  .page-title {
+    color: var(--lg-primary);
+    font-weight: 800;
+    font-size: 2.2rem;
+    margin-bottom: 5px;
+    letter-spacing: -0.5px;
+  }
+
+  .page-subtitle {
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 400;
+  }
+
+  /* SEARCH SECTION */
+  .search-container {
+    background-color: var(--lg-bg-mint);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 40px;
+  }
+
+  .search-label {
+    font-weight: 700;
+    color: #1b5e20;
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 8px;
+  }
+  
+  .search-btn:hover {
+  color: #ffffff !important;
+}
+
+  .search-input {
+    border: 1px solid #ddd;
+    padding: 12px 20px;
+    font-size: 1rem;
+    background-color: white;
+    height: 50px;
+    width: 100%;
+    border-radius: 10px 0 0 10px !important;
+    border-right: none !important;
+  }
+
+  .search-input:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 1px var(--lg-action);
+  }
+
+  .search-btn {
+    background-color: var(--lg-action);
+    color: white;
+    border: 1px solid var(--lg-action);
+    padding: 0 35px;
+    font-weight: 700;
+    font-size: 1rem;
+    height: 50px;
+    cursor: pointer;
+    border-radius: 0 10px 10px 0 !important;
+    transition: background 0.2s;
+  }
+
+  .search-btn:hover { background-color: #388e3c; }
+
+  /* KEY FIX: force dropdowns to fill their col-md-4 fully */
+  .form-select-custom {
+    border: 1px solid #ddd;
+    border-radius: 10px !important;
+    padding: 12px 15px;
+    font-size: 1rem;
+    height: 50px;
+    background-color: white;
+    cursor: pointer;
+    width: 100% !important;
+    display: block !important;
+    box-sizing: border-box;
+  }
+
+  /* Clear Button */
+  .clear-btn {
+    background-color: white;
+    border: 1px solid #ccc;
+    color: #555;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 10px 18px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    margin-right: 0;
+  }
+
+  .clear-btn:hover {
+    background-color: #fff0f0;
+    border-color: #e57373;
+    color: #d32f2f;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+  }
+
+  .results-pill {
+    background-color: #c8e6c9;
+    color: #1b5e20;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 50px;
+    white-space: normal;
+    max-width: 100%;
+    display: inline-block;
+  }
+
+  /* KEY FIX: actions col aligns to bottom, same height as dropdowns */
+  .actions-col {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+  }
+
+  .filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;   /* keep button + pill on same line */
+    width: 100%;
+  }
+
+  /* Filter row vertical alignment */
+  .filter-row { align-items: flex-end; }
+
+  @media (min-width: 992px) {
+    .filter-row { align-items: flex-end; }
+  }
+
+  @media (max-width: 991px) {
+    .filter-row { align-items: stretch; }
+  }
+
+  @media (max-width: 768px) {
+    .filter-actions { justify-content: flex-start; height: auto; }
+    .results-pill { width: 100%; text-align: center; }
+    .clear-btn { width: 100%; justify-content: center; }
+  }
+
+  /* STORY CARDS */
+  .story-card {
+    border: none;
+    border-radius: 16px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+    margin-bottom: 25px;
+    overflow: hidden;
+    height: 100%;
+  }
+
+  .story-card:hover { transform: translateY(-5px); }
+
+  .story-img-col {
+    min-height: 240px;
+    position: relative;
+  }
+
+  .story-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0; left: 0;
+  }
+
+  .story-content {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: flex-start;
+  }
+
+  .story-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #2c3e50;
+    margin-bottom: 8px;
+  }
+
+  .meta-text {
+    font-size: 0.85rem;
+    color: #888;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
+  }
+
+  .meta-highlight { color: var(--lg-action); }
+
+  .read-link {
+    color: var(--lg-action);
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .read-link:hover { 
+    gap: 8px;
+    text-decoration: none;
+    color: #1b5e20;
+  }
+
+  /* FAB */
+  .create-fab {
+    position: fixed; bottom: 30px; right: 30px;
+    background-color: #457F5B;
+    color: white; border: none;
+    border-radius: 50px; padding: 14px 28px; font-weight: 700;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+    display: flex; align-items: center; gap: 8px; z-index: 999;
+    transition: transform 0.2s;
+  }
+
+  .create-fab:hover { transform: scale(1.05); color: white; text-decoration: none; }
+
+  .modal-action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn-drafts {
+    background: #ffffff;
+    color: #2e7d32;
+    border: 2px solid #2e7d32;
+    font-weight: 800;
+    padding: 10px 18px;
+    border-radius: 999px;
+    box-shadow: 0 6px 16px rgba(46,125,50,0.12);
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-drafts:hover {
+    background: #2e7d32;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(46,125,50,0.18);
+    text-decoration: none;
+  }
+
+  .btn-drafts:active { transform: translateY(0); }
+
+  /* Story action buttons */
+  .story-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 18px;
+    flex-wrap: nowrap;
+  }
+
+  .action-btn,
+  .action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  .action-btn {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .story-actions i {
+    font-size: 1.35rem;
+    line-height: 1;
+    display: block;
+  }
+
+  .action-btn i { color: #dc3545; }
+  .action-link i { color: #198754; }
+
+  .count-text {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #6c757d;
+  }
+
+  .action-btn:active,
+  .action-link:active { transform: scale(1.08); }
+
+  @media (max-width: 767px) {
+  .filter-actions {
+    flex-wrap: wrap;
+  }
+  .results-pill {
+    width: auto;
+    text-align: center;
+  }
+  .actions-col {
+    justify-content: center;
+  }
+}
+  /* Force modal lower than center */
+#successModal .modal-dialog {
+  align-items: flex-start !important;
+}
+
+#successModal .custom-success-modal {
+  margin-top: 120px !important;  /* adjust: 80px / 100px / 140px */
+}
+#successModal .modal-dialog-centered {
+  align-items: flex-start !important;
+  margin-top: 120px !important;
+}
+</style>
+
+
+<div class="container py-4">
+
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="page-title">Our Legacy Garden</h1>
+      <p class="page-subtitle">See what others in the community have shared today!</p>
+    </div>
+    <a href="{{ url_for('story.manage') }}" class="btn btn-drafts">
+      <i class="fa-solid fa-book-open me-2"></i> My Stories
+    </a>
+  </div>
+
+  <div class="search-container">
+    <div class="row">
+
+      <!-- Search Bar -->
+      <div class="col-12">
+        <label class="search-label">Search Stories</label>
+        <div class="input-group">
+          <input type="text" class="form-control search-input" id="searchInput" placeholder="Search by title or story content...">
+          <button class="btn search-btn" type="button" onclick="handleSearchAndFilter()">Search</button>
+        </div>
+      </div>
+
+      <!-- Topic - equal 1/3 -->
+      <div class="col-md-4 mt-4 mb-3">
+        <label class="search-label">Topic</label>
+        <select class="form-select form-select-custom" id="topicFilter">
+  <option value="">All Topics</option>
+  <option value="Travel & Trips">✈️ Travel & Trips</option>
+  <option value="Childhood Memories">🧸 Childhood Memories</option>
+  <option value="Career & Work">💼 Career & Work</option>
+  <option value="Life Lessons">💡 Life Lessons</option>
+  <option value="Family History">🌳 Family History</option>
+  <option value="School">🎓 School</option>
+</select>
+      </div>
+
+      <!-- Sort By - equal 1/3 -->
+      <div class="col-md-4 mt-4 mb-3">
+        <label class="search-label">Sort By</label>
+        <select class="form-select form-select-custom" id="sortFilter">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="popular">Most Popular</option>
+        </select>
+      </div>
+
+      <!-- Actions - equal 1/3 -->
+      <div class="col-md-4 mt-4 mb-3 actions-col">
+        <div class="filter-actions">
+          <span class="clear-btn" onclick="clearFilters()">
+            <i class="fa-solid fa-rotate-left"></i> Clear Filters
+          </span>
+          <span class="results-pill" id="resultsPill">
+            Results: <span id="resultsCount">{{ stories|length }} Stories</span>
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="storiesContainer">
+    <div class="row filter-row">
+      {% for story in stories %}
+      <div class="col-12 story-item-wrapper mb-4"
+           data-topic="{{ story.topic }}"
+           data-date="{{ story.created_at }}"
+           data-likes="{{ story.like_count }}"
+           data-title="{{ story.title }}"
+           data-content="{{ story.content }}">
+        <div class="card story-card">
+          <div class="row g-0 h-100">
+            <div class="col-md-4 story-img-col">
+              {% set img = (story.image_path or '')|trim %}
+              <img
+                src="{% if img %}{{ url_for('static', filename='uploads/' + img) }}{% else %}{{ url_for('static', filename='uploads/logo.jpeg') }}{% endif %}"
+                class="story-img"
+                alt="{{ story.title }}"
+              >
+            </div>
+            <div class="col-md-8">
+              <div class="story-content">
+                <h3 class="story-title">{{ story.title }}</h3>
+                <div class="meta-text">
+                  Category: <span class="meta-highlight">{{ story.topic|capitalize if story.topic else 'General' }}</span>
+                  • Posted By 
+                  <a href="/view_profile/{{ story.username }}"
+	                class="text-success fw-bold text-decoration-none d-inline-flex align-items-center gap-1">
+	                {{ story.username }}
+              </a>
+                </div>
+                <p class="text-muted mt-2 mb-3">
+                  {{ story.content[:150] }}{% if story.content|length > 150 %}...{% endif %}
+                </p>
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                  <a href="{{ url_for('story.view_story', story_id=story.id) }}" class="read-link">
+                    Read More <i class="fa-solid fa-arrow-right"></i>
+                  </a>
+                  <div class="story-actions">
+                    <button
+                      type="button"
+                      class="action-btn js-like-btn"
+                      data-story-id="{{ story.id }}"
+                      data-liked="{{ 1 if story.user_liked else 0 }}"
+                      aria-label="Like story"
+                    >
+                      <i class="{% if story.user_liked %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+                      <span class="count-text js-like-count">{{ story.like_count or 0 }}</span>
+                    </button>
+                    <a href="{{ url_for('story.view_story', story_id=story.id) }}" class="action-link" aria-label="View comments">
+                      <i class="fa-regular fa-comment"></i>
+                      <span class="count-text">{{ story.comment_count or 0 }}</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="col-12 text-center py-5">
+        <h3 class="text-muted">No stories found yet.</h3>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<a href="{{ url_for('story.create') }}" class="create-fab" id="createBtn">
+  <i class="fa-solid fa-plus"></i> Create Story
+</a>
+
+{% if request.args.get('success') %}
+<div class="modal fade" id="successModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog custom-success-modal">
+    <div class="modal-content text-center p-4" style="border-radius: 20px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+      <div class="modal-body">
+        <div class="mb-3">
+          <i class="fa-solid fa-circle-check text-success fa-4x"></i>
+        </div>
+        <h2 class="fw-bold text-success mb-2">Story posted!</h2>
+        <p class="text-muted mb-4">Share more stories or experience!</p>
+        <div class="p-4 mb-4" style="background-color: #f0f7f0; border-radius: 15px;">
+          <h5 class="fw-bold mb-3 text-secondary">In this story, you have earned...</h5>
+          <div class="display-3 fw-bold text-primary mb-0">
+            {{ request.args.get('water', 0) }} <i class="fa-solid fa-droplet text-info"></i>
+          </div>
+        </div>
+        <div class="modal-action-buttons">
+          <a href="{{ url_for('story.manage') }}" class="btn btn-success fw-bold px-3 py-2" style="border-radius: 8px;">View and Manage stories</a>
+          <a href="{{ url_for('garden.index') }}" class="btn btn-primary fw-bold px-3 py-2" style="border-radius: 8px;">Go to Garden</a>
+          <button type="button" class="btn btn-secondary fw-bold px-3 py-2" data-bs-dismiss="modal" style="border-radius: 8px;">Back To Home</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var myModal = new bootstrap.Modal(document.getElementById('successModal'));
+    myModal.show();
+    setTimeout(function() { myModal.hide(); }, 7000);
+  });
+</script>
+{% endif %}
+
+<script>
+let storyElements = [];
+const container = document.getElementById('storiesContainer').querySelector('.row');
+const resultsCount = document.getElementById('resultsCount');
+
+document.addEventListener('DOMContentLoaded', function() {
+  storyElements = Array.from(document.querySelectorAll('.story-item-wrapper'));
+  document.getElementById('searchInput').addEventListener('keyup', handleSearchAndFilter);
+  document.getElementById('topicFilter').addEventListener('change', handleSearchAndFilter);
+  document.getElementById('sortFilter').addEventListener('change', handleSearchAndFilter);
+});
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('topicFilter').value = '';
+  document.getElementById('sortFilter').value = 'newest';
+  handleSearchAndFilter();
+}
+
+function handleSearchAndFilter() {
+  const searchVal = document.getElementById('searchInput').value.toLowerCase();
+  const topicVal = document.getElementById('topicFilter').value;
+  const sortVal = document.getElementById('sortFilter').value;
+
+  let visibleStories = storyElements.filter(el => {
+    const title = (el.dataset.title || '').toLowerCase();
+    const content = (el.dataset.content || '').toLowerCase();
+    const topic = el.dataset.topic;
+    const matchesSearch = title.includes(searchVal) || content.includes(searchVal);
+    const matchesTopic = topicVal === "" || topic === topicVal;
+    return matchesSearch && matchesTopic;
+  });
+
+  visibleStories.sort((a, b) => {
+    if (sortVal === 'newest') return new Date(b.dataset.date) - new Date(a.dataset.date);
+    if (sortVal === 'oldest') return new Date(a.dataset.date) - new Date(b.dataset.date);
+    if (sortVal === 'popular') return parseInt(b.dataset.likes) - parseInt(a.dataset.likes);
+    return 0;
+  });
+
+  container.innerHTML = '';
+  if (visibleStories.length > 0) {
+    visibleStories.forEach(el => container.appendChild(el));
+    resultsCount.innerText = visibleStories.length + " Stories";
+  } else {
+    container.innerHTML = `
+      <div class="col-12 text-center py-5">
+        <div class="text-muted opacity-50">
+          <i class="fa-solid fa-magnifying-glass fa-3x mb-3"></i>
+          <h4>No stories found matching your filters.</h4>
+          <p>Try clearing the filters to see everything again.</p>
+        </div>
+      </div>
+    `;
+    resultsCount.innerText = "0 Stories";
+  }
+}
+
+async function toggleLike(btn) {
+  const storyId = btn.dataset.storyId;
+  const icon = btn.querySelector("i");
+  const countEl = btn.querySelector(".js-like-count");
+
+  btn.style.transform = "scale(1.15)";
+  setTimeout(() => (btn.style.transform = ""), 120);
+
+  try {
+    const res = await fetch(`/story/${storyId}/like-toggle`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+    if (!data.ok) return;
+
+    countEl.textContent = data.like_count;
+
+    if (data.liked) {
+      icon.classList.remove("fa-regular");
+      icon.classList.add("fa-solid");
+      btn.dataset.liked = "1";
+    } else {
+      icon.classList.remove("fa-solid");
+      icon.classList.add("fa-regular");
+      btn.dataset.liked = "0";
+    }
+
+    const wrapper = btn.closest(".story-item-wrapper");
+    if (wrapper) wrapper.dataset.likes = String(data.like_count);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".js-like-btn");
+  if (!btn) return;
+  toggleLike(btn);
+});
+
+window.addEventListener('scroll', function() {
+  const btn = document.getElementById('createBtn');
+  const footer = document.querySelector('footer');
+  if (!footer || !btn) return;
+
+  const footerRect = footer.getBoundingClientRect();
+  const windowHeight = window.innerHeight;
+
+  if (footerRect.top < windowHeight) {
+    btn.style.bottom = (windowHeight - footerRect.top + 5) + 'px';
+  } else {
+    btn.style.bottom = '30px';
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+{% block title %}Edit Event | The Legacy Garden{% endblock %}
+
+{% block content %}
+
+<style>
+  :root{
+    --lg-green:#2F6D4F;
+    --lg-green-2:#24563E;
+    --lg-bg:#FBF9F3;
+    --lg-card:#ffffff;
+    --lg-text:#142019;
+    --lg-muted:#51615a;
+    --lg-border: rgba(0,0,0,0.08);
+    --lg-shadow: 0 18px 55px rgba(0,0,0,0.08);
+    --lg-shadow-2: 0 12px 30px rgba(0,0,0,0.07);
+    --lg-radius: 22px;
+  }
+
+  body{ background: var(--lg-bg); }
+
+.admin-events-wrap{
+  padding: 42px 0 70px;
+  min-height: 85vh;
+}
+
+  /* Premium card (same as admin) */
+  .card-lg{
+    border-radius: var(--lg-radius);
+    background: var(--lg-card);
+    border: 1px solid var(--lg-border);
+    box-shadow: var(--lg-shadow);
+  }
+  .card-pad{ padding: 26px; }
+
+  /* Section title row (like Add Event) */
+  .section-row{ margin-bottom: 12px; }
+  .section-title{
+    font-size: 1.6rem;
+    font-weight: 900;
+    margin-bottom: 4px;
+    color: #2f5f3a;
+  }
+  .hint{
+    margin: 0;
+    color: #5f6f7a;
+    font-size: 1.05rem;
+  }
+
+  /* Top actions */
+  .top-actions{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap:wrap;
+  }
+  .count-pill{
+    font-weight:900;
+    font-size:.9rem;
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(47,109,79,0.10);
+    color:var(--lg-green-2);
+    border:1px solid rgba(47,109,79,0.18);
+  }
+
+  /* Form layout = one column like screenshot */
+  .event-form{ margin: 0; }
+  .stack{ display:flex; flex-direction:column; gap: 14px; }
+
+  /* Title + Date row (2 columns on desktop, stack on mobile) */
+  .row2{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 767.98px){
+    .row2{ grid-template-columns: 1fr; }
+  }
+
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap: 7px;
+  }
+  .label{
+    font-weight: 800;
+    color: var(--lg-text);
+    font-size: 0.95rem;
+  }
+
+  .ctrl{
+    width:100%;
+    border-radius: 14px;
+    border: 1px solid var(--lg-border);
+    padding: 12px 14px;
+    font-size: 0.98rem;
+    outline: none;
+    background: #fff;
+    transition: box-shadow .18s ease, border-color .18s ease;
+  }
+  .ctrl:focus{
+    border-color: rgba(47,109,79,0.35);
+    box-shadow: 0 0 0 4px rgba(47,109,79,0.14);
+  }
+  textarea.ctrl{ resize: vertical; min-height: 120px; }
+
+  /* Image block like Add Event */
+  .file-wrap{
+    border: 1px dashed rgba(0,0,0,0.18);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(47,109,79,0.04);
+  }
+/* ===== Add-Event style preview ===== */
+.img-preview{
+  margin-top: 12px;
+  width: 100%;
+  max-width: 520px;   /* prevents huge empty space */
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.10);
+  overflow: hidden;
+  position: relative;
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+}
+
+.img-preview img{
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 767.98px){
+  .img-preview{ max-width: 100%; }
+  .img-preview img{ height: 190px; }
+}
+
+.hidden{ display:none; }
+
+/* overlay + remove button */
+.img-overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(0,0,0,0.45);
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+.img-preview:hover .img-overlay{ opacity: 1; }
+
+.img-remove-btn{
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 900;
+  cursor: pointer;
+  background: rgba(255,255,255,0.92);
+  color: #B02A37;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.18);
+  transition: transform .18s ease, filter .18s ease;
+}
+.img-remove-btn:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+}
+
+/* current image block */
+.current-wrap{ margin-top: 12px; }
+/* current image block */
+.current-img{
+  width: 100%;
+  height: 220px;       /* same everywhere */
+  border-radius: 16px;
+  object-fit: cover;
+  border: 1px solid rgba(0,0,0,0.10);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+  background: #eee;
+  margin-top: 10px;
+}
+
+/* ✅ make current block same width as preview */
+.current-wrap{
+  margin-top: 12px;
+  max-width: 520px;     /* same as .img-preview */
+  margin-left: auto;    /* center */
+  margin-right: auto;   /* center */
+  width: 100%;
+}
+
+  .img-tip{
+    display:block;
+    margin-top: 10px;
+    color: var(--lg-muted);
+    line-height: 1.4;
+    font-size: 0.98rem;
+  }
+
+  /* Buttons */
+  .btn-lgx{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap: 8px;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 18px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: transform .18s ease, filter .18s ease, background .18s ease;
+    white-space: nowrap;
+    box-shadow: none;
+    text-decoration: none;
+  }
+  .btn-primary{
+    background: linear-gradient(135deg, var(--lg-green), #43A047);
+    color:#fff;
+    box-shadow: 0 12px 24px rgba(47,109,79,0.20);
+  }
+  .btn-primary:hover{ transform: translateY(-1px); filter: brightness(1.02); }
+  .btn-primary:active{ transform: translateY(0px); }
+
+  .btn-soft{
+    background: #2F8F4E;
+    color: #fff;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+  .btn-soft:hover{ background:#257A41; transform: translateY(-1px); }
+  .btn-soft:active{ transform: translateY(0); }
+
+  .btn-edit{
+    background: #1E88E5;
+    color: #fff;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+  .btn-edit:hover{ background:#156FBE; transform: translateY(-1px); }
+  .btn-edit:active{ transform: translateY(0); }
+
+  .btn-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top: 4px;
+  }
+
+
+  /* Style the file input container */
+input[type="file"].ctrl{
+  padding: 8px;
+  background: #fff;
+}
+
+/* Style the actual Choose file button */
+input[type="file"].ctrl::file-selector-button{
+  background: #E5E7EB;        /* soft grey */
+  border: none;
+  padding: 10px 22px;
+  border-radius: 18px;        /* rounded pill */
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .18s ease, transform .18s ease;
+  margin-right: 14px;
+}
+
+/* Hover effect */
+input[type="file"].ctrl::file-selector-button:hover{
+  background: #D1D5DB;
+  transform: translateY(-1px);
+}
+
+/* Active click */
+input[type="file"].ctrl::file-selector-button:active{
+  transform: translateY(0);
+}
+</style>
+
+<section class="admin-events-wrap">
+  <div class="container">
+
+    <div class="card-lg card-pad">
+
+      <div class="top-actions">
+        <a class="btn-lgx btn-soft" href="{{ url_for('admin_events') }}">← Back to Events</a>
+        <div class="count-pill">Editing: #{{ event.id }}</div>
+      </div>
+
+      <div class="section-row">
+        <div>
+          <h3 class="section-title">Edit Event</h3>
+          <p class="hint">Update details carefully so the event stays clear and friendly for seniors.</p>
+        </div>
+      </div>
+
+      <form class="event-form"
+            method="POST"
+            action="{{ url_for('edit_event', event_id=event.id) }}"
+            enctype="multipart/form-data">
+
+        <div class="stack">
+
+          <!-- Title + Date -->
+          <div class="row2">
+            <div class="field">
+              <span class="label">Event Title</span>
+              <input class="ctrl" type="text" name="title" value="{{ event.title }}" required>
+            </div>
+
+            <div class="field">
+              <span class="label">Event Date</span>
+              <input class="ctrl" type="date" name="event_date" value="{{ event.event_date }}" required>
+            </div>
+          </div>
+
+          <!-- Short Description -->
+          <div class="field">
+            <span class="label">Short Description</span>
+            <textarea class="ctrl" name="short_description" rows="3" required>{{ event.short_description }}</textarea>
+          </div>
+
+          <!-- Full Description -->
+          <div class="field">
+            <span class="label">Full Description</span>
+            <textarea class="ctrl" name="full_description" rows="4" required>{{ event.full_description }}</textarea>
+          </div>
+
+          <!-- Event Image -->
+<!-- Event Image (same style as Add Event: upload + preview + remove) -->
+<div class="field file-wrap">
+  <span class="label">Event Image</span>
+
+  <!-- file input -->
+  <input id="eventImageInput"
+         class="ctrl"
+         type="file"
+         name="image"
+         accept="image/*">
+
+  <!-- preview card -->
+  <div id="eventImagePreview" class="img-preview hidden" aria-live="polite">
+    <img id="eventImagePreviewImg" src="" alt="Selected event image preview">
+
+    <div class="img-overlay">
+      <button type="button" id="removeEventImageBtn" class="img-remove-btn">
+        🗑 Remove
+      </button>
+    </div>
+  </div>
+
+  <!-- show current image (only if user didn't select new one) -->
+  <div class="current-wrap ">
+    <span class="label" style="margin-top:12px;">Current Image</span>
+
+    {% if event.image_filename %}
+      <img src="{{ url_for('static', filename='uploads/' + event.image_filename) }}"
+           class="current-img" alt="Current event image">
+    {% else %}
+      <img src="{{ url_for('static', filename='uploads/default_event.png') }}"
+           class="current-img" alt="Default event image">
+    {% endif %}
+  </div>
+
+  <small class="img-tip">
+    Tip: Use bright photos with faces/gardens. Avoid tiny text in images.
+  </small>
+</div>
+
+          <!-- Rewards -->
+          <div class="field">
+            <span class="label">Rewards</span>
+            <textarea class="ctrl" name="rewards" rows="3" required>{{ event.rewards }}</textarea>
+          </div>
+
+          <!-- Status -->
+          <div class="field">
+            <span class="label">Display Style</span>
+            <select class="ctrl" name="status" required>
+              <option value="details" {% if event.status == "details" %}selected{% endif %}>Show Details Button</option>
+              <option value="upcoming" {% if event.status == "upcoming" %}selected{% endif %}>Show Upcoming Badge</option>
+            </select>
+          </div>
+
+          <!-- Buttons -->
+          <div class="btn-row">
+            <button type="submit" class="btn-lgx btn-primary">💾 Update Event</button>
+            <a class="btn-lgx btn-edit" href="{{ url_for('admin_events') }}">Cancel</a>
+          </div>
+
+        </div>
+      </form>
+
+    </div>
+
+  </div>
+</section>
+
+<script>
+  (function(){
+  const input = document.getElementById("eventImageInput");
+  const wrap = document.getElementById("eventImagePreview");
+  const img = document.getElementById("eventImagePreviewImg");
+  const removeBtn = document.getElementById("removeEventImageBtn");
+  const currentWrap = document.querySelector(".current-wrap");
+
+  if(!input || !wrap || !img || !removeBtn) return;
+
+  input.addEventListener("change", function(){
+    const file = this.files && this.files[0];
+
+    if(!file){
+      wrap.classList.add("hidden");
+      img.src = "";
+      if(currentWrap) currentWrap.style.display = "block";  // show current again
+      return;
+    }
+
+    if(!file.type.startsWith("image/")){
+      alert("Please upload an image file.");
+      input.value = "";
+      wrap.classList.add("hidden");
+      img.src = "";
+      if(currentWrap) currentWrap.style.display = "block";
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    img.src = url;
+    wrap.classList.remove("hidden");
+
+    if(currentWrap) currentWrap.style.display = "none";  // ✅ hide current image
+
+    img.onload = () => URL.revokeObjectURL(url);
+  });
+
+  removeBtn.addEventListener("click", function(){
+    input.value = "";
+    img.src = "";
+    wrap.classList.add("hidden");
+    if(currentWrap) currentWrap.style.display = "block";  // show current again
+  });
+})();
+</script>
+{% endblock %}

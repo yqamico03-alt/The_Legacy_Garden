@@ -1,0 +1,534 @@
+{% extends "base.html" %}
+
+{% block body_class %}auth-page{% endblock %}
+{% block title %}Log In | The Legacy Garden{% endblock %}
+
+{% block content %}
+<style>
+  :root{
+    --lg-green:#2F6D4F;
+    --lg-green-2:#24563E;
+
+    /* ✅ same soft landing background */
+    --lg-soft:#FBF9F3;
+    --lg-card:#FFFFFF;
+    --lg-accent:#E3F2E4;
+    --lg-text:#1f2a24;
+    --lg-muted:#4b5a52;
+    --lg-border: rgba(0,0,0,0.07);
+
+    --lg-shadow: 0 14px 40px rgba(0,0,0,0.05);
+    --lg-shadow-2: 0 10px 26px rgba(0,0,0,0.05);
+  }
+
+  html, body{
+    height: 100%;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body.auth-page{
+    background: var(--lg-soft);
+    font-family: 'Inter', sans-serif;
+    position: relative;
+  }
+
+  /* ===== Decorative background (same as landing) ===== */
+  .bg-decor{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .blob{
+    position:absolute;
+    width: min(520px, 92vw);
+    height: min(520px, 92vw);
+    max-width: 520px;
+    max-height: 520px;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.35;
+    animation: floaty 16s ease-in-out infinite;
+  }
+  .blob.b1{ background: #CFE7D0; top: -120px; left: -160px; }
+  .blob.b2{ background: #EAD8C5; bottom: -180px; right: -220px; animation-delay: -6s; }
+  .blob.b3{ background: #DDE6F6; top: 22%; right: -260px; animation-delay: -10s; }
+
+  @keyframes floaty{
+    0%, 100%{ transform: translate(0,0) scale(1); }
+    50%{ transform: translate(25px, -20px) scale(1.03); }
+  }
+
+  .leaf{
+    position:absolute;
+    font-size: 1.2rem;
+    opacity: .35;
+    animation: drift 18s linear infinite;
+  }
+  .leaf.l1{ top: 18%; left: 12%; animation-duration: 22s; }
+  .leaf.l2{ top: 65%; left: 7%; animation-duration: 28s; }
+  .leaf.l3{ top: 30%; right: 10%; animation-duration: 25s; }
+  .leaf.l4{ top: 78%; right: 16%; animation-duration: 30s; }
+  @keyframes drift{
+    0%{ transform: translateY(20px) rotate(0deg); }
+    100%{ transform: translateY(-70px) rotate(120deg); }
+  }
+
+  /* ✅ keep content above decor */
+  .auth-layer{
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ===== Your auth layout ===== */
+  .auth-page {
+    min-height: 100vh;
+  }
+
+  .auth-card-wrap{
+    display: flex;
+    justify-content: center;
+    padding: 40px 12px;
+    min-height: calc(100vh - 160px);
+  }
+
+  .auth-card{
+    width: 100%;
+    max-width: 960px;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 44px 48px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .auth-brand{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .auth-logo{ width: 80px; border-radius: 50%; }
+
+  .auth-brand-name{
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+  }
+
+.auth-title{
+    text-align: center;
+    font-weight: 700;
+    font-size: 2.6rem;
+    margin: 12px 0 10px;
+    letter-spacing: -0.5px;
+
+    color: #7A5C47;   /* luxury muted brown */
+    text-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.auth-subtitle{
+    text-align: center;
+    font-size: 1.05rem;
+    color: #6f6f6f;
+  margin-bottom: 52px;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+}
+
+  /* Input with icon */
+  .input-group-icon{
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .input-group-icon .input-icon{
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    font-size: 1rem;
+    pointer-events: none;
+  }
+
+  .input-group-icon .auth-input{
+    width: 100%;
+    height: 48px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 0 44px 0 42px;
+    font-size: 0.97rem;
+    color: #333;
+    background: #fafafa;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    box-sizing: border-box;
+  }
+
+  .input-group-icon .auth-input:focus{
+    outline: none;
+    border-color: var(--lg-green);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+  }
+
+  .input-group-icon .auth-input::placeholder{
+    color: #bbb;
+    font-size: 0.92rem;
+  }
+
+  /* Password eye icon */
+  .toggle-password{
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #aaa;
+    font-size: 1rem;
+    transition: color 0.2s;
+  }
+  .toggle-password:hover{ color: #555; }
+
+  /* Hide browser default password icons */
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear{ display: none; }
+  input[type="password"]::-webkit-credentials-auto-fill-button,
+  input[type="password"]::-webkit-textfield-decoration-container{ display: none !important; }
+
+  .auth-label{
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: #555;
+    margin-bottom: 6px;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .password-row{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .auth-link-sm{
+    color: var(--lg-green);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+  }
+  .auth-link-sm:hover{ text-decoration: underline; }
+
+  .auth-btn{
+    display: block;
+    width: 100%;
+    margin: 20px auto 0;
+    background-color: var(--lg-green);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 0;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    letter-spacing: 0.3px;
+  }
+  .auth-btn:hover{
+    background-color: #1b5e20;
+    transform: translateY(-1px);
+  }
+  .auth-btn:active{ transform: translateY(0); }
+
+  .divider{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: #ccc;
+    font-size: 0.85rem;
+  }
+  .divider::before,
+  .divider::after{
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e8e8e8;
+  }
+
+  .auth-links{
+    text-align: center;
+    font-size: 0.9rem;
+    color: #777;
+    margin-top: 18px;
+  }
+  .auth-links a{
+    color: var(--lg-green);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .auth-links a:hover{ text-decoration: underline; }
+
+  /* Back button */
+  .auth-back-wrap{
+    max-width: 700px;
+    margin: 16px auto 0;
+    padding: 0 12px;
+  }
+
+  .auth-back-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    font-weight: 700;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    transition: background-color 0.2s, transform 0.2s;
+  }
+  .auth-back-btn:hover{
+    background-color: #c8e6c9;
+    color: #1b5e20;
+    transform: translateX(-2px);
+  }
+
+  @media (max-width: 768px){
+    .auth-card-wrap{ padding: 20px 12px; min-height: auto !important; }
+    .auth-card{ max-width: 100%; padding: 30px 20px; border-radius: 18px; }
+    .auth-back-wrap{ max-width: 100%; }
+  }
+
+  @media (max-width: 400px){
+    .auth-card{ padding: 24px 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .blob, .leaf{ animation: none !important; }
+  }
+
+  /* ✅ Normal inputs should look active (NOT grey/locked) */
+.auth-input{
+  background: #ffffff !important;          /* was #fafafa */
+  border: 1.5px solid #d9d9d9;            /* a bit stronger */
+  color: #2b2b2b;
+}
+
+/* nicer placeholder */
+.auth-input::placeholder{
+  color: #b7b7b7;
+}
+
+/* ✅ Only readonly/disabled should look grey */
+.auth-input[readonly],
+.auth-input:disabled{
+  background: #f3f3f3 !important;
+  border-color: #e2e2e2;
+  color: #8a8a8a;
+}
+
+/* optional: make icons match the new look */
+.field-icon{
+  color: #9a9a9a;
+}
+.auth-hero{
+  text-align: center;
+  margin-bottom: 22px;
+  padding-top: 10px;
+}
+
+.auth-logo{
+  width: 70px;   /* smaller = more premium */
+  margin-bottom: 8px;
+}
+
+.auth-title{
+  font-weight: 700;
+  font-size: 2.3rem;   /* slightly smaller */
+  margin: 6px 0 6px;
+  color: #7A5C47;
+  letter-spacing: -0.4px;
+}
+
+.auth-subtitle{
+  font-size: 1rem;
+  color: #7a7a7a;
+  margin-bottom: 18px;
+}
+
+.google-btn-wrap{
+  margin-top: 18px;
+  margin-bottom: 14px;
+}
+
+.google-section{
+  margin-top: 30px;   /* increase this number */
+}
+
+</style>
+
+<!-- ✅ landing-style background decor -->
+<div class="bg-decor" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="leaf l1">🍃</div>
+  <div class="leaf l2">🍃</div>
+  <div class="leaf l3">🌿</div>
+  <div class="leaf l4">🍃</div>
+</div>
+
+<div class="auth-layer">
+
+  <div class="auth-card-wrap">
+    <div class="auth-card shadow">
+
+      <div class="auth-brand">
+        <img src="{{ url_for('static', filename='uploads/logo.jpeg') }}" class="auth-logo">
+      
+      </div>
+
+      <h2 class="auth-title">Log In</h2>
+      <p class="auth-subtitle">
+          Your garden is waiting for you🌼
+      </p>
+<div class="google-section">
+      <!-- Google Sign In Button -->
+      <a href="{{ url_for('google.login') }}" style="text-decoration: none;">
+        <button type="button" style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          width: 100%;
+          padding: 12px 16px;
+          background-color: #ffffff;
+          color: #3c4043;
+          border: 1.5px solid #dadce0;
+          border-radius: 10px;
+          font-size: 0.95rem;
+          font-weight: 600;
+          font-family: 'Google Sans', Roboto, Arial, sans-serif;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+          transition: box-shadow 0.2s, background-color 0.2s;
+          margin-bottom: 4px;
+        "
+        onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.backgroundColor='#f8f9fa';"
+        onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.08)'; this.style.backgroundColor='#ffffff';">
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            <path fill="none" d="M0 0h48v48H0z"/>
+          </svg>
+          Continue with Google
+        </button>
+      </a>
+      </div>
+
+      <div class="divider">or sign in with username</div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}"
+           style="background:#e8f5e9; color:#2e7d32; border-radius:8px; padding:14px 18px; margin-bottom:18px; font-size:1rem; line-height:1.5;">
+        
+        {{ message }}
+
+        {% if "suspended" in message.lower() %}
+        <!-- ✅ Senior-friendly Contact Section -->
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+
+
+  <a href="mailto:admin@legacygarden.com?subject=Account%20Help%20Request"
+     style="display:inline-block; padding:10px 16px; border:2px solid #2F6D4F; color:#2F6D4F; border-radius:8px; text-decoration:none; font-weight:600; background:#fff;">
+    ✉️ Email Admin
+  </a>
+</div>
+
+<p style="margin-top:10px; font-size:0.95rem; color:#555;">
+  Admin hotline: <b>+65 9123 4567</b>
+</p>
+        {% endif %}
+
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+      {% if error %}
+        <div style="background-color:#fff3f3; color:#c0392b; border:1px solid #f5c6cb; padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:0.9rem;">
+          <i class="fa-solid fa-circle-exclamation" style="margin-right:6px;"></i>{{ error }}
+        </div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('login') }}">
+
+        <!-- Username -->
+        <label class="auth-label">Username / Email</label>
+        <div class="input-group-icon">
+          <i class="fa-solid fa-user input-icon"></i>
+          <input class="auth-input" name="username" required
+                 placeholder="Enter your username or email">
+        </div>
+
+        <!-- Password -->
+        <div class="password-row">
+          <label class="auth-label" style="margin-bottom:0;">Password</label>
+          <a href="{{ url_for('reset_password') }}" class="auth-link-sm">
+            {{ _("Forgot password?") }}
+          </a>
+        </div>
+        <div class="input-group-icon">
+          <i class="fa-solid fa-lock input-icon"></i>
+          <input class="auth-input" type="password" name="password" id="password"
+                 required placeholder="Enter your password">
+          <i class="fa-solid fa-eye toggle-password"
+             onclick="togglePassword('password', this)"></i>
+        </div>
+
+        <button type="submit" class="auth-btn">
+          <i class="fa-solid fa-right-to-bracket" style="margin-right:8px;"></i>Log In
+        </button>
+
+      </form>
+
+      <div class="auth-links">
+        {{ _("Don't have an account?") }}
+        <a href="{{ url_for('signup') }}">{{ _("Sign Up") }}</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function togglePassword(inputId, icon) {
+  const input = document.getElementById(inputId);
+  if (input.type === "password") {
+    input.type = "text";
+    icon.classList.replace("fa-eye", "fa-eye-slash");
+  } else {
+    input.type = "password";
+    icon.classList.replace("fa-eye-slash", "fa-eye");
+  }
+}
+</script>
+
+{% endblock %}
